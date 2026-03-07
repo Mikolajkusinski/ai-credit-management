@@ -1,4 +1,4 @@
-dataset/
+../dataset/
 *.csv
 __pycache__/
 .idea/

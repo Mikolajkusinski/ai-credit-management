@@ -15,7 +15,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Input
 from xgboost import XGBClassifier
 
-df = pd.read_csv("../ai-credit-management/dataset/default_of_credit_card_clients.csv", header=1)
+df = pd.read_csv("dataset/default_of_credit_card_clients.csv", header=1)
 df.rename(
     columns={"default payment next month": "Default"},
     inplace=True
