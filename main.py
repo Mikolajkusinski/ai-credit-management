@@ -292,3 +292,17 @@ print(f"AUC GRU:           {roc_auc_score(y_test_seq, y_pred_gru):.4f}")
 print(f"AUC 1D-CNN:        {roc_auc_score(y_test_seq, y_pred_cnn):.4f}")
 print(f"AUC Transformer:   {roc_auc_score(y_test_seq, y_pred_transformer):.4f}")
 print(f"AUC ENSEMBLE:      {roc_auc_score(y_test, y_pred_ensemble):.4f}")
+
+# ========== SAVE MODELS ==========
+import joblib
+
+# Static models + scaler + features
+joblib.dump(rf, "rf_model.pkl")
+joblib.dump(xgb, "xgb_model.pkl")
+joblib.dump(scaler, "scaler.pkl")
+joblib.dump(features, "features.pkl")
+
+# LSTM (Keras model)
+model.save("lstm_model.keras")
+
+print("Models saved: rf_model.pkl, xgb_model.pkl, lstm_model.keras")
