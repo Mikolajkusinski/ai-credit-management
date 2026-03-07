@@ -72,11 +72,7 @@ X = df[features]
 y = df["Default"]
 
 # CZYSZCZENIE DANYCH: Usunięcie wierszy z NaN lub zastąpienie ich
-# Opcja 1: Wypełnienie NaN zerami (bezpieczne dla większości cech)
 X = X.fillna(0)
-
-# Opcja 2 (alternatywna): Wypełnienie medianą każdej kolumny
-# X = X.fillna(X.median())
 
 # Sprawdzenie czy są jeszcze NaN lub nieskończoności
 X = X.replace([np.inf, -np.inf], 0)
