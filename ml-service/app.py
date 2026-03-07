@@ -66,10 +66,27 @@ def prepare_lstm_input(data):
         [data['PAY_3'], data['BILL_AMT3'], data['PAY_AMT3']],
         [data['PAY_2'], data['BILL_AMT2'], data['PAY_AMT2']],
         [data['PAY_0'], data['BILL_AMT1'], data['PAY_AMT1']]
-    ])
+    ], dtype=np.float32)
 
-    # Scale independently (assuming scaler can handle 2D array)
-    sequence_scaled = scaler.transform(sequence)
+    # Normalize each feature column independently using standardization
+    # PAY values typically range from -2 to 9
+    # BILL_AMT and PAY_AMT are monetary values
+    sequence_scaled = sequence.copy()
+
+    # Scale PAY column (column 0): standardize
+    pay_mean = np.mean(sequence[:, 0])
+    pay_std = np.std(sequence[:, 0]) + 1e-8
+    sequence_scaled[:, 0] = (sequence[:, 0] - pay_mean) / pay_std
+
+    # Scale BILL_AMT column (column 1): standardize
+    bill_mean = np.mean(sequence[:, 1])
+    bill_std = np.std(sequence[:, 1]) + 1e-8
+    sequence_scaled[:, 1] = (sequence[:, 1] - bill_mean) / bill_std
+
+    # Scale PAY_AMT column (column 2): standardize
+    pay_amt_mean = np.mean(sequence[:, 2])
+    pay_amt_std = np.std(sequence[:, 2]) + 1e-8
+    sequence_scaled[:, 2] = (sequence[:, 2] - pay_amt_mean) / pay_amt_std
 
     # Reshape to (1, 6, 3)
     return sequence_scaled.reshape(1, 6, 3)
