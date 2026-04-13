@@ -15,7 +15,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Input
 from xgboost import XGBClassifier
 
-df = pd.read_csv("dataset/default_of_credit_card_clients.csv", header=1)
+df = pd.read_csv("default_of_credit_card_clients.csv", header=1)
 df.rename(
     columns={"default payment next month": "Default"},
     inplace=True
@@ -141,10 +141,12 @@ for t in range(6):
     X_seq[:, t, 2] = df[pay_amt_seq_cols[t]]
 
 # SKALOWANIE: Skalujemy każdą cechę z osobna (0=PAY, 1=BILL, 2=PAY_AMT)
+lstm_scalers = []
 for f in range(3):
     feat_data = X_seq[:, :, f].reshape(-1, 1)
     scaler_seq = StandardScaler()
     X_seq[:, :, f] = scaler_seq.fit_transform(feat_data).reshape(len(df), 6)
+    lstm_scalers.append(scaler_seq)
 
 X_train_seq, X_test_seq, y_train_seq, y_test_seq = train_test_split(
     X_seq, y, test_size=0.3, stratify=y, random_state=42
@@ -299,7 +301,8 @@ joblib.dump(xgb, "xgb_model.pkl")
 joblib.dump(scaler, "scaler.pkl")
 joblib.dump(features, "features.pkl")
 
-# LSTM (Keras model)
+# LSTM (Keras model) + scalers
 model.save("lstm_model.keras")
+joblib.dump(lstm_scalers, "../ml-service/lstm_scalers.pkl")
 
-print("Models saved: rf_model.pkl, xgb_model.pkl, lstm_model.keras")
+print("Models saved: rf_model.pkl, xgb_model.pkl, lstm_model.keras, lstm_scalers.pkl")
