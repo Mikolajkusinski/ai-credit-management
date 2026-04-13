@@ -19,6 +19,7 @@ xgb_model = joblib.load('xgb_model.pkl')
 scaler = joblib.load('scaler.pkl')
 feature_names = joblib.load('features.pkl')
 lstm_model = keras.models.load_model('lstm_model.keras')
+lstm_scalers = joblib.load('lstm_scalers.pkl')
 logger.info("All models loaded successfully")
 
 
@@ -68,25 +69,11 @@ def prepare_lstm_input(data):
         [data['PAY_0'], data['BILL_AMT1'], data['PAY_AMT1']]
     ], dtype=np.float32)
 
-    # Normalize each feature column independently using standardization
-    # PAY values typically range from -2 to 9
-    # BILL_AMT and PAY_AMT are monetary values
+    # Scale each feature using the saved scalers from training
     sequence_scaled = sequence.copy()
-
-    # Scale PAY column (column 0): standardize
-    pay_mean = np.mean(sequence[:, 0])
-    pay_std = np.std(sequence[:, 0]) + 1e-8
-    sequence_scaled[:, 0] = (sequence[:, 0] - pay_mean) / pay_std
-
-    # Scale BILL_AMT column (column 1): standardize
-    bill_mean = np.mean(sequence[:, 1])
-    bill_std = np.std(sequence[:, 1]) + 1e-8
-    sequence_scaled[:, 1] = (sequence[:, 1] - bill_mean) / bill_std
-
-    # Scale PAY_AMT column (column 2): standardize
-    pay_amt_mean = np.mean(sequence[:, 2])
-    pay_amt_std = np.std(sequence[:, 2]) + 1e-8
-    sequence_scaled[:, 2] = (sequence[:, 2] - pay_amt_mean) / pay_amt_std
+    for f in range(3):
+        feat_data = sequence[:, f].reshape(-1, 1)
+        sequence_scaled[:, f] = lstm_scalers[f].transform(feat_data).ravel()
 
     # Reshape to (1, 6, 3)
     return sequence_scaled.reshape(1, 6, 3)

@@ -7,6 +7,7 @@ interface ResultsDashboardProps {
 }
 
 const ResultsDashboard = ({ results }: ResultsDashboardProps) => {
+  
   const defaultCount = [
     results.randomForest.prediction === 'DEFAULT',
     results.xgboost.prediction === 'DEFAULT',

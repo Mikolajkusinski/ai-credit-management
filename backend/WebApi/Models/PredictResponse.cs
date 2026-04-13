@@ -1,14 +1,24 @@
+using System.Text.Json.Serialization;
+
 namespace WebApi.Models;
 
 public class PredictResponse
 {
-    public ModelPrediction RandomForest { get; set; } = null!;
-    public ModelPrediction Xgboost { get; set; } = null!;
-    public ModelPrediction Lstm { get; set; } = null!;
+    [JsonPropertyName("randomForest")]
+    public ModelPrediction? RandomForest { get; set; }
+
+    [JsonPropertyName("xgboost")]
+    public ModelPrediction? Xgboost { get; set; }
+
+    [JsonPropertyName("lstm")]
+    public ModelPrediction? Lstm { get; set; }
 }
 
 public class ModelPrediction
 {
+    [JsonPropertyName("prediction")]
+    public string? Prediction { get; set; }
+
+    [JsonPropertyName("defaultProbability")]
     public double DefaultProbability { get; set; }
-    public string Prediction { get; set; } = null!;
 }
