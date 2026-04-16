@@ -30,7 +30,7 @@ function App() {
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: '#f3f4f6',
+      background: 'radial-gradient(ellipse at top left, #1e1040 0%, #0f172a 55%, #0d1117 100%)',
       padding: '40px 20px'
     }}>
       <div style={{
@@ -41,14 +41,14 @@ function App() {
           <h1 style={{
             fontSize: '36px',
             fontWeight: 700,
-            color: '#1f2937',
+            color: '#f1f5f9',
             margin: '0 0 12px 0'
           }}>
             Credit Default Prediction
           </h1>
           <p style={{
             fontSize: '18px',
-            color: '#6b7280',
+            color: '#94a3b8',
             margin: 0
           }}>
             AI-powered risk assessment using ensemble ML models
@@ -59,9 +59,9 @@ function App() {
 
         {error && (
           <div style={{
-            backgroundColor: '#fee2e2',
-            border: '1px solid #fca5a5',
-            color: '#991b1b',
+            backgroundColor: 'rgba(239, 68, 68, 0.15)',
+            border: '1px solid rgba(239, 68, 68, 0.4)',
+            color: '#fca5a5',
             padding: '16px',
             borderRadius: '12px',
             marginTop: '24px',
@@ -72,7 +72,7 @@ function App() {
         )}
 
         {results && !loading && (
-          <div style={{ marginTop: '40px' }}>
+          <div style={{ marginTop: '24px' }}>
             <ResultsDashboard results={results} />
           </div>
         )}
