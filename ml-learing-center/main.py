@@ -3,16 +3,13 @@ import numpy as np
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import roc_auc_score
 
-import tensorflow as tf
-from tensorflow.keras.layers import LSTM, Dense, Dropout
-from tensorflow.keras.layers import GRU, Conv1D, GlobalMaxPooling1D, MultiHeadAttention, LayerNormalization, Flatten
-from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.layers import LSTM, Dense, Dropout, Input
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Input
+from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
+from sklearn.utils.class_weight import compute_class_weight
 from xgboost import XGBClassifier
 
 df = pd.read_csv("default_of_credit_card_clients.csv", header=1)
@@ -84,17 +81,6 @@ X_train, X_test, y_train, y_test = train_test_split(
     X_scaled, y, test_size=0.3, stratify=y, random_state=42
 )
 
-lr = LogisticRegression(
-    max_iter=1000,
-    class_weight="balanced",
-    solver="lbfgs"
-)
-
-lr.fit(X_train, y_train)
-y_pred_lr = lr.predict_proba(X_test)[:, 1]
-
-print("AUC Logistic:", roc_auc_score(y_test, y_pred_lr))
-
 rf = RandomForestClassifier(
     n_estimators=500,
     max_depth=10,
@@ -107,7 +93,6 @@ rf.fit(X_train, y_train)
 y_pred_rf = rf.predict_proba(X_test)[:, 1]
 print("AUC Random Forest:", roc_auc_score(y_test, y_pred_rf))
 
-# NOWY MODEL: XGBoost
 xgb = XGBClassifier(
     n_estimators=800,
     learning_rate=0.02,  # Wolniejsze uczenie = lepsze wyniki
@@ -125,7 +110,7 @@ xgb.fit(X_train, y_train)
 y_pred_xgb = xgb.predict_proba(X_test)[:, 1]
 print("AUC XGBoost:", roc_auc_score(y_test, y_pred_xgb))
 
-# MODEL DYNAMICZNY
+# MODEL DYNAMICZNY (LSTM)
 # Mapujemy kolumny tak, aby odpowiadały kolejnym miesiącom (od najstarszego do najnowszego)
 # Wrzesień (0), Sierpień (2), Lipiec (3), Czerwiec (4), Maj (5), Kwiecień (6)
 pay_seq_cols = ["PAY_6", "PAY_5", "PAY_4", "PAY_3", "PAY_2", "PAY_0"]
@@ -154,9 +139,8 @@ X_train_seq, X_test_seq, y_train_seq, y_test_seq = train_test_split(
 
 model = Sequential([
     Input(shape=(6, 3)),
-    LSTM(64, return_sequences=True),
     LSTM(32),
-    Dropout(0.4),
+    Dropout(0.3),
     Dense(16, activation="relu"),
     Dense(1, activation="sigmoid")
 ])
@@ -167,129 +151,36 @@ model.compile(
     metrics=["AUC"]
 )
 
+lstm_class_weights = compute_class_weight(
+    class_weight="balanced",
+    classes=np.array([0, 1]),
+    y=y_train_seq.values
+)
+lstm_class_weight_dict = {0: lstm_class_weights[0], 1: lstm_class_weights[1]}
+
+lstm_callbacks = [
+    EarlyStopping(monitor="val_auc", mode="max", patience=5, restore_best_weights=True),
+    ReduceLROnPlateau(monitor="val_auc", mode="max", factor=0.5, patience=3, min_lr=1e-5),
+]
+
 history = model.fit(
     X_train_seq,
     y_train_seq,
     validation_split=0.2,
-    epochs=25,
+    epochs=60,
     batch_size=256,
+    class_weight=lstm_class_weight_dict,
+    callbacks=lstm_callbacks,
     verbose=1
 )
 
 y_pred_lstm = model.predict(X_test_seq).ravel()
 print("AUC LSTM:", roc_auc_score(y_test_seq, y_pred_lstm))
 
-# ========== MODEL GRU ==========
-model_gru = Sequential([
-    GRU(64, input_shape=(6, 3), return_sequences=True),
-    GRU(32),
-    Dropout(0.4),
-    Dense(16, activation="relu"),
-    Dense(1, activation="sigmoid")
-])
-
-model_gru.compile(
-    optimizer="adam",
-    loss="binary_crossentropy",
-    metrics=["AUC"]
-)
-
-early_stop = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
-
-model_gru.fit(
-    X_train_seq, y_train_seq,
-    validation_split=0.2,
-    epochs=30,
-    batch_size=256,
-    callbacks=[early_stop],
-    verbose=1
-)
-
-y_pred_gru = model_gru.predict(X_test_seq).ravel()
-print("AUC GRU:", roc_auc_score(y_test_seq, y_pred_gru))
-
-# ========== MODEL 1D CNN ==========
-model_cnn = Sequential([
-    Conv1D(64, kernel_size=2, activation='relu', input_shape=(6, 3)),
-    Conv1D(32, kernel_size=2, activation='relu'),
-    GlobalMaxPooling1D(),
-    Dropout(0.4),
-    Dense(16, activation="relu"),
-    Dense(1, activation="sigmoid")
-])
-
-model_cnn.compile(
-    optimizer="adam",
-    loss="binary_crossentropy",
-    metrics=["AUC"]
-)
-
-model_cnn.fit(
-    X_train_seq, y_train_seq,
-    validation_split=0.2,
-    epochs=30,
-    batch_size=256,
-    callbacks=[early_stop],
-    verbose=1
-)
-
-y_pred_cnn = model_cnn.predict(X_test_seq).ravel()
-print("AUC 1D-CNN:", roc_auc_score(y_test_seq, y_pred_cnn))
-
-# ========== MODEL TRANSFORMER (Simplified) ==========
-inputs = tf.keras.Input(shape=(6, 3))
-
-# Multi-Head Attention
-attention_output = MultiHeadAttention(num_heads=2, key_dim=16)(inputs, inputs)
-attention_output = LayerNormalization()(attention_output + inputs)
-
-# Feed Forward
-x = Dense(32, activation='relu')(attention_output)
-x = Dropout(0.4)(x)
-x = Flatten()(x)
-x = Dense(16, activation='relu')(x)
-outputs = Dense(1, activation='sigmoid')(x)
-
-model_transformer = tf.keras.Model(inputs, outputs)
-
-model_transformer.compile(
-    optimizer="adam",
-    loss="binary_crossentropy",
-    metrics=["AUC"]
-)
-
-model_transformer.fit(
-    X_train_seq, y_train_seq,
-    validation_split=0.2,
-    epochs=30,
-    batch_size=256,
-    callbacks=[early_stop],
-    verbose=1
-)
-
-y_pred_transformer = model_transformer.predict(X_test_seq).ravel()
-print("AUC Transformer:", roc_auc_score(y_test_seq, y_pred_transformer))
-
-# ========== ULEPSZONY ENSEMBLE ==========
-y_pred_ensemble = (
-        0.25 * y_pred_rf +
-        0.25 * y_pred_xgb +
-        0.10 * y_pred_lstm +
-        0.15 * y_pred_gru +
-        0.10 * y_pred_cnn +
-        0.10 * y_pred_transformer +
-        0.05 * y_pred_lr
-)
-
 print("\n===== WYNIKI KOŃCOWE =====")
-print(f"AUC Logistic:      {roc_auc_score(y_test, y_pred_lr):.4f}")
 print(f"AUC Random Forest: {roc_auc_score(y_test, y_pred_rf):.4f}")
 print(f"AUC XGBoost:       {roc_auc_score(y_test, y_pred_xgb):.4f}")
 print(f"AUC LSTM:          {roc_auc_score(y_test_seq, y_pred_lstm):.4f}")
-print(f"AUC GRU:           {roc_auc_score(y_test_seq, y_pred_gru):.4f}")
-print(f"AUC 1D-CNN:        {roc_auc_score(y_test_seq, y_pred_cnn):.4f}")
-print(f"AUC Transformer:   {roc_auc_score(y_test_seq, y_pred_transformer):.4f}")
-print(f"AUC ENSEMBLE:      {roc_auc_score(y_test, y_pred_ensemble):.4f}")
 
 # ========== SAVE MODELS ==========
 import joblib
