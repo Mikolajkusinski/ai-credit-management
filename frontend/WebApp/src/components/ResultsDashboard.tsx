@@ -23,10 +23,16 @@ const ResultsDashboard = ({ results }: ResultsDashboardProps) => {
 
   const risk = getRiskLevel();
 
+  const sortedModels = [
+    { modelName: 'Random Forest', prediction: results.randomForest, icon: '🌲' },
+    { modelName: 'XGBoost',       prediction: results.xgboost,       icon: '🚀' },
+    { modelName: 'LSTM',          prediction: results.lstm,           icon: '🧠' },
+  ].sort((a, b) => a.prediction.defaultProbability - b.prediction.defaultProbability);
+
   return (
     <div style={{
       animation: 'fadeIn 0.5s ease-in',
-      maxWidth: '1200px',
+      maxWidth: '1400px',
       margin: '0 auto'
     }}>
       <style>{`
@@ -38,41 +44,32 @@ const ResultsDashboard = ({ results }: ResultsDashboardProps) => {
 
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+        gridTemplateColumns: 'repeat(3, 1fr) 2fr',
         gap: '24px',
-        marginBottom: '32px'
+        marginBottom: '24px',
+        alignItems: 'stretch'
       }}>
-        <ModelCard
-          modelName="Random Forest"
-          prediction={results.randomForest}
-          icon="🌲"
-        />
-        <ModelCard
-          modelName="XGBoost"
-          prediction={results.xgboost}
-          icon="🚀"
-        />
-        <ModelCard
-          modelName="LSTM"
-          prediction={results.lstm}
-          icon="🧠"
-        />
+        {sortedModels.map(({ modelName, prediction, icon }) => (
+          <ModelCard key={modelName} modelName={modelName} prediction={prediction} icon={icon} />
+        ))}
+        <ComparisonChart results={results} />
       </div>
 
-      <ComparisonChart results={results} />
-
       <div style={{
-        backgroundColor: 'white',
-        borderRadius: '12px',
+        background: 'rgba(255, 255, 255, 0.05)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        borderRadius: '16px',
         padding: '24px',
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+        border: '1px solid rgba(255, 255, 255, 0.08)',
+        boxShadow: '0 4px 24px rgba(0, 0, 0, 0.3)',
         marginTop: '24px',
         textAlign: 'center'
       }}>
-        <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', fontWeight: 600, color: '#1f2937' }}>
+        <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', fontWeight: 600, color: '#f1f5f9' }}>
           Risk Summary
         </h3>
-        <p style={{ margin: '0 0 12px 0', fontSize: '16px', color: '#6b7280' }}>
+        <p style={{ margin: '0 0 12px 0', fontSize: '16px', color: '#94a3b8' }}>
           {defaultCount} out of 3 models predict default
         </p>
         <div style={{

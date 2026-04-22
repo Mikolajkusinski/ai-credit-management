@@ -12,23 +12,30 @@ const ModelCard = ({ modelName, prediction, icon }: ModelCardProps) => {
 
   return (
     <div style={{
-      backgroundColor: 'white',
-      borderRadius: '12px',
+      background: 'rgba(255, 255, 255, 0.05)',
+      backdropFilter: 'blur(12px)',
+      WebkitBackdropFilter: 'blur(12px)',
+      borderRadius: '16px',
       padding: '24px',
-      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+      border: '1px solid rgba(255, 255, 255, 0.08)',
+      boxShadow: '0 4px 24px rgba(0, 0, 0, 0.3)',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      gap: '16px'
+      justifyContent: 'space-between',
+      minHeight: '280px'
     }}>
-      <div style={{ fontSize: '32px' }}>{icon}</div>
-      <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600, color: '#1f2937' }}>
-        {modelName}
-      </h3>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+        <div style={{ fontSize: '32px' }}>{icon}</div>
+        <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600, color: '#f1f5f9' }}>
+          {modelName}
+        </h3>
+      </div>
       <ProbabilityGauge probability={prediction.defaultProbability} />
       <div style={{
-        backgroundColor: isDefault ? '#fee2e2' : '#d1fae5',
-        color: isDefault ? '#991b1b' : '#065f46',
+        backgroundColor: isDefault ? 'rgba(239,68,68,0.15)' : 'rgba(16,185,129,0.15)',
+        color: isDefault ? '#fca5a5' : '#6ee7b7',
+        border: `1px solid ${isDefault ? 'rgba(239,68,68,0.35)' : 'rgba(16,185,129,0.35)'}`,
         padding: '8px 16px',
         borderRadius: '9999px',
         fontWeight: 600,
