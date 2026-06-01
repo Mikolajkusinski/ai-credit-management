@@ -3,18 +3,19 @@
 > Lista zadań zsynchronizowana z `TASKS.md`. Aktualizuj po zmergeowaniu każdego PR-a.
 >
 > **Legenda statusów:**
+>
 > - 🟢 **Wykonane** — task zmergeowany do `main`.
 > - 🔴 **Do zrobienia** — task dostępny (wszystkie `blocked_by` są 🟢), nie został jeszcze rozpoczęty.
 > - 🔒 **Zablokowane** — task czeka na zależność (`blocked_by` zawiera coś, co nie jest 🟢).
 >
-> **Ostatnia aktualizacja:** 2026-06-01 (start Sprintu 1)
+> **Ostatnia aktualizacja:** 2026-06-01 (po mergu CREDIT-201)
 
 ---
 
 ## 🎯 Aktualne zadanie
 
 - **Gabriel Figur (GF):** 🔴 **CREDIT-101** — Sliding window panel · branch `sprint1/sliding-window-panel`
-- **Mikołaj Kusiński (MK):** 🔴 **CREDIT-201** — Test infrastructure · branch `sprint1/test-infra` *(potem 🔴 CREDIT-401 — DB schema)*
+- **Mikołaj Kusiński (MK):** 🔴 **CREDIT-401** — DB schema · branch `sprint1/db-schema`
 
 > **Reguła aktualizacji tej sekcji:** gdy task zostanie zmergeowany do `main`, ustaw tutaj kolejny najwyżej priorytetowy dostępny (🔴) task z toru właściwej osoby. Jeśli osoba nie ma już dostępnych tasków w bieżącym sprincie, wpisz „⏸️ czeka na odblokowanie / koniec sprintu".
 
@@ -23,8 +24,8 @@
 ## 📊 Statystyki
 
 - **Łącznie zadań:** 27
-- **🟢 Wykonane:** 0
-- **🔴 Dostępne:** 3 (CREDIT-101, CREDIT-201, CREDIT-401)
+- **🟢 Wykonane:** 1
+- **🔴 Dostępne:** 2 (CREDIT-101, CREDIT-401)
 - **🔒 Zablokowane:** 24
 
 ---
@@ -53,7 +54,7 @@
 
 ### Tor MK (infra)
 
-- 🔴 **CREDIT-201** · [INFRA] · P1 · SWAP-OK · `sprint1/test-infra`
+- 🟢 **CREDIT-201** · [INFRA] · P1 · SWAP-OK · `sprint1/test-infra`
   - xUnit (.NET) + pytest (Python) + Vitest (React) + CI workflow blokujący czerwone PR-y.
   - blocked_by: — · blocks: 205
 
