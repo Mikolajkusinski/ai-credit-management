@@ -8,14 +8,14 @@
 > - 🔴 **Do zrobienia** — task dostępny (wszystkie `blocked_by` są 🟢), nie został jeszcze rozpoczęty.
 > - 🔒 **Zablokowane** — task czeka na zależność (`blocked_by` zawiera coś, co nie jest 🟢).
 >
-> **Ostatnia aktualizacja:** 2026-06-01 (po mergu CREDIT-201)
+> **Ostatnia aktualizacja:** 2026-06-01 (po mergu CREDIT-401)
 
 ---
 
 ## 🎯 Aktualne zadanie
 
 - **Gabriel Figur (GF):** 🔴 **CREDIT-101** — Sliding window panel · branch `sprint1/sliding-window-panel`
-- **Mikołaj Kusiński (MK):** 🔴 **CREDIT-401** — DB schema · branch `sprint1/db-schema`
+- **Mikołaj Kusiński (MK):** 🔴 **CREDIT-402** — docker-compose + Postgres · branch `sprint1/docker-postgres`
 
 > **Reguła aktualizacji tej sekcji:** gdy task zostanie zmergeowany do `main`, ustaw tutaj kolejny najwyżej priorytetowy dostępny (🔴) task z toru właściwej osoby. Jeśli osoba nie ma już dostępnych tasków w bieżącym sprincie, wpisz „⏸️ czeka na odblokowanie / koniec sprintu".
 
@@ -24,9 +24,9 @@
 ## 📊 Statystyki
 
 - **Łącznie zadań:** 27
-- **🟢 Wykonane:** 1
-- **🔴 Dostępne:** 2 (CREDIT-101, CREDIT-401)
-- **🔒 Zablokowane:** 24
+- **🟢 Wykonane:** 2
+- **🔴 Dostępne:** 2 (CREDIT-101, CREDIT-402)
+- **🔒 Zablokowane:** 23
 
 ---
 
@@ -58,11 +58,11 @@
   - xUnit (.NET) + pytest (Python) + Vitest (React) + CI workflow blokujący czerwone PR-y.
   - blocked_by: — · blocks: 205
 
-- 🔴 **CREDIT-401** · [DB] · P0 · `sprint1/db-schema`
+- 🟢 **CREDIT-401** · [DB] · P0 · `sprint1/db-schema`
   - Schemat Postgres + EF Core (Client/Snapshot/Prediction/Trend) + NuGet packages (EFCore, .Design, .Tools, Npgsql.EFCore.PostgreSQL).
   - blocked_by: — · blocks: 402, 203, 204
 
-- 🔒 **CREDIT-402** · [INFRA] · P1 · `sprint1/docker-postgres`
+- 🔴 **CREDIT-402** · [INFRA] · P1 · `sprint1/docker-postgres`
   - docker-compose: db + backend + ml-service (frontend POZA compose); auto-migracje przy starcie.
   - blocked_by: 401 · blocks: —
 
