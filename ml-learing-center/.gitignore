@@ -2,5 +2,7 @@
 *.csv
 __pycache__/
 .idea/
+.venv/
+.pytest_cache/
 
 thesis_figures/output
