@@ -197,3 +197,89 @@ model.save("lstm_model.keras")
 joblib.dump(lstm_scalers, "../ml-service/lstm_scalers.pkl")
 
 print("Models saved: rf_model.pkl, xgb_model.pkl, lstm_model.keras, lstm_scalers.pkl")
+
+
+# ========== W3 RETRAIN (CREDIT-102) ==========
+# Train RF/XGBoost/LSTM on the W3 sliding window (newest 3 months: Jul/Aug/Sep)
+# aligned with the October default label. Same train/inference distribution will
+# let CREDIT-104 iterate W0..W3 at inference without OOD shift.
+from sliding_window import WINDOW_DEFS
+from features import engineer_features, prepare_lstm_sequences
+
+# Reload CSV fresh -- the legacy section above already one-hot encoded df, so
+# engineer_features can't get_dummies("EDUCATION") on it anymore.
+df_w3 = pd.read_csv("default_of_credit_card_clients.csv", header=1)
+df_w3.rename(columns={"default payment next month": "Default"}, inplace=True)
+df_w3.drop(columns=["ID"], inplace=True)
+df_w3["EDUCATION"] = df_w3["EDUCATION"].astype(int)
+df_w3["MARRIAGE"] = df_w3["MARRIAGE"].astype(int)
+df_w3["SEX"] = df_w3["SEX"].astype(int)
+y_w3 = df_w3["Default"]
+
+W3 = WINDOW_DEFS[3]
+
+# Static models on W3
+X_w3, features_w3 = engineer_features(df_w3, W3)
+scaler_w3 = StandardScaler()
+X_w3_scaled = scaler_w3.fit_transform(X_w3)
+
+X_tr_w3, X_te_w3, y_tr_w3, y_te_w3 = train_test_split(
+    X_w3_scaled, y_w3, test_size=0.3, stratify=y_w3, random_state=42
+)
+
+rf_w3 = RandomForestClassifier(
+    n_estimators=500, max_depth=10, min_samples_leaf=5,
+    class_weight="balanced", random_state=42,
+).fit(X_tr_w3, y_tr_w3)
+auc_rf_w3 = roc_auc_score(y_te_w3, rf_w3.predict_proba(X_te_w3)[:, 1])
+
+xgb_w3 = XGBClassifier(
+    n_estimators=800, learning_rate=0.02, max_depth=4,
+    subsample=0.7, colsample_bytree=0.7,
+    reg_alpha=0.1, reg_lambda=1.0,
+    scale_pos_weight=(len(y_w3) - sum(y_w3)) / sum(y_w3),
+    random_state=42, eval_metric="auc",
+).fit(X_tr_w3, y_tr_w3)
+auc_xgb_w3 = roc_auc_score(y_te_w3, xgb_w3.predict_proba(X_te_w3)[:, 1])
+
+# LSTM on W3 -- tensor (N, 3, 3)
+X_seq_w3, lstm_scalers_w3 = prepare_lstm_sequences(df_w3, W3)
+Xs_tr_w3, Xs_te_w3, ys_tr_w3, ys_te_w3 = train_test_split(
+    X_seq_w3, y_w3, test_size=0.3, stratify=y_w3, random_state=42
+)
+
+model_w3 = Sequential([
+    Input(shape=(3, 3)),
+    LSTM(32),
+    Dropout(0.3),
+    Dense(16, activation="relu"),
+    Dense(1, activation="sigmoid"),
+])
+model_w3.compile(optimizer="adam", loss="binary_crossentropy", metrics=["AUC"])
+
+cw_w3 = compute_class_weight(class_weight="balanced", classes=np.array([0, 1]), y=ys_tr_w3.values)
+model_w3.fit(
+    Xs_tr_w3, ys_tr_w3,
+    validation_split=0.2, epochs=60, batch_size=256,
+    class_weight={0: cw_w3[0], 1: cw_w3[1]},
+    callbacks=[
+        EarlyStopping(monitor="val_auc", mode="max", patience=5, restore_best_weights=True),
+        ReduceLROnPlateau(monitor="val_auc", mode="max", factor=0.5, patience=3, min_lr=1e-5),
+    ],
+    verbose=1,
+)
+auc_lstm_w3 = roc_auc_score(ys_te_w3, model_w3.predict(Xs_te_w3, verbose=0).ravel())
+
+print("\n===== WYNIKI W3 (3-mies.) =====")
+print(f"AUC RF_w3:   {auc_rf_w3:.4f}")
+print(f"AUC XGB_w3:  {auc_xgb_w3:.4f}")
+print(f"AUC LSTM_w3: {auc_lstm_w3:.4f}")
+
+joblib.dump(rf_w3,       "rf_model_w3.pkl")
+joblib.dump(xgb_w3,      "xgb_model_w3.pkl")
+joblib.dump(scaler_w3,   "scaler_w3.pkl")
+joblib.dump(features_w3, "features_w3.pkl")
+model_w3.save("lstm_model_w3.keras")
+joblib.dump(lstm_scalers_w3, "../ml-service/lstm_scalers_w3.pkl")
+
+print("W3 models saved: rf_model_w3.pkl, xgb_model_w3.pkl, lstm_model_w3.keras, scaler_w3.pkl, features_w3.pkl, lstm_scalers_w3.pkl")

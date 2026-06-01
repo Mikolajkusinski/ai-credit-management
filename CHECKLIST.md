@@ -7,13 +7,13 @@
 > - 🔴 **Do zrobienia** — task dostępny (wszystkie `blocked_by` są 🟢), nie został jeszcze rozpoczęty.
 > - 🔒 **Zablokowane** — task czeka na zależność (`blocked_by` zawiera coś, co nie jest 🟢).
 >
-> **Ostatnia aktualizacja:** 2026-06-01 (start Sprintu 1)
+> **Ostatnia aktualizacja:** 2026-06-01 (po merge CREDIT-101)
 
 ---
 
 ## 🎯 Aktualne zadanie
 
-- **Gabriel Figur (GF):** 🔴 **CREDIT-101** — Sliding window panel · branch `sprint1/sliding-window-panel`
+- **Gabriel Figur (GF):** 🔴 **CREDIT-102** — Retrain na W3 + features.py + fix mismatchu · branch `sprint1/retrain-3mo`
 - **Mikołaj Kusiński (MK):** 🔴 **CREDIT-201** — Test infrastructure · branch `sprint1/test-infra` *(potem 🔴 CREDIT-401 — DB schema)*
 
 > **Reguła aktualizacji tej sekcji:** gdy task zostanie zmergeowany do `main`, ustaw tutaj kolejny najwyżej priorytetowy dostępny (🔴) task z toru właściwej osoby. Jeśli osoba nie ma już dostępnych tasków w bieżącym sprincie, wpisz „⏸️ czeka na odblokowanie / koniec sprintu".
@@ -23,9 +23,9 @@
 ## 📊 Statystyki
 
 - **Łącznie zadań:** 27
-- **🟢 Wykonane:** 0
-- **🔴 Dostępne:** 3 (CREDIT-101, CREDIT-201, CREDIT-401)
-- **🔒 Zablokowane:** 24
+- **🟢 Wykonane:** 1 (CREDIT-101)
+- **🔴 Dostępne:** 3 (CREDIT-102, CREDIT-201, CREDIT-401)
+- **🔒 Zablokowane:** 23
 
 ---
 
@@ -39,11 +39,11 @@
 
 ### Tor GF (ML)
 
-- 🔴 **CREDIT-101** · [DATA] · P0 · `sprint1/sliding-window-panel`
+- 🟢 **CREDIT-101** · [DATA] · P0 · `sprint1/sliding-window-panel`
   - Sliding-window 3-mies. → 4 okna (W0–W3) z wiersza UCI; `extract_windows()` + test pytest.
   - blocked_by: — · blocks: 102, 103, 110, 111
 
-- 🔒 **CREDIT-102** · [ML] · P0 · `sprint1/retrain-3mo`
+- 🔴 **CREDIT-102** · [ML] · P0 · `sprint1/retrain-3mo`
   - Trening RF/XGB/LSTM na oknie W3; artefakty z sufiksem `_w3` (stare nietknięte); fix mismatchu `utilization_rate`/`severe_late` w `main.py` vs `app.py`.
   - blocked_by: 101 · blocks: 103, 104, 105, 106, 107, 108, 109, 110, 112, 113
 
