@@ -3,6 +3,7 @@
 > Lista zadań zsynchronizowana z `TASKS.md`. Aktualizuj po zmergeowaniu każdego PR-a.
 >
 > **Legenda statusów:**
+>
 > - 🟢 **Wykonane** — task zmergeowany do `main`.
 > - 🔴 **Do zrobienia** — task dostępny (wszystkie `blocked_by` są 🟢), nie został jeszcze rozpoczęty.
 > - 🔒 **Zablokowane** — task czeka na zależność (`blocked_by` zawiera coś, co nie jest 🟢).
@@ -14,7 +15,7 @@
 ## 🎯 Aktualne zadanie
 
 - **Gabriel Figur (GF):** 🔴 **CREDIT-101** — Sliding window panel · branch `sprint1/sliding-window-panel`
-- **Mikołaj Kusiński (MK):** 🔴 **CREDIT-201** — Test infrastructure · branch `sprint1/test-infra` *(potem 🔴 CREDIT-401 — DB schema)*
+- **Mikołaj Kusiński (MK):** 🔴 **CREDIT-201** — Test infrastructure · branch `sprint1/test-infra` _(potem 🔴 CREDIT-401 — DB schema)_
 
 > **Reguła aktualizacji tej sekcji:** gdy task zostanie zmergeowany do `main`, ustaw tutaj kolejny najwyżej priorytetowy dostępny (🔴) task z toru właściwej osoby. Jeśli osoba nie ma już dostępnych tasków w bieżącym sprincie, wpisz „⏸️ czeka na odblokowanie / koniec sprintu".
 
