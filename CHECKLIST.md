@@ -8,13 +8,13 @@
 > - 🔴 **Do zrobienia** — task dostępny (wszystkie `blocked_by` są 🟢), nie został jeszcze rozpoczęty.
 > - 🔒 **Zablokowane** — task czeka na zależność (`blocked_by` zawiera coś, co nie jest 🟢).
 >
-> **Ostatnia aktualizacja:** 2026-06-02 (po merge CREDIT-101 + CREDIT-201/401/402)
+> **Ostatnia aktualizacja:** 2026-06-02 (po merge CREDIT-102)
 
 ---
 
 ## 🎯 Aktualne zadanie
 
-- **Gabriel Figur (GF):** 🔴 **CREDIT-102** — Retrain na W3 + features.py + fix mismatchu · branch `sprint1/retrain-3mo`
+- **Gabriel Figur (GF):** 🔴 **CREDIT-103** — Rozszerzone metryki + 12 wykresów · branch `sprint1/revalidate-metrics`
 - **Mikołaj Kusiński (MK):** ⏸️ czeka na odblokowanie / koniec sprintu (kolejne taski MK w Sprincie 2 zależą od CREDIT-210)
 
 > **Reguła aktualizacji tej sekcji:** gdy task zostanie zmergeowany do `main`, ustaw tutaj kolejny najwyżej priorytetowy dostępny (🔴) task z toru właściwej osoby. Jeśli osoba nie ma już dostępnych tasków w bieżącym sprincie, wpisz „⏸️ czeka na odblokowanie / koniec sprintu".
@@ -24,9 +24,9 @@
 ## 📊 Statystyki
 
 - **Łącznie zadań:** 27
-- **🟢 Wykonane:** 4 (CREDIT-101, CREDIT-201, CREDIT-401, CREDIT-402)
-- **🔴 Dostępne:** 1 (CREDIT-102)
-- **🔒 Zablokowane:** 22
+- **🟢 Wykonane:** 5 (CREDIT-101, CREDIT-102, CREDIT-201, CREDIT-401, CREDIT-402)
+- **🔴 Dostępne:** 6 (CREDIT-103, CREDIT-105, CREDIT-107, CREDIT-108, CREDIT-109, CREDIT-112)
+- **🔒 Zablokowane:** 16
 
 ---
 
@@ -44,11 +44,11 @@
   - Sliding-window 3-mies. → 4 okna (W0–W3) z wiersza UCI; `extract_windows()` + test pytest.
   - blocked_by: — · blocks: 102, 103, 110, 111
 
-- 🔴 **CREDIT-102** · [ML] · P0 · `sprint1/retrain-3mo`
+- 🟢 **CREDIT-102** · [ML] · P0 · `sprint1/retrain-3mo`
   - Trening RF/XGB/LSTM na oknie W3; artefakty z sufiksem `_w3` (stare nietknięte); fix mismatchu `utilization_rate`/`severe_late` w `main.py` vs `app.py`.
   - blocked_by: 101 · blocks: 103, 104, 105, 106, 107, 108, 109, 110, 112, 113
 
-- 🔒 **CREDIT-103** · [EVAL] · P0 · `sprint1/revalidate-metrics`
+- 🔴 **CREDIT-103** · [EVAL] · P0 · `sprint1/revalidate-metrics`
   - AUC/Gini/KS/ROC/PR/calibration; ≥9 wykresów w `ml-learing-center/reports/`.
   - blocked_by: 102 · blocks: 114
 
@@ -78,7 +78,7 @@
   - Flask endpoint `/predict/timeseries`: 22 cechy → 4 okna → PD per okno per model + trendy.
   - blocked_by: 102, 210 · blocks: 110, 202
 
-- 🔒 **CREDIT-105** · [ML] · P0 · GF · `sprint2/calibration`
+- 🔴 **CREDIT-105** · [ML] · P0 · GF · `sprint2/calibration`
   - Kalibracja izotoniczna (3-way split train/calib/test); Brier po < przed.
   - blocked_by: 102 · blocks: 106, 113
 
@@ -126,11 +126,11 @@
   - Testy integracyjne persystencji (Testcontainers / SQLite in-memory), ≥6 testów.
   - blocked_by: 203, 201 · blocks: —
 
-- 🔒 **CREDIT-107** · [ML] · P2 · GF · SWAP-OK · `sprint4/shap`
+- 🔴 **CREDIT-107** · [ML] · P2 · GF · SWAP-OK · `sprint4/shap`
   - SHAP top-5 cech per predykcja (RF/XGB/LR); `shap.topFeatures` w response.
   - blocked_by: 102 · blocks: 211
 
-- 🔒 **CREDIT-108** · [ML] · P2 · GF · `sprint4/optuna-cv`
+- 🔴 **CREDIT-108** · [ML] · P2 · GF · `sprint4/optuna-cv`
   - 5-fold CV + tuning Optuna (XGBoost/RF) na oknach 3-mies.
   - blocked_by: 102 · blocks: —
 
@@ -146,11 +146,11 @@
   - SHAP pass-through w .NET DTO + komponent wizualizacji (bar/waterfall).
   - blocked_by: 107, 210 · blocks: —
 
-- 🔒 **CREDIT-109** · [ML] · P2 · GF · `sprint5/lgbm-catboost`
+- 🔴 **CREDIT-109** · [ML] · P2 · GF · `sprint5/lgbm-catboost`
   - LightGBM + CatBoost na oknach 3-mies.; response z 6 modelami.
   - blocked_by: 102 · blocks: 113
 
-- 🔒 **CREDIT-112** · [EVAL] · P1 · GF · SWAP-OK · `sprint5/fairness`
+- 🔴 **CREDIT-112** · [EVAL] · P1 · GF · SWAP-OK · `sprint5/fairness`
   - Audyt fairness (fairlearn) — DPD / EOD względem SEX; ostrzeżenie gdy |różnica| > 0.1.
   - blocked_by: 102 · blocks: —
 
