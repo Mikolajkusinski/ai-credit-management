@@ -8,13 +8,13 @@
 > - 🔴 **Do zrobienia** — task dostępny (wszystkie `blocked_by` są 🟢), nie został jeszcze rozpoczęty.
 > - 🔒 **Zablokowane** — task czeka na zależność (`blocked_by` zawiera coś, co nie jest 🟢).
 >
-> **Ostatnia aktualizacja:** 2026-06-02 (po merge CREDIT-102)
+> **Ostatnia aktualizacja:** 2026-06-02 (po merge CREDIT-103 — Sprint 1 zamknięty)
 
 ---
 
 ## 🎯 Aktualne zadanie
 
-- **Gabriel Figur (GF):** 🔴 **CREDIT-103** — Rozszerzone metryki + 12 wykresów · branch `sprint1/revalidate-metrics`
+- **Gabriel Figur (GF):** ⏸️ koniec Sprintu 1 — kolejny task to **CREDIT-210** (kontrakt API monitoringu, wspólnie z MK, Sprint 2)
 - **Mikołaj Kusiński (MK):** ⏸️ czeka na odblokowanie / koniec sprintu (kolejne taski MK w Sprincie 2 zależą od CREDIT-210)
 
 > **Reguła aktualizacji tej sekcji:** gdy task zostanie zmergeowany do `main`, ustaw tutaj kolejny najwyżej priorytetowy dostępny (🔴) task z toru właściwej osoby. Jeśli osoba nie ma już dostępnych tasków w bieżącym sprincie, wpisz „⏸️ czeka na odblokowanie / koniec sprintu".
@@ -24,8 +24,8 @@
 ## 📊 Statystyki
 
 - **Łącznie zadań:** 27
-- **🟢 Wykonane:** 5 (CREDIT-101, CREDIT-102, CREDIT-201, CREDIT-401, CREDIT-402)
-- **🔴 Dostępne:** 6 (CREDIT-103, CREDIT-105, CREDIT-107, CREDIT-108, CREDIT-109, CREDIT-112)
+- **🟢 Wykonane:** 6 (CREDIT-101, CREDIT-102, CREDIT-103, CREDIT-201, CREDIT-401, CREDIT-402) — cały Sprint 1
+- **🔴 Dostępne:** 5 (CREDIT-105, CREDIT-107, CREDIT-108, CREDIT-109, CREDIT-112)
 - **🔒 Zablokowane:** 16
 
 ---
@@ -48,7 +48,7 @@
   - Trening RF/XGB/LSTM na oknie W3; artefakty z sufiksem `_w3` (stare nietknięte); fix mismatchu `utilization_rate`/`severe_late` w `main.py` vs `app.py`.
   - blocked_by: 101 · blocks: 103, 104, 105, 106, 107, 108, 109, 110, 112, 113
 
-- 🔴 **CREDIT-103** · [EVAL] · P0 · `sprint1/revalidate-metrics`
+- 🟢 **CREDIT-103** · [EVAL] · P0 · `sprint1/revalidate-metrics`
   - AUC/Gini/KS/ROC/PR/calibration; ≥9 wykresów w `ml-learing-center/reports/`.
   - blocked_by: 102 · blocks: 114
 
