@@ -32,12 +32,12 @@ def engineer_features(data):
     df['PAY_max'] = df[['PAY_0', 'PAY_2', 'PAY_3', 'PAY_4', 'PAY_5', 'PAY_6']].max(axis=1)
     df['BILL_mean'] = df[['BILL_AMT1', 'BILL_AMT2', 'BILL_AMT3', 'BILL_AMT4', 'BILL_AMT5', 'BILL_AMT6']].mean(axis=1)
     df['PAY_AMT_mean'] = df[['PAY_AMT1', 'PAY_AMT2', 'PAY_AMT3', 'PAY_AMT4', 'PAY_AMT5', 'PAY_AMT6']].mean(axis=1)
-    df['utilization_rate'] = df['BILL_AMT1'] / df['LIMIT_BAL']
+    df['utilization_rate'] = df['BILL_mean'] / df['LIMIT_BAL']
     df['BILL_std'] = df[['BILL_AMT1', 'BILL_AMT2', 'BILL_AMT3', 'BILL_AMT4', 'BILL_AMT5', 'BILL_AMT6']].std(axis=1)
     df['BILL_trend'] = df['BILL_AMT1'] - df['BILL_AMT6']
     df['payment_ratio'] = df['PAY_AMT_mean'] / (df['BILL_mean'] + 1)
     df['late_count'] = (df[['PAY_0', 'PAY_2', 'PAY_3', 'PAY_4', 'PAY_5', 'PAY_6']] > 0).sum(axis=1)
-    df['severe_late'] = (df[['PAY_0', 'PAY_2', 'PAY_3', 'PAY_4', 'PAY_5', 'PAY_6']] >= 2).sum(axis=1)
+    df['severe_late'] = (df[['PAY_0', 'PAY_2', 'PAY_3', 'PAY_4', 'PAY_5', 'PAY_6']] >= 2).any(axis=1).astype(int)
     df['recent_pay_status'] = df['PAY_0']
 
     # One-hot encoding for categorical features
