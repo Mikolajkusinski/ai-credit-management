@@ -1,5 +1,7 @@
 ../dataset/
 *.csv
+# Exception: evaluation report CSVs (CREDIT-103)
+!reports/*.csv
 __pycache__/
 .idea/
 .venv/
