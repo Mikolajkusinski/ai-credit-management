@@ -3,18 +3,19 @@
 > Lista zadań zsynchronizowana z `TASKS.md`. Aktualizuj po zmergeowaniu każdego PR-a.
 >
 > **Legenda statusów:**
+>
 > - 🟢 **Wykonane** — task zmergeowany do `main`.
 > - 🔴 **Do zrobienia** — task dostępny (wszystkie `blocked_by` są 🟢), nie został jeszcze rozpoczęty.
 > - 🔒 **Zablokowane** — task czeka na zależność (`blocked_by` zawiera coś, co nie jest 🟢).
 >
-> **Ostatnia aktualizacja:** 2026-06-01 (po merge CREDIT-101)
+> **Ostatnia aktualizacja:** 2026-06-02 (po merge CREDIT-101 + CREDIT-201/401/402)
 
 ---
 
 ## 🎯 Aktualne zadanie
 
 - **Gabriel Figur (GF):** 🔴 **CREDIT-102** — Retrain na W3 + features.py + fix mismatchu · branch `sprint1/retrain-3mo`
-- **Mikołaj Kusiński (MK):** 🔴 **CREDIT-201** — Test infrastructure · branch `sprint1/test-infra` *(potem 🔴 CREDIT-401 — DB schema)*
+- **Mikołaj Kusiński (MK):** ⏸️ czeka na odblokowanie / koniec sprintu (kolejne taski MK w Sprincie 2 zależą od CREDIT-210)
 
 > **Reguła aktualizacji tej sekcji:** gdy task zostanie zmergeowany do `main`, ustaw tutaj kolejny najwyżej priorytetowy dostępny (🔴) task z toru właściwej osoby. Jeśli osoba nie ma już dostępnych tasków w bieżącym sprincie, wpisz „⏸️ czeka na odblokowanie / koniec sprintu".
 
@@ -23,9 +24,9 @@
 ## 📊 Statystyki
 
 - **Łącznie zadań:** 27
-- **🟢 Wykonane:** 1 (CREDIT-101)
-- **🔴 Dostępne:** 3 (CREDIT-102, CREDIT-201, CREDIT-401)
-- **🔒 Zablokowane:** 23
+- **🟢 Wykonane:** 4 (CREDIT-101, CREDIT-201, CREDIT-401, CREDIT-402)
+- **🔴 Dostępne:** 1 (CREDIT-102)
+- **🔒 Zablokowane:** 22
 
 ---
 
@@ -53,15 +54,15 @@
 
 ### Tor MK (infra)
 
-- 🔴 **CREDIT-201** · [INFRA] · P1 · SWAP-OK · `sprint1/test-infra`
+- 🟢 **CREDIT-201** · [INFRA] · P1 · SWAP-OK · `sprint1/test-infra`
   - xUnit (.NET) + pytest (Python) + Vitest (React) + CI workflow blokujący czerwone PR-y.
   - blocked_by: — · blocks: 205
 
-- 🔴 **CREDIT-401** · [DB] · P0 · `sprint1/db-schema`
+- 🟢 **CREDIT-401** · [DB] · P0 · `sprint1/db-schema`
   - Schemat Postgres + EF Core (Client/Snapshot/Prediction/Trend) + NuGet packages (EFCore, .Design, .Tools, Npgsql.EFCore.PostgreSQL).
   - blocked_by: — · blocks: 402, 203, 204
 
-- 🔒 **CREDIT-402** · [INFRA] · P1 · `sprint1/docker-postgres`
+- 🟢 **CREDIT-402** · [INFRA] · P1 · `sprint1/docker-postgres`
   - docker-compose: db + backend + ml-service (frontend POZA compose); auto-migracje przy starcie.
   - blocked_by: 401 · blocks: —
 

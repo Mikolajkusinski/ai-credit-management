@@ -1,0 +1,41 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: credit
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d credit"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  ml-service:
+    build: ./ml-service
+    ports:
+      - "5001:5001"
+
+  backend:
+    build:
+      context: ./backend/WebApi
+      dockerfile: Dockerfile
+    ports:
+      - "5120:8080"
+    environment:
+      ConnectionStrings__Default: "Host=db;Port=5432;Database=credit;Username=postgres;Password=postgres"
+      FlaskServiceUrl: "http://ml-service:5001"
+      ASPNETCORE_URLS: "http://+:8080"
+      ASPNETCORE_ENVIRONMENT: "Development"
+    depends_on:
+      db:
+        condition: service_healthy
+      ml-service:
+        condition: service_started
+
+volumes:
+  pg_data:
