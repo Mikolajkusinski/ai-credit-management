@@ -365,6 +365,46 @@ Content-Type: application/json
 
 ---
 
+### 4.5. Backend: `GET /api/v1/monitoring/clients`
+
+**Stateful read (dodane w CREDIT-302).** Zwraca listę wszystkich monitorowanych klientów ze statystykami
+zbiorczymi — zasila widok listy klientów (`ClientList`); klik w wiersz ładuje pełną historię przez 4.4.
+Non-breaking addition do kontraktu (nowy endpoint, bez zmiany istniejących).
+
+**Query params:** brak.
+
+**Response 200:**
+```json
+{
+  "clients": [
+    {
+      "clientRef": "client-001",
+      "createdAt": "2026-05-10T08:23:00Z",
+      "snapshotCount": 4,
+      "latestSnapshotDate": "2026-05-24",
+      "latestAlert": "INCREASING_RISK"
+    },
+    {
+      "clientRef": "client-002",
+      "createdAt": "2026-05-12T09:00:00Z",
+      "snapshotCount": 1,
+      "latestSnapshotDate": "2026-04-15",
+      "latestAlert": "STABLE"
+    }
+  ]
+}
+```
+
+- **Sortowanie:** najpierw klienci z migawkami, najnowsza aktywność na górze (`latestSnapshotDate` desc),
+  potem `createdAt` desc.
+- **`latestAlert`** = roll-up trendów per model dla pojedynczego badge: `INCREASING_RISK`, gdy
+  którykolwiek model sygnalizuje wzrost; inaczej `DECREASING_RISK`, gdy którykolwiek spada; inaczej
+  `STABLE`. Pełny rozbicie per model jest w odpowiedzi 4.4.
+- **`latestSnapshotDate`** = `null`, gdy klient nie ma jeszcze migawek.
+- Pusta baza → `{ "clients": [] }` (200, nie 404).
+
+---
+
 ## 5. Naming conventions
 
 - **Wszystkie publiczne JSON** używają **camelCase** (`clientRef`, `snapshotDate`, `defaultProbability`).

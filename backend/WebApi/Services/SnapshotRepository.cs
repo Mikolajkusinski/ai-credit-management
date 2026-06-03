@@ -19,6 +19,21 @@ public class SnapshotRepository
     public Task<Client?> FindClientAsync(string externalRef) =>
         _db.Clients.FirstOrDefaultAsync(c => c.ExternalRef == externalRef);
 
+    /// <summary>
+    /// Projects every client into a lightweight stats row for the client list (CREDIT-302): snapshot
+    /// count, latest snapshot date, and the per-model trend alerts (for the roll-up badge). A single
+    /// projection query — no snapshots/predictions are materialised. Ordering is left to the caller.
+    /// </summary>
+    public Task<List<ClientStatsRow>> GetClientStatsAsync() =>
+        _db.Clients
+            .Select(c => new ClientStatsRow(
+                c.ExternalRef,
+                c.CreatedAt,
+                c.Snapshots.Count,
+                c.Snapshots.Max(s => (DateTime?)s.SnapshotDate),
+                c.Trends.Select(t => t.Alert).ToList()))
+            .ToListAsync();
+
     /// <summary>Creates a client. <c>CreatedAt</c> is left to the DB default (<c>NOW()</c>).</summary>
     public async Task<Client> CreateClientAsync(string externalRef)
     {
@@ -78,3 +93,11 @@ public class SnapshotRepository
         return rows;
     }
 }
+
+/// <summary>Flat projection of a client for the list endpoint (see <see cref="SnapshotRepository.GetClientStatsAsync"/>).</summary>
+public record ClientStatsRow(
+    string ExternalRef,
+    DateTime CreatedAt,
+    int SnapshotCount,
+    DateTime? LatestSnapshotDate,
+    List<string> Alerts);

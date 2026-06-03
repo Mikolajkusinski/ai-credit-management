@@ -145,6 +145,42 @@ public class MonitoringService
     }
 
     /// <summary>
+    /// Read path for <c>GET /api/v1/monitoring/clients</c> (contract 4.5): lists every persisted client
+    /// with its snapshot count, latest snapshot date, and a single roll-up alert. Ordered by most-recent
+    /// activity (clients with snapshots first, newest snapshot first), then by creation date. Pure read.
+    /// </summary>
+    public async Task<ClientListResponse> GetClientsAsync()
+    {
+        var rows = await _snapshotRepository.GetClientStatsAsync();
+
+        var clients = rows
+            .Select(r => new ClientSummary
+            {
+                ClientRef = r.ExternalRef,
+                CreatedAt = r.CreatedAt,
+                SnapshotCount = r.SnapshotCount,
+                LatestSnapshotDate = r.LatestSnapshotDate is { } d ? DateOnly.FromDateTime(d) : null,
+                LatestAlert = RollUpAlert(r.Alerts),
+            })
+            .OrderByDescending(c => c.LatestSnapshotDate.HasValue)
+            .ThenByDescending(c => c.LatestSnapshotDate)
+            .ThenByDescending(c => c.CreatedAt)
+            .ToList();
+
+        _logger.LogInformation("Listed {Count} monitored client(s)", clients.Count);
+        return new ClientListResponse { Clients = clients };
+    }
+
+    // Surfaces the most actionable signal for the list badge: rising risk wins over falling, which
+    // wins over stable. STABLE when a client has no stored trends yet.
+    private static string RollUpAlert(IReadOnlyCollection<string> alerts)
+    {
+        if (alerts.Contains("INCREASING_RISK")) return "INCREASING_RISK";
+        if (alerts.Contains("DECREASING_RISK")) return "DECREASING_RISK";
+        return "STABLE";
+    }
+
+    /// <summary>
     /// Read path for <c>GET /api/v1/monitoring/clients/{ref}/history</c> (contract 4.4): assembles
     /// the client's persisted snapshots (with W3 predictions) into a chronological PD trajectory and
     /// attaches the current per-model trends. Pure read — no Flask call, no writes.
