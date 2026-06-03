@@ -23,6 +23,9 @@ public class ErrorEnvelope
     public static ErrorEnvelope Conflict(string message, object? details = null) =>
         new("CONFLICT", message, details);
 
+    public static ErrorEnvelope ClientNotFound(string message) =>
+        new("CLIENT_NOT_FOUND", message);
+
     public static ErrorEnvelope MlServiceError(string message) =>
         new("ML_SERVICE_ERROR", message);
 

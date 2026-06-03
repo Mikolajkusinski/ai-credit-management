@@ -49,4 +49,8 @@ public class TrendRepository
         await _db.SaveChangesAsync();
         return result;
     }
+
+    /// <summary>Reads the current trend rows for a client (one per model). Used by the history read (CREDIT-204).</summary>
+    public Task<List<Trend>> GetByClientAsync(int clientId) =>
+        _db.Trends.Where(t => t.ClientId == clientId).ToListAsync();
 }

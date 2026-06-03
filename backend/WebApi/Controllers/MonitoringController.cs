@@ -117,4 +117,56 @@ public class MonitoringController : ControllerBase
                 ErrorEnvelope.Internal("An error occurred while processing your request"));
         }
     }
+
+    /// <summary>
+    /// Stateful read: returns the client's persisted snapshots as a chronological PD trajectory
+    /// (oldest → newest) plus the current per-model trends (monitoring API contract 4.4).
+    /// Optionally filtered by <c>from</c>/<c>to</c> dates and capped by <c>limit</c> (1..500).
+    /// </summary>
+    [HttpGet("clients/{clientRef}/history")]
+    [ProducesResponseType(typeof(HistoryResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorEnvelope), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorEnvelope), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetClientHistory(
+        string clientRef,
+        [FromQuery] DateOnly? from,
+        [FromQuery] DateOnly? to,
+        [FromQuery] int limit = 100)
+    {
+        if (string.IsNullOrWhiteSpace(clientRef) || clientRef.Length > 64)
+        {
+            return BadRequest(ErrorEnvelope.ValidationFailed(
+                "clientRef must be between 1 and 64 characters", new { field = "clientRef" }));
+        }
+
+        if (limit < 1 || limit > 500)
+        {
+            return BadRequest(ErrorEnvelope.ValidationFailed(
+                "limit must be between 1 and 500", new { field = "limit" }));
+        }
+
+        if (from is { } f && to is { } t && f > t)
+        {
+            return BadRequest(ErrorEnvelope.ValidationFailed(
+                "from must not be after to", new { field = "from" }));
+        }
+
+        try
+        {
+            _logger.LogInformation("Received history read request for client {ClientRef}", clientRef);
+            var result = await _monitoringService.GetClientHistoryAsync(clientRef, from, to, limit);
+            return Ok(result);
+        }
+        catch (ClientNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "History requested for unknown client {ClientRef}", clientRef);
+            return NotFound(ErrorEnvelope.ClientNotFound(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing history read request");
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                ErrorEnvelope.Internal("An error occurred while processing your request"));
+        }
+    }
 }

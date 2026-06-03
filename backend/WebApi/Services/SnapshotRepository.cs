@@ -44,4 +44,37 @@ public class SnapshotRepository
         await _db.SaveChangesAsync();
         return snapshot;
     }
+
+    /// <summary>
+    /// Reads a client's snapshots (with their predictions eager-loaded) for the history endpoint
+    /// (CREDIT-204). Optionally filtered by <paramref name="from"/>/<paramref name="to"/> (the
+    /// <paramref name="to"/> day is inclusive) and capped at <paramref name="limit"/>. Returns the
+    /// most-recent <paramref name="limit"/> snapshots in ascending date order (oldest → newest),
+    /// using the existing <c>(ClientId, SnapshotDate)</c> index.
+    /// </summary>
+    public async Task<List<Snapshot>> GetHistoryAsync(int clientId, DateOnly? from, DateOnly? to, int limit)
+    {
+        var query = _db.Snapshots
+            .Include(s => s.Predictions)
+            .Where(s => s.ClientId == clientId);
+
+        if (from is { } f)
+        {
+            query = query.Where(s => s.SnapshotDate >= f.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
+        }
+
+        if (to is { } t)
+        {
+            var dayAfterTo = t.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+            query = query.Where(s => s.SnapshotDate < dayAfterTo);
+        }
+
+        var rows = await query
+            .OrderByDescending(s => s.SnapshotDate)
+            .Take(limit)
+            .ToListAsync();
+
+        rows.Reverse(); // newest-first DB read → ascending response (left = oldest on the chart)
+        return rows;
+    }
 }
