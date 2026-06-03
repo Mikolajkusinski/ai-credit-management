@@ -77,7 +77,7 @@ cp rf_model.pkl xgb_model.pkl lstm_model.keras scaler.pkl features.pkl ../ml-ser
 
 **Opcja B — pobierz od kolegi z zespołu** (jeśli ktoś już wytrenował).
 
-**Po CREDIT-102 (Sprint 1):** pojawią się DODATKOWE artefakty z sufiksem `_w3` (np. `rf_model_w3.pkl`) — używane przy oknie 3-miesięcznym i nowym endpointcie `/predict/timeseries` (CREDIT-104, Sprint 2). Stare artefakty bez sufiksu **pozostają działające** dla legacy `/predict`.
+**Po CREDIT-104 (Sprint 2):** artefakty z sufiksem `_w3` są **commitowane do gita** w `ml-service/` (5 plików + `lstm_scalers_w3.pkl`). Nie musisz ich kopiować — działają od razu po klonie i uruchomieniu Flaska. Endpoint `/predict/timeseries` korzysta z tych modeli. Legacy `/predict` nadal wymaga manualnej kopii 6 artefaktów bez sufiksu (sekcja 2.2 opcja A).
 
 ### 2.3. Uruchomienie serwisu
 
