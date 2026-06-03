@@ -8,14 +8,14 @@
 > - 🔴 **Do zrobienia** — task dostępny (wszystkie `blocked_by` są 🟢), nie został jeszcze rozpoczęty.
 > - 🔒 **Zablokowane** — task czeka na zależność (`blocked_by` zawiera coś, co nie jest 🟢).
 >
-> **Ostatnia aktualizacja:** 2026-06-02 (po merge CREDIT-103 — Sprint 1 zamknięty)
+> **Ostatnia aktualizacja:** 2026-06-03 (po merge CREDIT-210 — Sprint 2 otwarty)
 
 ---
 
 ## 🎯 Aktualne zadanie
 
-- **Gabriel Figur (GF):** ⏸️ koniec Sprintu 1 — kolejny task to **CREDIT-210** (kontrakt API monitoringu, wspólnie z MK, Sprint 2)
-- **Mikołaj Kusiński (MK):** ⏸️ czeka na odblokowanie / koniec sprintu (kolejne taski MK w Sprincie 2 zależą od CREDIT-210)
+- **Gabriel Figur (GF):** 🔴 **CREDIT-104** — Flask `/predict/timeseries` (trajektoria PD + trendy) · branch `sprint2/flask-timeseries`
+- **Mikołaj Kusiński (MK):** 🔴 **CREDIT-203** — Repozytoria EF Core (zapis migawki + predykcji) · branch `sprint2/persistence-write` *(potem 🔴 202, 301)*
 
 > **Reguła aktualizacji tej sekcji:** gdy task zostanie zmergeowany do `main`, ustaw tutaj kolejny najwyżej priorytetowy dostępny (🔴) task z toru właściwej osoby. Jeśli osoba nie ma już dostępnych tasków w bieżącym sprincie, wpisz „⏸️ czeka na odblokowanie / koniec sprintu".
 
@@ -24,9 +24,9 @@
 ## 📊 Statystyki
 
 - **Łącznie zadań:** 27
-- **🟢 Wykonane:** 6 (CREDIT-101, CREDIT-102, CREDIT-103, CREDIT-201, CREDIT-401, CREDIT-402) — cały Sprint 1
-- **🔴 Dostępne:** 5 (CREDIT-105, CREDIT-107, CREDIT-108, CREDIT-109, CREDIT-112)
-- **🔒 Zablokowane:** 16
+- **🟢 Wykonane:** 7 (CREDIT-101, CREDIT-102, CREDIT-103, CREDIT-201, CREDIT-401, CREDIT-402, CREDIT-210)
+- **🔴 Dostępne:** 9 (CREDIT-104, CREDIT-105, CREDIT-107, CREDIT-108, CREDIT-109, CREDIT-112, CREDIT-202, CREDIT-203, CREDIT-301)
+- **🔒 Zablokowane:** 11
 
 ---
 
@@ -70,11 +70,11 @@
 
 ## Sprint 2 — Silnik monitoringu, kontrakty, zapis (16 cze – 29 cze)
 
-- 🔒 **CREDIT-210** · [CONTRACT] · P0 · GF+MK · `sprint2/contract-monitoring`
+- 🟢 **CREDIT-210** · [CONTRACT] · P0 · GF+MK · `sprint2/contract-monitoring`
   - Payload trajektorii + zapisu migawki; reguła alertu slope (W3−W0).
   - blocked_by: — · blocks: 104, 202, 203, 301
 
-- 🔒 **CREDIT-104** · [ML] · P0 · GF · `sprint2/flask-timeseries`
+- 🔴 **CREDIT-104** · [ML] · P0 · GF · `sprint2/flask-timeseries`
   - Flask endpoint `/predict/timeseries`: 22 cechy → 4 okna → PD per okno per model + trendy.
   - blocked_by: 102, 210 · blocks: 110, 202
 
@@ -82,11 +82,11 @@
   - Kalibracja izotoniczna (3-way split train/calib/test); Brier po < przed.
   - blocked_by: 102 · blocks: 106, 113
 
-- 🔒 **CREDIT-202** · [BE] · P0 · MK · `sprint2/dotnet-timeseries`
+- 🔴 **CREDIT-202** · [BE] · P0 · MK · `sprint2/dotnet-timeseries`
   - `.NET POST /api/monitoring/predict-timeseries`; mock do czasu 104.
   - blocked_by: 210 (mock) / 104 (real) · blocks: —
 
-- 🔒 **CREDIT-203** · [BE] · P0 · MK · `sprint2/persistence-write`
+- 🔴 **CREDIT-203** · [BE] · P0 · MK · `sprint2/persistence-write`
   - Repozytoria EF Core: zapis migawki + predykcji.
   - blocked_by: 401, 210 · blocks: 204, 205
 
@@ -110,7 +110,7 @@
   - `GET /api/monitoring/clients/{ref}/history` — zwraca zapisaną trajektorię.
   - blocked_by: 203 · blocks: 302
 
-- 🔒 **CREDIT-301** · [FE] · P0 · MK · `sprint3/timeline-view`
+- 🔴 **CREDIT-301** · [FE] · P0 · MK · `sprint3/timeline-view`
   - Recharts LineChart trajektorii PD (X=okno, Y=PD, 3 linie) + karty alertów (na mocku).
   - blocked_by: 210 · blocks: 302, 303
 

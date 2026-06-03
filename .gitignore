@@ -1,8 +1,13 @@
 # ML Model files (too large for git)
 ml-service/*.pkl
 ml-service/*.keras
-# Exception: W3 scalers shipped with the repo (CREDIT-102)
+# Exceptions: W3 artifacts shipped with the repo (CREDIT-102 / CREDIT-104)
 !ml-service/lstm_scalers_w3.pkl
+!ml-service/rf_model_w3.pkl
+!ml-service/xgb_model_w3.pkl
+!ml-service/scaler_w3.pkl
+!ml-service/features_w3.pkl
+!ml-service/lstm_model_w3.keras
 
 # Python
 __pycache__/
