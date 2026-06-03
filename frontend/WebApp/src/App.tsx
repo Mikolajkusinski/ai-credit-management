@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import InputForm from './components/InputForm';
 import ResultsDashboard from './components/ResultsDashboard';
-import TimelineChart from './components/TimelineChart';
-import TrendAlerts from './components/TrendAlerts';
+import ClientList from './components/ClientList';
+import ClientHistory from './components/ClientHistory';
 import { PredictRequest, PredictResponse } from './types/prediction';
 import { predictDefault } from './api/predictApi';
-import { MOCK_TIMESERIES_RESPONSE } from './api/monitoringApi';
 
 type Tab = 'prediction' | 'timeline';
 
@@ -14,6 +13,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<PredictResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [selectedClient, setSelectedClient] = useState<string | null>(null);
 
   const handlePredict = async (data: PredictRequest) => {
     setLoading(true);
@@ -121,10 +121,11 @@ function App() {
         )}
 
         {tab === 'timeline' && (
-          <div style={{ display: 'grid', gap: '24px' }}>
-            <TimelineChart trajectory={MOCK_TIMESERIES_RESPONSE.trajectory} />
-            <TrendAlerts trends={MOCK_TIMESERIES_RESPONSE.trends} />
-          </div>
+          selectedClient ? (
+            <ClientHistory clientRef={selectedClient} onBack={() => setSelectedClient(null)} />
+          ) : (
+            <ClientList onSelect={setSelectedClient} />
+          )
         )}
       </div>
     </div>

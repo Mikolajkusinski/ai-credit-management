@@ -119,6 +119,29 @@ public class MonitoringController : ControllerBase
     }
 
     /// <summary>
+    /// Lists every monitored client with per-client stats (snapshot count, latest snapshot date, a
+    /// roll-up alert) for the client list view (monitoring API contract 4.5). Pure read; returns an
+    /// empty array when nothing has been persisted yet.
+    /// </summary>
+    [HttpGet("clients")]
+    [ProducesResponseType(typeof(ClientListResponse), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetClients()
+    {
+        try
+        {
+            _logger.LogInformation("Received client list request");
+            var result = await _monitoringService.GetClientsAsync();
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing client list request");
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                ErrorEnvelope.Internal("An error occurred while processing your request"));
+        }
+    }
+
+    /// <summary>
     /// Stateful read: returns the client's persisted snapshots as a chronological PD trajectory
     /// (oldest → newest) plus the current per-model trends (monitoring API contract 4.4).
     /// Optionally filtered by <c>from</c>/<c>to</c> dates and capped by <c>limit</c> (1..500).

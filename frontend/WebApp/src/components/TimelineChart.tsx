@@ -3,6 +3,8 @@ import { ModelKey, TrajectoryPoint } from '../types/monitoring';
 
 interface TimelineChartProps {
   trajectory: TrajectoryPoint[];
+  title?: string;
+  subtitle?: string;
 }
 
 interface ChartRow {
@@ -31,7 +33,11 @@ export const buildChartData = (trajectory: TrajectoryPoint[]): ChartRow[] =>
     lstm: point.predictions.lstm,
   }));
 
-const TimelineChart = ({ trajectory }: TimelineChartProps) => {
+const TimelineChart = ({
+  trajectory,
+  title = 'PD Trajectory',
+  subtitle = 'Probability of default across the four 3-month windows (W0 → W3)',
+}: TimelineChartProps) => {
   const data = buildChartData(trajectory);
 
   const prefersReducedMotion =
@@ -49,10 +55,10 @@ const TimelineChart = ({ trajectory }: TimelineChartProps) => {
       boxShadow: '0 4px 24px rgba(0, 0, 0, 0.3)'
     }}>
       <h3 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: 600, color: '#e2e8f0' }}>
-        PD Trajectory
+        {title}
       </h3>
       <p style={{ margin: '0 0 20px 0', fontSize: '14px', color: '#94a3b8' }}>
-        Probability of default across the four 3-month windows (W0 → W3)
+        {subtitle}
       </p>
       <ResponsiveContainer width="100%" height={340}>
         <LineChart data={data} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>

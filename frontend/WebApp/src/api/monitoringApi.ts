@@ -1,5 +1,11 @@
 import axios from 'axios';
-import { TimeseriesRequest, TimeseriesResponse } from '../types/monitoring';
+import {
+  ClientListResponse,
+  HistoryQuery,
+  HistoryResponse,
+  TimeseriesRequest,
+  TimeseriesResponse,
+} from '../types/monitoring';
 
 const API_BASE_URL = 'http://localhost:5120/api/v1/monitoring';
 
@@ -11,6 +17,24 @@ export const predictTimeseries = async (
   const response = await axios.post<TimeseriesResponse>(
     `${API_BASE_URL}/predict-timeseries`,
     data,
+  );
+  return response.data;
+};
+
+// List every monitored client with roll-up stats (contract 4.5). Drives the ClientList view.
+export const listClients = async (): Promise<ClientListResponse> => {
+  const response = await axios.get<ClientListResponse>(`${API_BASE_URL}/clients`);
+  return response.data;
+};
+
+// Read a client's persisted snapshot timeline (contract 4.4). Drives the ClientHistory view.
+export const getClientHistory = async (
+  clientRef: string,
+  query: HistoryQuery = {},
+): Promise<HistoryResponse> => {
+  const response = await axios.get<HistoryResponse>(
+    `${API_BASE_URL}/clients/${encodeURIComponent(clientRef)}/history`,
+    { params: query },
   );
   return response.data;
 };

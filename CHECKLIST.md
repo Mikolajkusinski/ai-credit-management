@@ -8,14 +8,14 @@
 > - 🔴 **Do zrobienia** — task dostępny (wszystkie `blocked_by` są 🟢), nie został jeszcze rozpoczęty.
 > - 🔒 **Zablokowane** — task czeka na zależność (`blocked_by` zawiera coś, co nie jest 🟢).
 >
-> **Ostatnia aktualizacja:** 2026-06-03 (po merge CREDIT-301 — widok Timeline: Recharts LineChart trajektorii PD + karty alertów trendu, na mocku z kontraktu)
+> **Ostatnia aktualizacja:** 2026-06-03 (po merge CREDIT-302 — lista klientów + widok historii na realnych danych z bazy: nowy GET /clients, ClientList ⇄ ClientHistory w zakładce Monitoring, reuse TimelineChart/TrendAlerts)
 
 ---
 
 ## 🎯 Aktualne zadanie
 
 - **Gabriel Figur (GF):** 🔴 **CREDIT-105** — Kalibracja izotoniczna (3-way split, Brier po < przed) · branch `sprint2/calibration` *(potem 🔴 110, 111)*
-- **Mikołaj Kusiński (MK):** 🔴 **CREDIT-302** — lista klientów + widok historii na realnych danych z bazy · branch `sprint4/client-history-ui` *(Sprint 4 P1; odblokowane przez CREDIT-204 + CREDIT-301)*
+- **Mikołaj Kusiński (MK):** 🔴 **CREDIT-205** — testy integracyjne persystencji (Testcontainers / SQLite in-memory, ≥6 testów) · branch `sprint4/persistence-tests` *(Sprint 4 P1, SWAP-OK; odblokowane przez CREDIT-203 + CREDIT-201)*
 
 > **Reguła aktualizacji tej sekcji:** gdy task zostanie zmergeowany do `main`, ustaw tutaj kolejny najwyżej priorytetowy dostępny (🔴) task z toru właściwej osoby. Jeśli osoba nie ma już dostępnych tasków w bieżącym sprincie, wpisz „⏸️ czeka na odblokowanie / koniec sprintu".
 
@@ -24,8 +24,8 @@
 ## 📊 Statystyki
 
 - **Łącznie zadań:** 28
-- **🟢 Wykonane:** 12 (CREDIT-101, CREDIT-102, CREDIT-103, CREDIT-201, CREDIT-401, CREDIT-402, CREDIT-210, CREDIT-104, CREDIT-202, CREDIT-203, CREDIT-204, CREDIT-301)
-- **🔴 Dostępne:** 9 (CREDIT-105, CREDIT-107, CREDIT-108, CREDIT-109, CREDIT-110, CREDIT-112, CREDIT-205, CREDIT-302, CREDIT-303)
+- **🟢 Wykonane:** 13 (CREDIT-101, CREDIT-102, CREDIT-103, CREDIT-201, CREDIT-401, CREDIT-402, CREDIT-210, CREDIT-104, CREDIT-202, CREDIT-203, CREDIT-204, CREDIT-301, CREDIT-302)
+- **🔴 Dostępne:** 8 (CREDIT-105, CREDIT-107, CREDIT-108, CREDIT-109, CREDIT-110, CREDIT-112, CREDIT-205, CREDIT-303)
 - **🔒 Zablokowane:** 7
 
 ---
@@ -118,8 +118,8 @@
 
 ## Sprint 4 — Integracja + interpretowalność + tuning (14 lip – 27 lip)
 
-- 🔴 **CREDIT-302** · [FE] · P1 · MK · `sprint4/client-history-ui`
-  - Lista klientów + widok historii na realnych danych z bazy.
+- 🟢 **CREDIT-302** · [FE] · P1 · MK · `sprint4/client-history-ui`
+  - Lista klientów + widok historii na realnych danych z bazy. Nowy backend `GET /api/v1/monitoring/clients` (roster ze statami: snapshotCount, latestSnapshotDate, roll-up alert; kontrakt 4.5) + repo projection `GetClientStatsAsync`. Frontend: `monitoringApi.listClients/getClientHistory`, `ClientList.tsx` (realna lista, badge alertu, klik → historia), `ClientHistory.tsx` (GET history → reuse `TimelineChart`+`TrendAlerts`, mapper `historyToTrajectory`), zakładka Monitoring jako master-detail (ClientList ⇄ ClientHistory). `TimelineChart` z opcjonalnymi `title`/`subtitle` (defaulty bez zmian → testy 301 zielone). Testy: backend +2 (ClientListTests: lista po migawkach + pusta), frontend +9 (ClientList 4, ClientHistory 5).
   - blocked_by: 204, 301 · blocks: 304
 
 - 🔴 **CREDIT-205** · [BE] · P1 · MK · SWAP-OK · `sprint4/persistence-tests`

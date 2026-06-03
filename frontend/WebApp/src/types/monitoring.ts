@@ -47,3 +47,37 @@ export interface TimeseriesRequest {
   snapshotDate?: string;
   features: Snapshot22Features;
 }
+
+// --- Persisted client history (contract 4.4: GET clients/{ref}/history) ---
+// A point on the real calendar-time timeline: one persisted snapshot with its W3 predictions.
+export interface HistoryPoint {
+  snapshotId: number;
+  snapshotDate: string; // ISO date, e.g. "2026-05-10"
+  predictions: WindowPredictions;
+}
+
+export interface HistoryResponse {
+  clientRef: string;
+  createdAt: string; // ISO datetime
+  history: HistoryPoint[]; // ascending by date (oldest → newest)
+  trends: Trends;
+}
+
+// --- Client list (contract 4.5: GET clients) ---
+export interface ClientSummary {
+  clientRef: string;
+  createdAt: string; // ISO datetime
+  snapshotCount: number;
+  latestSnapshotDate?: string | null; // ISO date; null when no snapshots yet
+  latestAlert: AlertType; // roll-up badge across the per-model trends
+}
+
+export interface ClientListResponse {
+  clients: ClientSummary[];
+}
+
+export interface HistoryQuery {
+  from?: string;
+  to?: string;
+  limit?: number;
+}
