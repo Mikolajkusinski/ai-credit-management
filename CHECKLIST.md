@@ -8,14 +8,14 @@
 > - 🔴 **Do zrobienia** — task dostępny (wszystkie `blocked_by` są 🟢), nie został jeszcze rozpoczęty.
 > - 🔒 **Zablokowane** — task czeka na zależność (`blocked_by` zawiera coś, co nie jest 🟢).
 >
-> **Ostatnia aktualizacja:** 2026-06-03 (po merge CREDIT-302 — lista klientów + widok historii na realnych danych z bazy: nowy GET /clients, ClientList ⇄ ClientHistory w zakładce Monitoring, reuse TimelineChart/TrendAlerts)
+> **Ostatnia aktualizacja:** 2026-06-03 (po merge CREDIT-205 — wierne testy integracyjne persystencji na realnym PostgreSQL przez Testcontainers: 8 testów zapis→odczyt pokrywających unikalność ExternalRef, kaskadowe usuwanie FK, upsert trendów, round-trip timestamptz/DateOnly i serwerowe defaulty NOW())
 
 ---
 
 ## 🎯 Aktualne zadanie
 
 - **Gabriel Figur (GF):** 🔴 **CREDIT-105** — Kalibracja izotoniczna (3-way split, Brier po < przed) · branch `sprint2/calibration` *(potem 🔴 110, 111)*
-- **Mikołaj Kusiński (MK):** 🔴 **CREDIT-205** — testy integracyjne persystencji (Testcontainers / SQLite in-memory, ≥6 testów) · branch `sprint4/persistence-tests` *(Sprint 4 P1, SWAP-OK; odblokowane przez CREDIT-203 + CREDIT-201)*
+- **Mikołaj Kusiński (MK):** 🔴 **CREDIT-303** — SnapshotForm + datepicker; fix zahardkodowanych miesięcy w `InputForm.tsx`; „kopiuj z poprzedniej migawki" · branch `sprint5/snapshot-entry` *(Sprint 5 P1; odblokowane przez CREDIT-210 + CREDIT-301)*
 
 > **Reguła aktualizacji tej sekcji:** gdy task zostanie zmergeowany do `main`, ustaw tutaj kolejny najwyżej priorytetowy dostępny (🔴) task z toru właściwej osoby. Jeśli osoba nie ma już dostępnych tasków w bieżącym sprincie, wpisz „⏸️ czeka na odblokowanie / koniec sprintu".
 
@@ -24,8 +24,8 @@
 ## 📊 Statystyki
 
 - **Łącznie zadań:** 28
-- **🟢 Wykonane:** 13 (CREDIT-101, CREDIT-102, CREDIT-103, CREDIT-201, CREDIT-401, CREDIT-402, CREDIT-210, CREDIT-104, CREDIT-202, CREDIT-203, CREDIT-204, CREDIT-301, CREDIT-302)
-- **🔴 Dostępne:** 8 (CREDIT-105, CREDIT-107, CREDIT-108, CREDIT-109, CREDIT-110, CREDIT-112, CREDIT-205, CREDIT-303)
+- **🟢 Wykonane:** 14 (CREDIT-101, CREDIT-102, CREDIT-103, CREDIT-201, CREDIT-401, CREDIT-402, CREDIT-210, CREDIT-104, CREDIT-202, CREDIT-203, CREDIT-204, CREDIT-301, CREDIT-302, CREDIT-205)
+- **🔴 Dostępne:** 7 (CREDIT-105, CREDIT-107, CREDIT-108, CREDIT-109, CREDIT-110, CREDIT-112, CREDIT-303)
 - **🔒 Zablokowane:** 7
 
 ---
@@ -122,8 +122,8 @@
   - Lista klientów + widok historii na realnych danych z bazy. Nowy backend `GET /api/v1/monitoring/clients` (roster ze statami: snapshotCount, latestSnapshotDate, roll-up alert; kontrakt 4.5) + repo projection `GetClientStatsAsync`. Frontend: `monitoringApi.listClients/getClientHistory`, `ClientList.tsx` (realna lista, badge alertu, klik → historia), `ClientHistory.tsx` (GET history → reuse `TimelineChart`+`TrendAlerts`, mapper `historyToTrajectory`), zakładka Monitoring jako master-detail (ClientList ⇄ ClientHistory). `TimelineChart` z opcjonalnymi `title`/`subtitle` (defaulty bez zmian → testy 301 zielone). Testy: backend +2 (ClientListTests: lista po migawkach + pusta), frontend +9 (ClientList 4, ClientHistory 5).
   - blocked_by: 204, 301 · blocks: 304
 
-- 🔴 **CREDIT-205** · [BE] · P1 · MK · SWAP-OK · `sprint4/persistence-tests`
-  - Testy integracyjne persystencji (Testcontainers / SQLite in-memory), ≥6 testów.
+- 🟢 **CREDIT-205** · [BE] · P1 · MK · SWAP-OK · `sprint4/persistence-tests`
+  - Wierne testy integracyjne persystencji na realnym PostgreSQL 16 przez Testcontainers (uruchamia prawdziwą migrację Npgsql, nie EF InMemory). Nowy `WebApi.Tests/PersistenceTests.cs` (8 testów) + współdzielony `PostgresFixture` (jeden kontener `postgres:16-alpine` na klasę, `TRUNCATE … RESTART IDENTITY CASCADE` między testami). Reuse harnessu z 203/204 (WebApplicationFactory + stub Flask), podmiana providera InMemory → `UseNpgsql`. Pokrycie tego, czego InMemory nie sprawdza: round-trip zapis→odczyt (Client/Snapshot/3×Prediction W3/3×Trend), historia rosnąco po dacie, **kaskadowe usuwanie FK** (usunięcie klienta czyści snapshoty/predykcje/trendy), unikalny `ExternalRef`, upsert trendów (nadpisanie nie duplikacja + bump `ComputedAt`), 409 na duplikat `(ref, date)`, round-trip `timestamptz`↔`DateOnly` (Kind=Utc), serwerowe defaulty `NOW()`. Tylko testy — kod produkcyjny nietknięty (atomowa transakcja pozostaje świadomie odłożona). Backend: 16 → 24 testów, CI zielone.
   - blocked_by: 203, 201 · blocks: —
 
 - 🔴 **CREDIT-107** · [ML] · P2 · GF · SWAP-OK · `sprint4/shap`
