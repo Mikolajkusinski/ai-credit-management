@@ -8,14 +8,14 @@
 > - 🔴 **Do zrobienia** — task dostępny (wszystkie `blocked_by` są 🟢), nie został jeszcze rozpoczęty.
 > - 🔒 **Zablokowane** — task czeka na zależność (`blocked_by` zawiera coś, co nie jest 🟢).
 >
-> **Ostatnia aktualizacja:** 2026-06-03 (po merge CREDIT-104 + CREDIT-202 — silnik monitoringu działa end-to-end ML→.NET)
+> **Ostatnia aktualizacja:** 2026-06-03 (po merge CREDIT-203 — zapis migawek + predykcji + trendów do Postgresa; endpoint `POST /clients/{ref}/snapshots`)
 
 ---
 
 ## 🎯 Aktualne zadanie
 
 - **Gabriel Figur (GF):** 🔴 **CREDIT-105** — Kalibracja izotoniczna (3-way split, Brier po < przed) · branch `sprint2/calibration` *(potem 🔴 110, 111)*
-- **Mikołaj Kusiński (MK):** 🔴 **CREDIT-203** — Repozytoria EF Core (zapis migawki + predykcji) · branch `sprint2/persistence-write` *(potem 🔴 301)*
+- **Mikołaj Kusiński (MK):** 🔴 **CREDIT-204** — `GET /clients/{ref}/history` (odczyt zapisanej trajektorii) · branch `sprint3/client-history-get` *(potem 🔴 301; 204 i 301 oba Sprint 3 P0)*
 
 > **Reguła aktualizacji tej sekcji:** gdy task zostanie zmergeowany do `main`, ustaw tutaj kolejny najwyżej priorytetowy dostępny (🔴) task z toru właściwej osoby. Jeśli osoba nie ma już dostępnych tasków w bieżącym sprincie, wpisz „⏸️ czeka na odblokowanie / koniec sprintu".
 
@@ -24,9 +24,9 @@
 ## 📊 Statystyki
 
 - **Łącznie zadań:** 27
-- **🟢 Wykonane:** 9 (CREDIT-101, CREDIT-102, CREDIT-103, CREDIT-201, CREDIT-401, CREDIT-402, CREDIT-210, CREDIT-104, CREDIT-202)
-- **🔴 Dostępne:** 8 (CREDIT-105, CREDIT-107, CREDIT-108, CREDIT-109, CREDIT-110, CREDIT-112, CREDIT-203, CREDIT-301)
-- **🔒 Zablokowane:** 10
+- **🟢 Wykonane:** 10 (CREDIT-101, CREDIT-102, CREDIT-103, CREDIT-201, CREDIT-401, CREDIT-402, CREDIT-210, CREDIT-104, CREDIT-202, CREDIT-203)
+- **🔴 Dostępne:** 9 (CREDIT-105, CREDIT-107, CREDIT-108, CREDIT-109, CREDIT-110, CREDIT-112, CREDIT-204, CREDIT-205, CREDIT-301)
+- **🔒 Zablokowane:** 8
 
 ---
 
@@ -86,8 +86,8 @@
   - `.NET POST /api/v1/monitoring/predict-timeseries`; proxy nad Flask + walidacja + labelki okien + mapowanie błędów (400/502/503). Test integracyjny (WebApplicationFactory + stub HttpMessageHandler).
   - blocked_by: 210, 104 · blocks: —
 
-- 🔴 **CREDIT-203** · [BE] · P0 · MK · `sprint2/persistence-write`
-  - Repozytoria EF Core: zapis migawki + predykcji.
+- 🟢 **CREDIT-203** · [BE] · P0 · MK · `sprint2/persistence-write`
+  - Repozytoria EF Core (Snapshot/Prediction/Trend) + endpoint `POST /api/v1/monitoring/clients/{ref}/snapshots`: scoring (reuse) → zapis migawki + predykcji W3 + upsert trendów; 409 przy duplikacie `(ref, snapshotDate)`. Test integracyjny (WebApplicationFactory + EF InMemory + stub Flask, 4 testy).
   - blocked_by: 401, 210 · blocks: 204, 205
 
 ---
@@ -106,7 +106,7 @@
   - Progi kosztowe (FN > FP); `alert_thresholds.json` w (0.1, 0.9).
   - blocked_by: 105 · blocks: —
 
-- 🔒 **CREDIT-204** · [BE] · P0 · MK · `sprint3/client-history-get`
+- 🔴 **CREDIT-204** · [BE] · P0 · MK · `sprint3/client-history-get`
   - `GET /api/monitoring/clients/{ref}/history` — zwraca zapisaną trajektorię.
   - blocked_by: 203 · blocks: 302
 
@@ -122,7 +122,7 @@
   - Lista klientów + widok historii na realnych danych z bazy.
   - blocked_by: 204, 301 · blocks: 304
 
-- 🔒 **CREDIT-205** · [BE] · P1 · MK · SWAP-OK · `sprint4/persistence-tests`
+- 🔴 **CREDIT-205** · [BE] · P1 · MK · SWAP-OK · `sprint4/persistence-tests`
   - Testy integracyjne persystencji (Testcontainers / SQLite in-memory), ≥6 testów.
   - blocked_by: 203, 201 · blocks: —
 
