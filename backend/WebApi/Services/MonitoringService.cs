@@ -144,6 +144,63 @@ public class MonitoringService
         };
     }
 
+    /// <summary>
+    /// Read path for <c>GET /api/v1/monitoring/clients/{ref}/history</c> (contract 4.4): assembles
+    /// the client's persisted snapshots (with W3 predictions) into a chronological PD trajectory and
+    /// attaches the current per-model trends. Pure read — no Flask call, no writes.
+    /// </summary>
+    /// <exception cref="ClientNotFoundException">The client reference does not exist.</exception>
+    public async Task<HistoryResponse> GetClientHistoryAsync(string clientRef, DateOnly? from, DateOnly? to, int limit)
+    {
+        var client = await _snapshotRepository.FindClientAsync(clientRef)
+            ?? throw new ClientNotFoundException($"Client '{clientRef}' does not exist");
+
+        var snapshots = await _snapshotRepository.GetHistoryAsync(client.Id, from, to, limit);
+        var trends = await _trendRepository.GetByClientAsync(client.Id);
+
+        _logger.LogInformation(
+            "Read history for client {ClientRef}: {Count} snapshot(s)", clientRef, snapshots.Count);
+
+        return new HistoryResponse
+        {
+            ClientRef = clientRef,
+            CreatedAt = client.CreatedAt,
+            History = snapshots.Select(MapHistoryPoint).ToList(),
+            Trends = MapTrends(trends),
+        };
+    }
+
+    private static HistoryPoint MapHistoryPoint(Snapshot s) => new()
+    {
+        SnapshotId = s.Id,
+        SnapshotDate = DateOnly.FromDateTime(s.SnapshotDate),
+        Predictions = new WindowPredictions
+        {
+            RandomForest = ProbabilityFor(s.Predictions, "randomForest"),
+            Xgboost = ProbabilityFor(s.Predictions, "xgboost"),
+            Lstm = ProbabilityFor(s.Predictions, "lstm"),
+        },
+    };
+
+    private static double ProbabilityFor(IEnumerable<Prediction> predictions, string modelName) =>
+        predictions.FirstOrDefault(p => p.ModelName == modelName)?.DefaultProbability ?? 0d;
+
+    private static Trends MapTrends(IReadOnlyCollection<Trend> trends) => new()
+    {
+        RandomForest = TrendInfoFor(trends, "randomForest"),
+        Xgboost = TrendInfoFor(trends, "xgboost"),
+        Lstm = TrendInfoFor(trends, "lstm"),
+    };
+
+    // Falls back to a neutral STABLE trend when a model has no stored row (e.g. a client with no snapshots).
+    private static TrendInfo TrendInfoFor(IEnumerable<Trend> trends, string modelName)
+    {
+        var row = trends.FirstOrDefault(t => t.ModelName == modelName);
+        return row is null
+            ? new TrendInfo { Slope = 0d, Alert = "STABLE" }
+            : new TrendInfo { Slope = row.Slope, Alert = row.Alert };
+    }
+
     private static Prediction ToPrediction(string modelName, double pd) => new()
     {
         ModelName = modelName,
