@@ -44,6 +44,9 @@ builder.Services.AddCors(options =>
 builder.Services.AddHttpClient<PythonModelClient>();
 builder.Services.AddScoped<PredictionService>();
 builder.Services.AddScoped<MonitoringService>();
+builder.Services.AddScoped<SnapshotRepository>();
+builder.Services.AddScoped<PredictionRepository>();
+builder.Services.AddScoped<TrendRepository>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Default")));

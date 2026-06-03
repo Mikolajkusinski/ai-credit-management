@@ -61,4 +61,60 @@ public class MonitoringController : ControllerBase
                 ErrorEnvelope.Internal("An error occurred while processing your request"));
         }
     }
+
+    /// <summary>
+    /// Stateful scoring: scores a client snapshot, then persists the snapshot, its W3 predictions,
+    /// and the per-model trends (monitoring API contract 4.3). Auto-creates the client when
+    /// <c>{clientRef}</c> is new. Rejects a duplicate <c>(clientRef, snapshotDate)</c> with 409.
+    /// </summary>
+    [HttpPost("clients/{clientRef}/snapshots")]
+    [ProducesResponseType(typeof(SnapshotResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ErrorEnvelope), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorEnvelope), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ErrorEnvelope), StatusCodes.Status502BadGateway)]
+    [ProducesResponseType(typeof(ErrorEnvelope), StatusCodes.Status503ServiceUnavailable)]
+    public async Task<IActionResult> CreateSnapshot(string clientRef, [FromBody] SnapshotRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(clientRef) || clientRef.Length > 64)
+        {
+            return BadRequest(ErrorEnvelope.ValidationFailed(
+                "clientRef must be between 1 and 64 characters", new { field = "clientRef" }));
+        }
+
+        if (request.SnapshotDate is { } date && date > DateOnly.FromDateTime(DateTime.UtcNow))
+        {
+            return BadRequest(ErrorEnvelope.ValidationFailed(
+                "snapshotDate must not be in the future", new { field = "snapshotDate" }));
+        }
+
+        try
+        {
+            _logger.LogInformation("Received snapshot write request for client {ClientRef}", clientRef);
+            var result = await _monitoringService.ScoreAndPersistAsync(clientRef, request);
+            return StatusCode(StatusCodes.Status201Created, result);
+        }
+        catch (SnapshotConflictException ex)
+        {
+            _logger.LogWarning(ex, "Duplicate snapshot for client {ClientRef}", clientRef);
+            return Conflict(ErrorEnvelope.Conflict(ex.Message));
+        }
+        catch (MlServiceException ex) when (ex.UpstreamStatusCode is not null)
+        {
+            _logger.LogError(ex, "ML service returned an error status");
+            return StatusCode(StatusCodes.Status502BadGateway,
+                ErrorEnvelope.MlServiceError(ex.Message));
+        }
+        catch (MlServiceException ex)
+        {
+            _logger.LogError(ex, "ML service unreachable");
+            return StatusCode(StatusCodes.Status503ServiceUnavailable,
+                ErrorEnvelope.MlServiceUnavailable(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing snapshot write request");
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                ErrorEnvelope.Internal("An error occurred while processing your request"));
+        }
+    }
 }

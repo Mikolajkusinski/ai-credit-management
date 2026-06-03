@@ -1,5 +1,6 @@
 using System.Globalization;
 using WebApi.Models;
+using WebApi.Models.Entities;
 
 namespace WebApi.Services;
 
@@ -12,7 +13,13 @@ namespace WebApi.Services;
 public class MonitoringService
 {
     private readonly PythonModelClient _pythonModelClient;
+    private readonly SnapshotRepository _snapshotRepository;
+    private readonly PredictionRepository _predictionRepository;
+    private readonly TrendRepository _trendRepository;
     private readonly ILogger<MonitoringService> _logger;
+
+    // The labelled window whose predictions are persisted (contract open question #1 = W3 only).
+    private const string LabelledWindow = "W3";
 
     // Number of months before the snapshot month that each window's FIRST month sits at
     // (contract 2.1/2.2). Window spans 3 consecutive months: first .. first+2.
@@ -24,9 +31,17 @@ public class MonitoringService
         ["W3"] = 2,
     };
 
-    public MonitoringService(PythonModelClient pythonModelClient, ILogger<MonitoringService> logger)
+    public MonitoringService(
+        PythonModelClient pythonModelClient,
+        SnapshotRepository snapshotRepository,
+        PredictionRepository predictionRepository,
+        TrendRepository trendRepository,
+        ILogger<MonitoringService> logger)
     {
         _pythonModelClient = pythonModelClient;
+        _snapshotRepository = snapshotRepository;
+        _predictionRepository = predictionRepository;
+        _trendRepository = trendRepository;
         _logger = logger;
     }
 
@@ -53,6 +68,117 @@ public class MonitoringService
 
         return result;
     }
+
+    /// <summary>
+    /// Stateful write path for <c>POST /api/v1/monitoring/clients/{ref}/snapshots</c> (contract 4.3):
+    /// validates duplicates, scores via Flask (reusing <see cref="PredictTimeseriesAsync"/>), then
+    /// persists the snapshot, its W3 predictions, and the per-model trends.
+    /// </summary>
+    /// <exception cref="SnapshotConflictException">The client already has a snapshot on that date.</exception>
+    /// <exception cref="MlServiceException">Flask could not be reached or returned an error.</exception>
+    public async Task<SnapshotResponse> ScoreAndPersistAsync(string clientRef, SnapshotRequest request)
+    {
+        var snapshotDate = request.SnapshotDate ?? DateOnly.FromDateTime(DateTime.UtcNow);
+
+        // Reject duplicates before scoring so Flask isn't called and no client is created on conflict.
+        var client = await _snapshotRepository.FindClientAsync(clientRef);
+        if (client is not null && await _snapshotRepository.ExistsForDateAsync(client.Id, snapshotDate))
+        {
+            throw new SnapshotConflictException(
+                $"A snapshot for client '{clientRef}' on {snapshotDate:yyyy-MM-dd} already exists");
+        }
+
+        // Score (clientRef/snapshotDate/labels are filled in by PredictTimeseriesAsync).
+        var scored = await PredictTimeseriesAsync(new TimeseriesRequest
+        {
+            ClientRef = clientRef,
+            SnapshotDate = snapshotDate,
+            Features = request.Features,
+        });
+        if (scored is null)
+        {
+            throw new MlServiceException("ML service returned an empty response", upstreamStatusCode: null);
+        }
+
+        var clientCreated = client is null;
+        client ??= await _snapshotRepository.CreateClientAsync(clientRef);
+
+        // Persist the snapshot (SnapshotDate column is timestamptz → Kind must be Utc).
+        var snapshot = await _snapshotRepository.AddAsync(MapToSnapshot(
+            client.Id, snapshotDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), request.Features));
+
+        // Persist the W3 predictions (one row per model).
+        var w3 = scored.Trajectory.First(p => p.Window == LabelledWindow).Predictions;
+        var predictions = await _predictionRepository.AddRangeAsync(snapshot.Id, new[]
+        {
+            ToPrediction("randomForest", w3.RandomForest),
+            ToPrediction("xgboost", w3.Xgboost),
+            ToPrediction("lstm", w3.Lstm),
+        });
+
+        // Upsert the per-model trends.
+        var trends = await _trendRepository.UpsertRangeAsync(client.Id, new[]
+        {
+            ("randomForest", scored.Trends.RandomForest.Slope, scored.Trends.RandomForest.Alert),
+            ("xgboost", scored.Trends.Xgboost.Slope, scored.Trends.Xgboost.Alert),
+            ("lstm", scored.Trends.Lstm.Slope, scored.Trends.Lstm.Alert),
+        });
+
+        _logger.LogInformation(
+            "Persisted snapshot {SnapshotId} for client {ClientRef} ({PredCount} predictions, {TrendCount} trends)",
+            snapshot.Id, clientRef, predictions.Count, trends.Count);
+
+        return new SnapshotResponse
+        {
+            SnapshotId = snapshot.Id,
+            ClientRef = clientRef,
+            SnapshotDate = snapshotDate,
+            Trajectory = scored.Trajectory,
+            Trends = scored.Trends,
+            Persisted = new PersistedInfo
+            {
+                ClientCreated = clientCreated,
+                PredictionIds = predictions.Select(p => p.Id).ToList(),
+                TrendIds = trends.Select(t => t.Id).ToList(),
+            },
+        };
+    }
+
+    private static Prediction ToPrediction(string modelName, double pd) => new()
+    {
+        ModelName = modelName,
+        DefaultProbability = pd,
+        Label = pd >= 0.5 ? "DEFAULT" : "NO DEFAULT",
+    };
+
+    private static Snapshot MapToSnapshot(int clientId, DateTime snapshotDate, Snapshot22Features f) => new()
+    {
+        ClientId = clientId,
+        SnapshotDate = snapshotDate,
+        LimitBal = f.LimitBal,
+        Sex = f.Sex,
+        Education = f.Education,
+        Marriage = f.Marriage,
+        Age = f.Age,
+        Pay0 = f.Pay0,
+        Pay2 = f.Pay2,
+        Pay3 = f.Pay3,
+        Pay4 = f.Pay4,
+        Pay5 = f.Pay5,
+        Pay6 = f.Pay6,
+        BillAmt1 = f.BillAmt1,
+        BillAmt2 = f.BillAmt2,
+        BillAmt3 = f.BillAmt3,
+        BillAmt4 = f.BillAmt4,
+        BillAmt5 = f.BillAmt5,
+        BillAmt6 = f.BillAmt6,
+        PayAmt1 = f.PayAmt1,
+        PayAmt2 = f.PayAmt2,
+        PayAmt3 = f.PayAmt3,
+        PayAmt4 = f.PayAmt4,
+        PayAmt5 = f.PayAmt5,
+        PayAmt6 = f.PayAmt6,
+    };
 
     /// <summary>
     /// Builds the "MMM-MMM yyyy" label (e.g. "Mar-May 2026") for a window, given the snapshot date.

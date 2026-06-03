@@ -20,6 +20,9 @@ public class ErrorEnvelope
     public static ErrorEnvelope ValidationFailed(string message, object? details = null) =>
         new("VALIDATION_FAILED", message, details);
 
+    public static ErrorEnvelope Conflict(string message, object? details = null) =>
+        new("CONFLICT", message, details);
+
     public static ErrorEnvelope MlServiceError(string message) =>
         new("ML_SERVICE_ERROR", message);
 
