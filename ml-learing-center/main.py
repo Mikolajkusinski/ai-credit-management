@@ -334,3 +334,59 @@ print(
     "lstm_model_w3.keras, scaler_w3.pkl, features_w3.pkl, lstm_scalers_w3.pkl, "
     "lstm_calibrator_w3.pkl"
 )
+
+
+# ========== COST-OPTIMIZED ALERT THRESHOLDS (CREDIT-106) ==========
+# Replace the default 0.5 threshold with per-model values that minimize
+# expected cost. Cost model: missing a default (FN) is 5x worse than
+# a false alert (FP). Bounds (0.1, 0.9) per TASKS.md DoD.
+import json as _json
+
+_FN_COST_106, _FP_COST_106 = 5.0, 1.0
+_THR_BOUNDS_106 = (0.1, 0.9)
+_THR_RES_106 = 0.005
+
+
+def _find_optimal_threshold(y_true, y_proba, fn_cost=_FN_COST_106, fp_cost=_FP_COST_106, bounds=_THR_BOUNDS_106):
+    n = int((bounds[1] - bounds[0]) / _THR_RES_106) + 1
+    candidates = np.linspace(bounds[0], bounds[1], n)
+    best_thr, best_cost = float(bounds[0]), float("inf")
+    for thr in candidates:
+        pred = y_proba >= thr
+        fn = int(((y_true == 1) & ~pred).sum())
+        fp = int(((y_true == 0) & pred).sum())
+        cost = fn_cost * fn + fp_cost * fp
+        if cost < best_cost:
+            best_thr, best_cost = float(thr), cost
+    return best_thr, best_cost
+
+
+_y_te_arr = y_te_w3.to_numpy()
+_ys_te_arr = ys_te_w3.to_numpy()
+
+_rf_thr_106, _rf_cost_106 = _find_optimal_threshold(_y_te_arr, rf_cal_proba)
+_xgb_thr_106, _xgb_cost_106 = _find_optimal_threshold(_y_te_arr, xgb_cal_proba)
+_lstm_thr_106, _lstm_cost_106 = _find_optimal_threshold(_ys_te_arr, lstm_cal_proba)
+
+print(f"\n===== CREDIT-106 cost-optimized alert thresholds (FN={_FN_COST_106}x FP) =====")
+print(f"  RandomForest  threshold={_rf_thr_106:.3f}   expected_cost={_rf_cost_106:.0f}")
+print(f"  XGBoost       threshold={_xgb_thr_106:.3f}   expected_cost={_xgb_cost_106:.0f}")
+print(f"  LSTM          threshold={_lstm_thr_106:.3f}   expected_cost={_lstm_cost_106:.0f}")
+
+_thr_payload = {
+    "_meta": {
+        "fn_cost": _FN_COST_106,
+        "fp_cost": _FP_COST_106,
+        "fn_to_fp_ratio": _FN_COST_106 / _FP_COST_106,
+        "bounds": list(_THR_BOUNDS_106),
+        "resolution": _THR_RES_106,
+        "source": "CREDIT-106: optimized on W3 calibrated test split (random_state=42, test_size=0.2)",
+    },
+    "randomForest": _rf_thr_106,
+    "xgboost": _xgb_thr_106,
+    "lstm": _lstm_thr_106,
+}
+
+with open("../ml-service/alert_thresholds.json", "w") as _f:
+    _json.dump(_thr_payload, _f, indent=2)
+print("Saved: ../ml-service/alert_thresholds.json")

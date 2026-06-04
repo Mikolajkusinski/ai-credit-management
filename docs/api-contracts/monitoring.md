@@ -147,7 +147,7 @@ Tendencja PD dla jednego modelu w obrębie jednej trajektorii:
 
 ### 3.5. `TimeseriesResponse`
 
-Pełna odpowiedź scoringu (z trajektorią + trendami):
+Pełna odpowiedź scoringu (z trajektorią + trendami + alertami kosztowymi z CREDIT-106):
 
 ```json
 {
@@ -159,9 +159,28 @@ Pełna odpowiedź scoringu (z trajektorią + trendami):
     { "window": "W2", "label": "Mar-May 2026", "predictions": { ... } },
     { "window": "W3", "label": "Apr-Jun 2026", "predictions": { ... } }
   ],
-  "trends": { "randomForest": { ... }, "xgboost": { ... }, "lstm": { ... } }
+  "trends": { "randomForest": { ... }, "xgboost": { ... }, "lstm": { ... } },
+
+  // CREDIT-106 (optional, dodane w Sprincie 3) — cost-optimized PD thresholds
+  // per model i flagi alertu per okno per model. Modele klienckie mogą je
+  // ignorować dla backward compatibility, ale frontend powinien je używać do
+  // semaforowych alertów per okno (zamiast hardcoded 0.5).
+  "costThresholds": {
+    "randomForest": 0.145,
+    "xgboost": 0.180,
+    "lstm": 0.185
+  },
+  "windowAlerts": {
+    "randomForest": [false, false, true, true],
+    "xgboost":      [false, true,  true, true],
+    "lstm":         [false, false, false, true]
+  }
 }
 ```
+
+`costThresholds`: per-model próg PD, ponad który Flask flaguje okno jako alert. Wartości są obliczone w `optimize_thresholds.py` (lub `main.py`) i shipping w `ml-service/alert_thresholds.json` z `_meta` (cost ratio, bounds). Re-optymalizacja: zmień `_FN_COST_106` w `main.py` lub stałe w `optimize_thresholds.py`, uruchom skrypt, commit nowy JSON.
+
+`windowAlerts[model]` ma długość 4 (W0..W3), każda wartość to `predictions[model] >= costThresholds[model]` dla tego okna.
 
 ### 3.6. `ErrorEnvelope`
 
