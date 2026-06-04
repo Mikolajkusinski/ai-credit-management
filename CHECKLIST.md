@@ -8,13 +8,13 @@
 > - 🔴 **Do zrobienia** — task dostępny (wszystkie `blocked_by` są 🟢), nie został jeszcze rozpoczęty.
 > - 🔒 **Zablokowane** — task czeka na zależność (`blocked_by` zawiera coś, co nie jest 🟢).
 >
-> **Ostatnia aktualizacja:** 2026-06-04 (po merge CREDIT-105 — kalibracja izotoniczna W3, Brier −19/−24/−23% dla RF/XGB/LSTM przy zachowanym AUC)
+> **Ostatnia aktualizacja:** 2026-06-04 (po merge CREDIT-110 — metryki time-series: lead time ~2 okna, slope_auc ~0.59, catch_rate ~50% przy progu 0.5)
 
 ---
 
 ## 🎯 Aktualne zadanie
 
-- **Gabriel Figur (GF):** 🔴 **CREDIT-110** — Metryki time-series (lead time, slope, AUC trajektorii) · branch `sprint3/timeseries-metrics` *(potem 🔴 111 — dowód tezy)*
+- **Gabriel Figur (GF):** 🔴 **CREDIT-111** — DOWÓD TEZY: statyka (W3) vs monitoring (any W0..W3) · branch `sprint3/static-vs-dynamic`
 - **Mikołaj Kusiński (MK):** 🔴 **CREDIT-303** — SnapshotForm + datepicker; fix zahardkodowanych miesięcy w `InputForm.tsx`; „kopiuj z poprzedniej migawki" · branch `sprint5/snapshot-entry` *(Sprint 5 P1; odblokowane przez CREDIT-210 + CREDIT-301)*
 
 > **Reguła aktualizacji tej sekcji:** gdy task zostanie zmergeowany do `main`, ustaw tutaj kolejny najwyżej priorytetowy dostępny (🔴) task z toru właściwej osoby. Jeśli osoba nie ma już dostępnych tasków w bieżącym sprincie, wpisz „⏸️ czeka na odblokowanie / koniec sprintu".
@@ -24,9 +24,9 @@
 ## 📊 Statystyki
 
 - **Łącznie zadań:** 28
-- **🟢 Wykonane:** 15 (CREDIT-101, CREDIT-102, CREDIT-103, CREDIT-201, CREDIT-401, CREDIT-402, CREDIT-210, CREDIT-104, CREDIT-202, CREDIT-203, CREDIT-204, CREDIT-301, CREDIT-302, CREDIT-205, CREDIT-105)
-- **🔴 Dostępne:** 7 (CREDIT-106, CREDIT-107, CREDIT-108, CREDIT-109, CREDIT-110, CREDIT-112, CREDIT-303)
-- **🔒 Zablokowane:** 6
+- **🟢 Wykonane:** 16 (CREDIT-101, CREDIT-102, CREDIT-103, CREDIT-201, CREDIT-401, CREDIT-402, CREDIT-210, CREDIT-104, CREDIT-202, CREDIT-203, CREDIT-204, CREDIT-301, CREDIT-302, CREDIT-205, CREDIT-105, CREDIT-110)
+- **🔴 Dostępne:** 7 (CREDIT-106, CREDIT-107, CREDIT-108, CREDIT-109, CREDIT-111, CREDIT-112, CREDIT-303)
+- **🔒 Zablokowane:** 5
 
 ---
 
@@ -94,11 +94,11 @@
 
 ## Sprint 3 — Dowód tezy + start frontendu (30 cze – 13 lip)
 
-- 🔴 **CREDIT-110** · [EVAL] · P0 · GF · `sprint3/timeseries-metrics`
-  - Early-warning lead time + rozkład slope (default vs non-default) + AUC trajektorii.
+- 🟢 **CREDIT-110** · [EVAL] · P0 · GF · `sprint3/timeseries-metrics`
+  - Early-warning lead time + rozkład slope (default vs non-default) + AUC trajektorii. Catch rate ~50% (próg 0.5), mean lead time ~2.05 okien, slope_auc ~0.59 vs w3_auc ~0.77. 6 PNG + CSV + Markdown report w `reports/`.
   - blocked_by: 101, 102, 104 · blocks: 111
 
-- 🔒 **CREDIT-111** · [EVAL] · P0 · GF · `sprint3/static-vs-dynamic`
+- 🔴 **CREDIT-111** · [EVAL] · P0 · GF · `sprint3/static-vs-dynamic`
   - **DOWÓD TEZY** — statyka (PD z W3) vs monitoring (trajektoria); catch rate vs fałszywe alarmy.
   - blocked_by: 110 · blocks: 114
 
