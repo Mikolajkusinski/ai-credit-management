@@ -119,7 +119,7 @@ Pojedynczy punkt trajektorii (jedno okno):
 
 - `window`: enum `"W0" | "W1" | "W2" | "W3"`
 - `label`: string (computed by backend)
-- `predictions`: obiekt z PD per model, wartości w `[0.0, 1.0]`. Klucze modeli: `randomForest`, `xgboost`, `lstm` (camelCase — zgodne z istniejącym `PredictResponse.cs`).
+- `predictions`: obiekt z PD per model, wartości w `[0.0, 1.0]`. Klucze modeli: `randomForest`, `xgboost`, `lightgbm`, `catboost`, `lstm` (camelCase — zgodne z istniejącym `PredictResponse.cs`). LightGBM + CatBoost dodane w CREDIT-109; modele klienckie mogą ignorować nowe klucze dla backward compatibility.
 
 ### 3.3. `TrendInfo`
 
@@ -159,20 +159,25 @@ Pełna odpowiedź scoringu (z trajektorią + trendami + alertami kosztowymi z CR
     { "window": "W2", "label": "Mar-May 2026", "predictions": { ... } },
     { "window": "W3", "label": "Apr-Jun 2026", "predictions": { ... } }
   ],
-  "trends": { "randomForest": { ... }, "xgboost": { ... }, "lstm": { ... } },
+  "trends": { "randomForest": { ... }, "xgboost": { ... }, "lightgbm": { ... }, "catboost": { ... }, "lstm": { ... } },
 
   // CREDIT-106 (optional, dodane w Sprincie 3) — cost-optimized PD thresholds
-  // per model i flagi alertu per okno per model. Modele klienckie mogą je
-  // ignorować dla backward compatibility, ale frontend powinien je używać do
-  // semaforowych alertów per okno (zamiast hardcoded 0.5).
+  // per model i flagi alertu per okno per model. CREDIT-109 rozszerzył o
+  // lightgbm + catboost. Modele klienckie mogą je ignorować dla backward
+  // compatibility, ale frontend powinien je używać do semaforowych alertów
+  // per okno (zamiast hardcoded 0.5).
   "costThresholds": {
     "randomForest": 0.145,
-    "xgboost": 0.180,
-    "lstm": 0.185
+    "xgboost":      0.180,
+    "lightgbm":     0.150,
+    "catboost":     0.160,
+    "lstm":         0.185
   },
   "windowAlerts": {
-    "randomForest": [false, false, true, true],
-    "xgboost":      [false, true,  true, true],
+    "randomForest": [false, false, true,  true],
+    "xgboost":      [false, true,  true,  true],
+    "lightgbm":     [false, false, true,  true],
+    "catboost":     [false, false, true,  true],
     "lstm":         [false, false, false, true]
   }
 }

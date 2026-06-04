@@ -37,6 +37,8 @@ lstm_scalers = joblib.load(ROOT / "lstm_scalers.pkl")
 logger.info("Loading W3 3-month models...")
 rf_w3 = joblib.load(ROOT / "rf_model_w3.pkl")
 xgb_w3 = joblib.load(ROOT / "xgb_model_w3.pkl")
+lgbm_w3 = joblib.load(ROOT / "lightgbm_model_w3.pkl")   # CREDIT-109
+cat_w3 = joblib.load(ROOT / "catboost_model_w3.pkl")    # CREDIT-109
 scaler_w3 = joblib.load(ROOT / "scaler_w3.pkl")
 features_w3 = joblib.load(ROOT / "features_w3.pkl")
 lstm_w3 = keras.models.load_model(ROOT / "lstm_model_w3.keras")
@@ -162,10 +164,13 @@ def prepare_lstm_input_w3(data, window):
 
 
 def predict_single_window(data, window):
-    """Score one window with RF/XGBoost/LSTM. Returns dict of calibrated probabilities."""
+    """Score one window with RF/XGBoost/LightGBM/CatBoost/LSTM (CREDIT-109).
+    Returns dict of calibrated probabilities keyed by model name."""
     X_static = engineer_features_w3(data, window)
     rf_prob = float(rf_w3.predict_proba(X_static)[0][1])
     xgb_prob = float(xgb_w3.predict_proba(X_static)[0][1])
+    lgbm_prob = float(lgbm_w3.predict_proba(X_static)[0][1])
+    cat_prob = float(cat_w3.predict_proba(X_static)[0][1])
 
     X_seq = prepare_lstm_input_w3(data, window)
     lstm_raw = float(lstm_w3.predict(X_seq, verbose=0)[0][0])
@@ -174,6 +179,8 @@ def predict_single_window(data, window):
     return {
         "randomForest": rf_prob,
         "xgboost": xgb_prob,
+        "lightgbm": lgbm_prob,
+        "catboost": cat_prob,
         "lstm": lstm_prob,
     }
 
@@ -257,12 +264,11 @@ def predict_timeseries():
 
         trends = compute_trends(trajectory)
 
-        # Cost-optimized per-window per-model alerts (CREDIT-106). True = PD at
-        # this window crosses the model-specific cost-optimized threshold.
+        # Cost-optimized per-window per-model alerts (CREDIT-106 / CREDIT-109).
+        # True = PD at this window crosses the model-specific cost-optimized threshold.
         cost_thresholds = {
-            "randomForest": ALERT_THRESHOLDS["randomForest"],
-            "xgboost": ALERT_THRESHOLDS["xgboost"],
-            "lstm": ALERT_THRESHOLDS["lstm"],
+            model_key: ALERT_THRESHOLDS[model_key]
+            for model_key in trajectory[0]["predictions"].keys()
         }
         window_alerts = {
             model_key: [

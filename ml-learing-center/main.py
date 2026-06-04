@@ -210,6 +210,8 @@ from sklearn.calibration import CalibratedClassifierCV
 from sklearn.frozen import FrozenEstimator
 from sklearn.isotonic import IsotonicRegression
 from sklearn.metrics import brier_score_loss
+from lightgbm import LGBMClassifier
+from catboost import CatBoostClassifier
 
 from sliding_window import WINDOW_DEFS
 from features import engineer_features, prepare_lstm_sequences
@@ -271,6 +273,41 @@ xgb_cal_proba = xgb_w3.predict_proba(X_te_w3)[:, 1]
 auc_xgb_cal = roc_auc_score(y_te_w3, xgb_cal_proba)
 brier_xgb_cal = brier_score_loss(y_te_w3, xgb_cal_proba)
 
+# LightGBM -- CREDIT-109; same 3-way split + isotonic calibration protocol as RF/XGB
+lgbm_base = LGBMClassifier(
+    n_estimators=800, learning_rate=0.02, max_depth=4,
+    subsample=0.7, colsample_bytree=0.7,
+    reg_alpha=0.1, reg_lambda=1.0,
+    class_weight="balanced",
+    random_state=42, verbose=-1,
+).fit(X_tr_w3, y_tr_w3)
+lgbm_uncal_proba = lgbm_base.predict_proba(X_te_w3)[:, 1]
+auc_lgbm_uncal = roc_auc_score(y_te_w3, lgbm_uncal_proba)
+brier_lgbm_uncal = brier_score_loss(y_te_w3, lgbm_uncal_proba)
+
+lgbm_w3 = CalibratedClassifierCV(FrozenEstimator(lgbm_base), method="isotonic").fit(X_cal_w3, y_cal_w3)
+lgbm_cal_proba = lgbm_w3.predict_proba(X_te_w3)[:, 1]
+auc_lgbm_cal = roc_auc_score(y_te_w3, lgbm_cal_proba)
+brier_lgbm_cal = brier_score_loss(y_te_w3, lgbm_cal_proba)
+
+# CatBoost -- CREDIT-109; same protocol
+cat_base = CatBoostClassifier(
+    iterations=800, learning_rate=0.02, depth=4,
+    subsample=0.7, colsample_bylevel=0.7,
+    l2_leaf_reg=3.0,
+    auto_class_weights="Balanced",
+    random_state=42, verbose=False,
+    bootstrap_type="Bernoulli",
+).fit(X_tr_w3, y_tr_w3)
+cat_uncal_proba = cat_base.predict_proba(X_te_w3)[:, 1]
+auc_cat_uncal = roc_auc_score(y_te_w3, cat_uncal_proba)
+brier_cat_uncal = brier_score_loss(y_te_w3, cat_uncal_proba)
+
+cat_w3 = CalibratedClassifierCV(FrozenEstimator(cat_base), method="isotonic").fit(X_cal_w3, y_cal_w3)
+cat_cal_proba = cat_w3.predict_proba(X_te_w3)[:, 1]
+auc_cat_cal = roc_auc_score(y_te_w3, cat_cal_proba)
+brier_cat_cal = brier_score_loss(y_te_w3, cat_cal_proba)
+
 # LSTM -- tensor (N, 3, 3), same 3-way split via shared random_state=42
 X_seq_w3, lstm_scalers_w3 = prepare_lstm_sequences(df_w3, W3)
 Xs_tmp, Xs_te_w3, ys_tmp, ys_te_w3 = train_test_split(
@@ -318,11 +355,15 @@ print("\n===== WYNIKI W3 (3-mies., 60/20/20 split) =====")
 print("Model         AUC uncal -> AUC cal     Brier uncal -> Brier cal")
 print(f"RandomForest  {auc_rf_uncal:.4f}    -> {auc_rf_cal:.4f}     {brier_rf_uncal:.4f}      -> {brier_rf_cal:.4f}")
 print(f"XGBoost       {auc_xgb_uncal:.4f}    -> {auc_xgb_cal:.4f}     {brier_xgb_uncal:.4f}      -> {brier_xgb_cal:.4f}")
+print(f"LightGBM      {auc_lgbm_uncal:.4f}    -> {auc_lgbm_cal:.4f}     {brier_lgbm_uncal:.4f}      -> {brier_lgbm_cal:.4f}")
+print(f"CatBoost      {auc_cat_uncal:.4f}    -> {auc_cat_cal:.4f}     {brier_cat_uncal:.4f}      -> {brier_cat_cal:.4f}")
 print(f"LSTM          {auc_lstm_uncal:.4f}    -> {auc_lstm_cal:.4f}     {brier_lstm_uncal:.4f}      -> {brier_lstm_cal:.4f}")
 
 # Save calibrated artifacts (overwrite per TASKS.md CREDIT-105 DoD).
 joblib.dump(rf_w3,              "rf_model_w3.pkl")
 joblib.dump(xgb_w3,             "xgb_model_w3.pkl")
+joblib.dump(lgbm_w3,            "lightgbm_model_w3.pkl")  # CREDIT-109
+joblib.dump(cat_w3,             "catboost_model_w3.pkl")   # CREDIT-109
 joblib.dump(scaler_w3,          "scaler_w3.pkl")
 joblib.dump(features_w3,        "features_w3.pkl")
 model_w3.save("lstm_model_w3.keras")
@@ -331,7 +372,8 @@ joblib.dump(lstm_calibrator_w3, "../ml-service/lstm_calibrator_w3.pkl")
 
 print(
     "\nW3 calibrated models saved: rf_model_w3.pkl, xgb_model_w3.pkl, "
-    "lstm_model_w3.keras, scaler_w3.pkl, features_w3.pkl, lstm_scalers_w3.pkl, "
+    "lightgbm_model_w3.pkl, catboost_model_w3.pkl, lstm_model_w3.keras, "
+    "scaler_w3.pkl, features_w3.pkl, lstm_scalers_w3.pkl, "
     "lstm_calibrator_w3.pkl"
 )
 
@@ -366,11 +408,15 @@ _ys_te_arr = ys_te_w3.to_numpy()
 
 _rf_thr_106, _rf_cost_106 = _find_optimal_threshold(_y_te_arr, rf_cal_proba)
 _xgb_thr_106, _xgb_cost_106 = _find_optimal_threshold(_y_te_arr, xgb_cal_proba)
+_lgbm_thr_106, _lgbm_cost_106 = _find_optimal_threshold(_y_te_arr, lgbm_cal_proba)
+_cat_thr_106, _cat_cost_106 = _find_optimal_threshold(_y_te_arr, cat_cal_proba)
 _lstm_thr_106, _lstm_cost_106 = _find_optimal_threshold(_ys_te_arr, lstm_cal_proba)
 
 print(f"\n===== CREDIT-106 cost-optimized alert thresholds (FN={_FN_COST_106}x FP) =====")
 print(f"  RandomForest  threshold={_rf_thr_106:.3f}   expected_cost={_rf_cost_106:.0f}")
 print(f"  XGBoost       threshold={_xgb_thr_106:.3f}   expected_cost={_xgb_cost_106:.0f}")
+print(f"  LightGBM      threshold={_lgbm_thr_106:.3f}   expected_cost={_lgbm_cost_106:.0f}")
+print(f"  CatBoost      threshold={_cat_thr_106:.3f}   expected_cost={_cat_cost_106:.0f}")
 print(f"  LSTM          threshold={_lstm_thr_106:.3f}   expected_cost={_lstm_cost_106:.0f}")
 
 _thr_payload = {
@@ -380,10 +426,12 @@ _thr_payload = {
         "fn_to_fp_ratio": _FN_COST_106 / _FP_COST_106,
         "bounds": list(_THR_BOUNDS_106),
         "resolution": _THR_RES_106,
-        "source": "CREDIT-106: optimized on W3 calibrated test split (random_state=42, test_size=0.2)",
+        "source": "CREDIT-106 + CREDIT-109: optimized on W3 calibrated test split (random_state=42, test_size=0.2)",
     },
     "randomForest": _rf_thr_106,
     "xgboost": _xgb_thr_106,
+    "lightgbm": _lgbm_thr_106,
+    "catboost": _cat_thr_106,
     "lstm": _lstm_thr_106,
 }
 

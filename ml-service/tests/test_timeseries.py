@@ -60,11 +60,14 @@ def test_compute_trends_decreasing():
 ARTIFACTS = [
     "rf_model.pkl", "xgb_model.pkl", "scaler.pkl", "features.pkl",
     "lstm_model.keras", "lstm_scalers.pkl",
-    "rf_model_w3.pkl", "xgb_model_w3.pkl", "scaler_w3.pkl", "features_w3.pkl",
+    "rf_model_w3.pkl", "xgb_model_w3.pkl",
+    "lightgbm_model_w3.pkl", "catboost_model_w3.pkl",  # CREDIT-109
+    "scaler_w3.pkl", "features_w3.pkl",
     "lstm_model_w3.keras", "lstm_scalers_w3.pkl",
     "lstm_calibrator_w3.pkl",
     "alert_thresholds.json",
 ]
+MODEL_KEYS = {"randomForest", "xgboost", "lightgbm", "catboost", "lstm"}
 SERVICE_ROOT = Path(__file__).resolve().parent.parent
 
 
@@ -112,7 +115,7 @@ def test_predict_timeseries_returns_four_trajectory_points(client):
 
     for point in body["trajectory"]:
         preds = point["predictions"]
-        assert set(preds.keys()) == {"randomForest", "xgboost", "lstm"}
+        assert set(preds.keys()) == MODEL_KEYS
         for prob in preds.values():
             assert 0.0 <= prob <= 1.0
 
@@ -122,7 +125,7 @@ def test_predict_timeseries_returns_per_model_trends(client):
     body = resp.get_json()
 
     assert "trends" in body
-    assert set(body["trends"].keys()) == {"randomForest", "xgboost", "lstm"}
+    assert set(body["trends"].keys()) == MODEL_KEYS
     for trend in body["trends"].values():
         assert "slope" in trend
         assert "alert" in trend
@@ -136,7 +139,7 @@ def test_predict_timeseries_deteriorating_client_flags_increasing_risk(client):
 
     # At least one of the three models must flag INCREASING_RISK on a clearly
     # deteriorating trajectory (rising bills + delays in recent months).
-    alerts = {m: body["trends"][m]["alert"] for m in ("randomForest", "xgboost", "lstm")}
+    alerts = {m: body["trends"][m]["alert"] for m in MODEL_KEYS}
     assert "INCREASING_RISK" in alerts.values(), \
         f"Expected at least one INCREASING_RISK on deteriorating sample; got {alerts}"
 
@@ -148,12 +151,12 @@ def test_predict_timeseries_returns_cost_thresholds_and_window_alerts(client):
     body = resp.get_json()
 
     assert "costThresholds" in body
-    assert set(body["costThresholds"].keys()) == {"randomForest", "xgboost", "lstm"}
+    assert set(body["costThresholds"].keys()) == MODEL_KEYS
     for model_key, threshold in body["costThresholds"].items():
         assert 0.1 <= threshold <= 0.9, f"{model_key} threshold {threshold} outside DoD bounds (0.1, 0.9)"
 
     assert "windowAlerts" in body
-    assert set(body["windowAlerts"].keys()) == {"randomForest", "xgboost", "lstm"}
+    assert set(body["windowAlerts"].keys()) == MODEL_KEYS
     for model_key, alerts in body["windowAlerts"].items():
         assert len(alerts) == 4
         assert all(isinstance(a, bool) for a in alerts)

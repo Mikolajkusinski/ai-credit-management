@@ -44,8 +44,14 @@ HERE = Path(__file__).parent
 REPORTS = HERE / "reports"
 REPORTS.mkdir(exist_ok=True)
 
-MODELS = ["Random Forest", "XGBoost", "LSTM"]
-_SLUG = {"Random Forest": "random_forest", "XGBoost": "xgboost", "LSTM": "lstm"}
+MODELS = ["Random Forest", "XGBoost", "LightGBM", "CatBoost", "LSTM"]
+_SLUG = {
+    "Random Forest": "random_forest",
+    "XGBoost": "xgboost",
+    "LightGBM": "lightgbm",
+    "CatBoost": "catboost",
+    "LSTM": "lstm",
+}
 
 
 def _load_csv() -> pd.DataFrame:
@@ -80,8 +86,12 @@ def load_data_and_predict() -> Dict[str, Dict[str, np.ndarray]]:
 
     rf = joblib.load(HERE / "rf_model_w3.pkl")
     xgb = joblib.load(HERE / "xgb_model_w3.pkl")
+    lgbm = joblib.load(HERE / "lightgbm_model_w3.pkl")
+    cat = joblib.load(HERE / "catboost_model_w3.pkl")
     rf_prob = rf.predict_proba(X_te)[:, 1]
     xgb_prob = xgb.predict_proba(X_te)[:, 1]
+    lgbm_prob = lgbm.predict_proba(X_te)[:, 1]
+    cat_prob = cat.predict_proba(X_te)[:, 1]
 
     # Sequence path -- LSTM with external isotonic calibrator
     X_seq, _ = prepare_lstm_sequences(df, W3)  # refits scalers, deterministic
@@ -100,6 +110,8 @@ def load_data_and_predict() -> Dict[str, Dict[str, np.ndarray]]:
     return {
         "Random Forest": {"y_true": y_te_arr, "y_prob": rf_prob},
         "XGBoost":       {"y_true": y_te_arr, "y_prob": xgb_prob},
+        "LightGBM":      {"y_true": y_te_arr, "y_prob": lgbm_prob},
+        "CatBoost":      {"y_true": y_te_arr, "y_prob": cat_prob},
         "LSTM":          {"y_true": ys_te_arr, "y_prob": lstm_prob},
     }
 

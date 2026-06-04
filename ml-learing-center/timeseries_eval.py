@@ -36,8 +36,14 @@ HERE = Path(__file__).parent
 REPORTS = HERE / "reports"
 REPORTS.mkdir(exist_ok=True)
 
-MODELS = ["Random Forest", "XGBoost", "LSTM"]
-SLUG = {"Random Forest": "random_forest", "XGBoost": "xgboost", "LSTM": "lstm"}
+MODELS = ["Random Forest", "XGBoost", "LightGBM", "CatBoost", "LSTM"]
+SLUG = {
+    "Random Forest": "random_forest",
+    "XGBoost": "xgboost",
+    "LightGBM": "lightgbm",
+    "CatBoost": "catboost",
+    "LSTM": "lstm",
+}
 WINDOW_LABELS = ["W0", "W1", "W2", "W3"]
 ALERT_THRESHOLD = 0.5  # PD threshold for "alert raised" (absolute, calibrated)
 
@@ -78,6 +84,8 @@ def score_test_set() -> Tuple[np.ndarray, Dict[str, np.ndarray]]:
 
     rf = joblib.load(HERE / "rf_model_w3.pkl")
     xgb = joblib.load(HERE / "xgb_model_w3.pkl")
+    lgbm = joblib.load(HERE / "lightgbm_model_w3.pkl")
+    cat = joblib.load(HERE / "catboost_model_w3.pkl")
     scaler_w3 = joblib.load(HERE / "scaler_w3.pkl")
     features_w3 = joblib.load(HERE / "features_w3.pkl")
     lstm = load_model(HERE / "lstm_model_w3.keras")
@@ -90,7 +98,7 @@ def score_test_set() -> Tuple[np.ndarray, Dict[str, np.ndarray]]:
     for w_idx, window in enumerate(WINDOW_DEFS):
         df_remapped = _remap_to_w3(df_te, window)
 
-        # Static path -- RF / XGBoost
+        # Static path -- RF / XGBoost / LightGBM / CatBoost
         X_df, _ = engineer_features(df_remapped, w3)
         for col in features_w3:
             if col not in X_df.columns:
@@ -100,6 +108,8 @@ def score_test_set() -> Tuple[np.ndarray, Dict[str, np.ndarray]]:
 
         traj["Random Forest"][:, w_idx] = rf.predict_proba(X_scaled)[:, 1]
         traj["XGBoost"][:, w_idx] = xgb.predict_proba(X_scaled)[:, 1]
+        traj["LightGBM"][:, w_idx] = lgbm.predict_proba(X_scaled)[:, 1]
+        traj["CatBoost"][:, w_idx] = cat.predict_proba(X_scaled)[:, 1]
 
         # LSTM path
         X_seq, _ = prepare_lstm_sequences(df_remapped, w3)

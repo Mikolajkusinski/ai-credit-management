@@ -42,21 +42,57 @@ Mean lead time among monitor-caught defaulters (FA=10%): **2.04** windows before
 
 ---
 
+## LightGBM
+
+Catch rate at canonical false-alarm budgets:
+
+| Target FA | Static catch | Monitoring catch | Delta (mon - static, pp) |
+|---|---|---|---|
+| 5% | 34.7% | 39.0% | +4.22 |
+| 10% | 51.1% | 49.8% | -1.28 |
+| 20% | 66.0% | 59.8% | -6.25 |
+
+Lead-only wins (defaulters caught by monitor but missed by static at FA=10%): **71**
+Lost-only cases (defaulters caught by static but missed by monitor at FA=10%): **88**
+Mean lead time among monitor-caught defaulters (FA=10%): **2.05** windows before W3
+
+**Verdict at FA=10%:** static wins (delta = -1.28 pp catch rate).
+
+---
+
+## CatBoost
+
+Catch rate at canonical false-alarm budgets:
+
+| Target FA | Static catch | Monitoring catch | Delta (mon - static, pp) |
+|---|---|---|---|
+| 5% | 39.0% | 37.7% | -1.28 |
+| 10% | 51.5% | 44.6% | -6.86 |
+| 20% | 67.7% | 63.3% | -4.45 |
+
+Lead-only wins (defaulters caught by monitor but missed by static at FA=10%): **36**
+Lost-only cases (defaulters caught by static but missed by monitor at FA=10%): **127**
+Mean lead time among monitor-caught defaulters (FA=10%): **2.10** windows before W3
+
+**Verdict at FA=10%:** static wins (delta = -6.86 pp catch rate).
+
+---
+
 ## LSTM
 
 Catch rate at canonical false-alarm budgets:
 
 | Target FA | Static catch | Monitoring catch | Delta (mon - static, pp) |
 |---|---|---|---|
-| 5% | 35.5% | 45.7% | +10.25 |
-| 10% | 47.9% | 45.7% | -2.11 |
-| 20% | 68.7% | 61.9% | -6.86 |
+| 5% | 35.9% | 39.6% | +3.69 |
+| 10% | 47.3% | 39.6% | -7.69 |
+| 20% | 61.7% | 61.0% | -0.68 |
 
-Lead-only wins (defaulters caught by monitor but missed by static at FA=10%): **58**
-Lost-only cases (defaulters caught by static but missed by monitor at FA=10%): **86**
-Mean lead time among monitor-caught defaulters (FA=10%): **2.06** windows before W3
+Lead-only wins (defaulters caught by monitor but missed by static at FA=10%): **57**
+Lost-only cases (defaulters caught by static but missed by monitor at FA=10%): **159**
+Mean lead time among monitor-caught defaulters (FA=10%): **2.19** windows before W3
 
-**Verdict at FA=10%:** static wins (delta = -2.11 pp catch rate).
+**Verdict at FA=10%:** static wins (delta = -7.69 pp catch rate).
 
 ---
 
