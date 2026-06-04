@@ -62,6 +62,7 @@ ARTIFACTS = [
     "lstm_model.keras", "lstm_scalers.pkl",
     "rf_model_w3.pkl", "xgb_model_w3.pkl", "scaler_w3.pkl", "features_w3.pkl",
     "lstm_model_w3.keras", "lstm_scalers_w3.pkl",
+    "lstm_calibrator_w3.pkl",
 ]
 SERVICE_ROOT = Path(__file__).resolve().parent.parent
 

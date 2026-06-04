@@ -199,10 +199,18 @@ joblib.dump(lstm_scalers, "../ml-service/lstm_scalers.pkl")
 print("Models saved: rf_model.pkl, xgb_model.pkl, lstm_model.keras, lstm_scalers.pkl")
 
 
-# ========== W3 RETRAIN (CREDIT-102) ==========
-# Train RF/XGBoost/LSTM on the W3 sliding window (newest 3 months: Jul/Aug/Sep)
-# aligned with the October default label. Same train/inference distribution will
-# let CREDIT-104 iterate W0..W3 at inference without OOD shift.
+# ========== W3 RETRAIN + CALIBRATION (CREDIT-102 / CREDIT-105) ==========
+# CREDIT-102: train RF/XGBoost/LSTM on the W3 sliding window (newest 3 months,
+# Jul/Aug/Sep), aligned with the October default label. Same train/inference
+# distribution lets CREDIT-104 iterate W0..W3 at inference without OOD shift.
+# CREDIT-105: wrap each model with isotonic calibration on a held-out calib
+# split (60/20/20: train/calib/test). RF/XGB use CalibratedClassifierCV
+# (cv='prefit'); LSTM gets a sklearn IsotonicRegression applied to raw outputs.
+from sklearn.calibration import CalibratedClassifierCV
+from sklearn.frozen import FrozenEstimator
+from sklearn.isotonic import IsotonicRegression
+from sklearn.metrics import brier_score_loss
+
 from sliding_window import WINDOW_DEFS
 from features import engineer_features, prepare_lstm_sequences
 
@@ -218,34 +226,58 @@ y_w3 = df_w3["Default"]
 
 W3 = WINDOW_DEFS[3]
 
-# Static models on W3
+# Static features on W3 (RF / XGBoost)
 X_w3, features_w3 = engineer_features(df_w3, W3)
 scaler_w3 = StandardScaler()
 X_w3_scaled = scaler_w3.fit_transform(X_w3)
 
-X_tr_w3, X_te_w3, y_tr_w3, y_te_w3 = train_test_split(
-    X_w3_scaled, y_w3, test_size=0.3, stratify=y_w3, random_state=42
+# 3-way split (60 / 20 / 20): test first (20% held out for final eval), then
+# split the remaining 80% into 75/25 -> 60% train / 20% calib of total.
+X_tmp, X_te_w3, y_tmp, y_te_w3 = train_test_split(
+    X_w3_scaled, y_w3, test_size=0.2, stratify=y_w3, random_state=42
+)
+X_tr_w3, X_cal_w3, y_tr_w3, y_cal_w3 = train_test_split(
+    X_tmp, y_tmp, test_size=0.25, stratify=y_tmp, random_state=42
 )
 
-rf_w3 = RandomForestClassifier(
+# RF -- train on 60%, calibrate on 20%, evaluate on 20%
+rf_base = RandomForestClassifier(
     n_estimators=500, max_depth=10, min_samples_leaf=5,
     class_weight="balanced", random_state=42,
 ).fit(X_tr_w3, y_tr_w3)
-auc_rf_w3 = roc_auc_score(y_te_w3, rf_w3.predict_proba(X_te_w3)[:, 1])
+rf_uncal_proba = rf_base.predict_proba(X_te_w3)[:, 1]
+auc_rf_uncal = roc_auc_score(y_te_w3, rf_uncal_proba)
+brier_rf_uncal = brier_score_loss(y_te_w3, rf_uncal_proba)
 
-xgb_w3 = XGBClassifier(
+rf_w3 = CalibratedClassifierCV(FrozenEstimator(rf_base), method="isotonic").fit(X_cal_w3, y_cal_w3)
+rf_cal_proba = rf_w3.predict_proba(X_te_w3)[:, 1]
+auc_rf_cal = roc_auc_score(y_te_w3, rf_cal_proba)
+brier_rf_cal = brier_score_loss(y_te_w3, rf_cal_proba)
+
+# XGBoost -- same protocol
+xgb_base = XGBClassifier(
     n_estimators=800, learning_rate=0.02, max_depth=4,
     subsample=0.7, colsample_bytree=0.7,
     reg_alpha=0.1, reg_lambda=1.0,
     scale_pos_weight=(len(y_w3) - sum(y_w3)) / sum(y_w3),
     random_state=42, eval_metric="auc",
 ).fit(X_tr_w3, y_tr_w3)
-auc_xgb_w3 = roc_auc_score(y_te_w3, xgb_w3.predict_proba(X_te_w3)[:, 1])
+xgb_uncal_proba = xgb_base.predict_proba(X_te_w3)[:, 1]
+auc_xgb_uncal = roc_auc_score(y_te_w3, xgb_uncal_proba)
+brier_xgb_uncal = brier_score_loss(y_te_w3, xgb_uncal_proba)
 
-# LSTM on W3 -- tensor (N, 3, 3)
+xgb_w3 = CalibratedClassifierCV(FrozenEstimator(xgb_base), method="isotonic").fit(X_cal_w3, y_cal_w3)
+xgb_cal_proba = xgb_w3.predict_proba(X_te_w3)[:, 1]
+auc_xgb_cal = roc_auc_score(y_te_w3, xgb_cal_proba)
+brier_xgb_cal = brier_score_loss(y_te_w3, xgb_cal_proba)
+
+# LSTM -- tensor (N, 3, 3), same 3-way split via shared random_state=42
 X_seq_w3, lstm_scalers_w3 = prepare_lstm_sequences(df_w3, W3)
-Xs_tr_w3, Xs_te_w3, ys_tr_w3, ys_te_w3 = train_test_split(
-    X_seq_w3, y_w3, test_size=0.3, stratify=y_w3, random_state=42
+Xs_tmp, Xs_te_w3, ys_tmp, ys_te_w3 = train_test_split(
+    X_seq_w3, y_w3, test_size=0.2, stratify=y_w3, random_state=42
+)
+Xs_tr_w3, Xs_cal_w3, ys_tr_w3, ys_cal_w3 = train_test_split(
+    Xs_tmp, ys_tmp, test_size=0.25, stratify=ys_tmp, random_state=42
 )
 
 model_w3 = Sequential([
@@ -268,18 +300,37 @@ model_w3.fit(
     ],
     verbose=1,
 )
-auc_lstm_w3 = roc_auc_score(ys_te_w3, model_w3.predict(Xs_te_w3, verbose=0).ravel())
 
-print("\n===== WYNIKI W3 (3-mies.) =====")
-print(f"AUC RF_w3:   {auc_rf_w3:.4f}")
-print(f"AUC XGB_w3:  {auc_xgb_w3:.4f}")
-print(f"AUC LSTM_w3: {auc_lstm_w3:.4f}")
+lstm_uncal_proba = model_w3.predict(Xs_te_w3, verbose=0).ravel()
+auc_lstm_uncal = roc_auc_score(ys_te_w3, lstm_uncal_proba)
+brier_lstm_uncal = brier_score_loss(ys_te_w3, lstm_uncal_proba)
 
-joblib.dump(rf_w3,       "rf_model_w3.pkl")
-joblib.dump(xgb_w3,      "xgb_model_w3.pkl")
-joblib.dump(scaler_w3,   "scaler_w3.pkl")
-joblib.dump(features_w3, "features_w3.pkl")
+# Fit IsotonicRegression on raw LSTM probabilities from the calibration split.
+lstm_calib_proba = model_w3.predict(Xs_cal_w3, verbose=0).ravel()
+lstm_calibrator_w3 = IsotonicRegression(out_of_bounds="clip").fit(
+    lstm_calib_proba, ys_cal_w3.to_numpy()
+)
+lstm_cal_proba = lstm_calibrator_w3.predict(lstm_uncal_proba)
+auc_lstm_cal = roc_auc_score(ys_te_w3, lstm_cal_proba)
+brier_lstm_cal = brier_score_loss(ys_te_w3, lstm_cal_proba)
+
+print("\n===== WYNIKI W3 (3-mies., 60/20/20 split) =====")
+print("Model         AUC uncal -> AUC cal     Brier uncal -> Brier cal")
+print(f"RandomForest  {auc_rf_uncal:.4f}    -> {auc_rf_cal:.4f}     {brier_rf_uncal:.4f}      -> {brier_rf_cal:.4f}")
+print(f"XGBoost       {auc_xgb_uncal:.4f}    -> {auc_xgb_cal:.4f}     {brier_xgb_uncal:.4f}      -> {brier_xgb_cal:.4f}")
+print(f"LSTM          {auc_lstm_uncal:.4f}    -> {auc_lstm_cal:.4f}     {brier_lstm_uncal:.4f}      -> {brier_lstm_cal:.4f}")
+
+# Save calibrated artifacts (overwrite per TASKS.md CREDIT-105 DoD).
+joblib.dump(rf_w3,              "rf_model_w3.pkl")
+joblib.dump(xgb_w3,             "xgb_model_w3.pkl")
+joblib.dump(scaler_w3,          "scaler_w3.pkl")
+joblib.dump(features_w3,        "features_w3.pkl")
 model_w3.save("lstm_model_w3.keras")
-joblib.dump(lstm_scalers_w3, "../ml-service/lstm_scalers_w3.pkl")
+joblib.dump(lstm_scalers_w3,    "../ml-service/lstm_scalers_w3.pkl")
+joblib.dump(lstm_calibrator_w3, "../ml-service/lstm_calibrator_w3.pkl")
 
-print("W3 models saved: rf_model_w3.pkl, xgb_model_w3.pkl, lstm_model_w3.keras, scaler_w3.pkl, features_w3.pkl, lstm_scalers_w3.pkl")
+print(
+    "\nW3 calibrated models saved: rf_model_w3.pkl, xgb_model_w3.pkl, "
+    "lstm_model_w3.keras, scaler_w3.pkl, features_w3.pkl, lstm_scalers_w3.pkl, "
+    "lstm_calibrator_w3.pkl"
+)
