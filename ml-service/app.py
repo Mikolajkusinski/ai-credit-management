@@ -29,7 +29,10 @@ feature_names = joblib.load(ROOT / "features.pkl")
 lstm_model = keras.models.load_model(ROOT / "lstm_model.keras")
 lstm_scalers = joblib.load(ROOT / "lstm_scalers.pkl")
 
-# Load W3 3-month models (used by /predict/timeseries) at startup
+# Load W3 3-month models (used by /predict/timeseries) at startup.
+# RF/XGB are CalibratedClassifierCV wrappers (CREDIT-105); .predict_proba is
+# isotonic-calibrated. LSTM has an external IsotonicRegression in
+# lstm_calibrator_w3.pkl that must be applied to the raw Keras outputs.
 logger.info("Loading W3 3-month models...")
 rf_w3 = joblib.load(ROOT / "rf_model_w3.pkl")
 xgb_w3 = joblib.load(ROOT / "xgb_model_w3.pkl")
@@ -37,6 +40,7 @@ scaler_w3 = joblib.load(ROOT / "scaler_w3.pkl")
 features_w3 = joblib.load(ROOT / "features_w3.pkl")
 lstm_w3 = keras.models.load_model(ROOT / "lstm_model_w3.keras")
 lstm_scalers_w3 = joblib.load(ROOT / "lstm_scalers_w3.pkl")
+lstm_calibrator_w3 = joblib.load(ROOT / "lstm_calibrator_w3.pkl")
 logger.info("All models loaded successfully")
 
 
@@ -144,13 +148,14 @@ def prepare_lstm_input_w3(data, window):
 
 
 def predict_single_window(data, window):
-    """Score one window with RF/XGBoost/LSTM. Returns dict of probabilities."""
+    """Score one window with RF/XGBoost/LSTM. Returns dict of calibrated probabilities."""
     X_static = engineer_features_w3(data, window)
     rf_prob = float(rf_w3.predict_proba(X_static)[0][1])
     xgb_prob = float(xgb_w3.predict_proba(X_static)[0][1])
 
     X_seq = prepare_lstm_input_w3(data, window)
-    lstm_prob = float(lstm_w3.predict(X_seq, verbose=0)[0][0])
+    lstm_raw = float(lstm_w3.predict(X_seq, verbose=0)[0][0])
+    lstm_prob = float(lstm_calibrator_w3.predict([lstm_raw])[0])
 
     return {
         "randomForest": rf_prob,

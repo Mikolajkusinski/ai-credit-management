@@ -59,17 +59,23 @@ def _load_csv() -> pd.DataFrame:
 
 
 def load_data_and_predict() -> Dict[str, Dict[str, np.ndarray]]:
-    """Return {model_name: {"y_true": ..., "y_prob": ...}} on the W3 test split."""
+    """Return {model_name: {"y_true": ..., "y_prob": ...}} on the W3 test split.
+
+    Uses the same 60/20/20 split as CREDIT-105 calibration so we evaluate on
+    the same 20% test partition the calibrators were tuned against. The
+    saved artifacts are calibrated (RF/XGB via CalibratedClassifierCV,
+    LSTM via an external IsotonicRegression in lstm_calibrator_w3.pkl).
+    """
     df = _load_csv()
     y = df["Default"]
     W3 = WINDOW_DEFS[3]
 
-    # Static path -- RF / XGBoost
+    # Static path -- RF / XGBoost (CalibratedClassifierCV wrappers)
     X_w3, _ = engineer_features(df, W3)
     scaler_w3 = joblib.load(HERE / "scaler_w3.pkl")
     X_scaled = scaler_w3.transform(X_w3)
     _, X_te, _, y_te = train_test_split(
-        X_scaled, y, test_size=0.3, stratify=y, random_state=42
+        X_scaled, y, test_size=0.2, stratify=y, random_state=42
     )
 
     rf = joblib.load(HERE / "rf_model_w3.pkl")
@@ -77,13 +83,15 @@ def load_data_and_predict() -> Dict[str, Dict[str, np.ndarray]]:
     rf_prob = rf.predict_proba(X_te)[:, 1]
     xgb_prob = xgb.predict_proba(X_te)[:, 1]
 
-    # Sequence path -- LSTM
+    # Sequence path -- LSTM with external isotonic calibrator
     X_seq, _ = prepare_lstm_sequences(df, W3)  # refits scalers, deterministic
     _, Xs_te, _, ys_te = train_test_split(
-        X_seq, y, test_size=0.3, stratify=y, random_state=42
+        X_seq, y, test_size=0.2, stratify=y, random_state=42
     )
     lstm = load_model(HERE / "lstm_model_w3.keras")
-    lstm_prob = lstm.predict(Xs_te, verbose=0).ravel()
+    lstm_calibrator = joblib.load(HERE.parent / "ml-service" / "lstm_calibrator_w3.pkl")
+    lstm_raw = lstm.predict(Xs_te, verbose=0).ravel()
+    lstm_prob = lstm_calibrator.predict(lstm_raw)
 
     y_te_arr = y_te.to_numpy()
     ys_te_arr = ys_te.to_numpy()
