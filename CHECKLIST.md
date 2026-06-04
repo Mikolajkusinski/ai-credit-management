@@ -8,13 +8,13 @@
 > - 🔴 **Do zrobienia** — task dostępny (wszystkie `blocked_by` są 🟢), nie został jeszcze rozpoczęty.
 > - 🔒 **Zablokowane** — task czeka na zależność (`blocked_by` zawiera coś, co nie jest 🟢).
 >
-> **Ostatnia aktualizacja:** 2026-06-03 (po merge CREDIT-205 — wierne testy integracyjne persystencji na realnym PostgreSQL przez Testcontainers: 8 testów zapis→odczyt pokrywających unikalność ExternalRef, kaskadowe usuwanie FK, upsert trendów, round-trip timestamptz/DateOnly i serwerowe defaulty NOW())
+> **Ostatnia aktualizacja:** 2026-06-04 (po merge CREDIT-105 — kalibracja izotoniczna W3, Brier −19/−24/−23% dla RF/XGB/LSTM przy zachowanym AUC)
 
 ---
 
 ## 🎯 Aktualne zadanie
 
-- **Gabriel Figur (GF):** 🔴 **CREDIT-105** — Kalibracja izotoniczna (3-way split, Brier po < przed) · branch `sprint2/calibration` *(potem 🔴 110, 111)*
+- **Gabriel Figur (GF):** 🔴 **CREDIT-110** — Metryki time-series (lead time, slope, AUC trajektorii) · branch `sprint3/timeseries-metrics` *(potem 🔴 111 — dowód tezy)*
 - **Mikołaj Kusiński (MK):** 🔴 **CREDIT-303** — SnapshotForm + datepicker; fix zahardkodowanych miesięcy w `InputForm.tsx`; „kopiuj z poprzedniej migawki" · branch `sprint5/snapshot-entry` *(Sprint 5 P1; odblokowane przez CREDIT-210 + CREDIT-301)*
 
 > **Reguła aktualizacji tej sekcji:** gdy task zostanie zmergeowany do `main`, ustaw tutaj kolejny najwyżej priorytetowy dostępny (🔴) task z toru właściwej osoby. Jeśli osoba nie ma już dostępnych tasków w bieżącym sprincie, wpisz „⏸️ czeka na odblokowanie / koniec sprintu".
@@ -24,9 +24,9 @@
 ## 📊 Statystyki
 
 - **Łącznie zadań:** 28
-- **🟢 Wykonane:** 14 (CREDIT-101, CREDIT-102, CREDIT-103, CREDIT-201, CREDIT-401, CREDIT-402, CREDIT-210, CREDIT-104, CREDIT-202, CREDIT-203, CREDIT-204, CREDIT-301, CREDIT-302, CREDIT-205)
-- **🔴 Dostępne:** 7 (CREDIT-105, CREDIT-107, CREDIT-108, CREDIT-109, CREDIT-110, CREDIT-112, CREDIT-303)
-- **🔒 Zablokowane:** 7
+- **🟢 Wykonane:** 15 (CREDIT-101, CREDIT-102, CREDIT-103, CREDIT-201, CREDIT-401, CREDIT-402, CREDIT-210, CREDIT-104, CREDIT-202, CREDIT-203, CREDIT-204, CREDIT-301, CREDIT-302, CREDIT-205, CREDIT-105)
+- **🔴 Dostępne:** 7 (CREDIT-106, CREDIT-107, CREDIT-108, CREDIT-109, CREDIT-110, CREDIT-112, CREDIT-303)
+- **🔒 Zablokowane:** 6
 
 ---
 
@@ -78,8 +78,8 @@
   - Flask endpoint `/predict/timeseries`: 22 cechy → 4 okna → PD per okno per model + trendy.
   - blocked_by: 102, 210 · blocks: 110, 202
 
-- 🔴 **CREDIT-105** · [ML] · P0 · GF · `sprint2/calibration`
-  - Kalibracja izotoniczna (3-way split train/calib/test); Brier po < przed.
+- 🟢 **CREDIT-105** · [ML] · P0 · GF · `sprint2/calibration`
+  - Kalibracja izotoniczna (3-way split train/calib/test); Brier po < przed. CalibratedClassifierCV(FrozenEstimator, isotonic) dla RF/XGB; sklearn IsotonicRegression na raw output LSTM. Brier −19/−24/−23%; AUC zachowane.
   - blocked_by: 102 · blocks: 106, 113
 
 - 🟢 **CREDIT-202** · [BE] · P0 · MK · `sprint2/dotnet-timeseries`
@@ -102,7 +102,7 @@
   - **DOWÓD TEZY** — statyka (PD z W3) vs monitoring (trajektoria); catch rate vs fałszywe alarmy.
   - blocked_by: 110 · blocks: 114
 
-- 🔒 **CREDIT-106** · [ML] · P1 · GF · SWAP-OK · `sprint3/cost-thresholds`
+- 🔴 **CREDIT-106** · [ML] · P1 · GF · SWAP-OK · `sprint3/cost-thresholds`
   - Progi kosztowe (FN > FP); `alert_thresholds.json` w (0.1, 0.9).
   - blocked_by: 105 · blocks: —
 

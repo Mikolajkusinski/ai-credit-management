@@ -1,0 +1,4 @@
+model,n_defaulters,catch_rate,mean_lead_windows,slope_auc,w3_auc
+Random Forest,1327,0.4981,2.0545,0.5882,0.7741
+XGBoost,1327,0.5057,2.0507,0.59,0.776
+LSTM,1327,0.5154,2.0629,0.5962,0.7601
