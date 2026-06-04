@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 from flask import Flask, request, jsonify
@@ -41,6 +42,19 @@ features_w3 = joblib.load(ROOT / "features_w3.pkl")
 lstm_w3 = keras.models.load_model(ROOT / "lstm_model_w3.keras")
 lstm_scalers_w3 = joblib.load(ROOT / "lstm_scalers_w3.pkl")
 lstm_calibrator_w3 = joblib.load(ROOT / "lstm_calibrator_w3.pkl")
+
+# Cost-optimized alert thresholds (CREDIT-106). Per-model PD threshold derived
+# under an FN-heavy cost model; used in /predict/timeseries response so frontend
+# can flag windows above the per-model threshold.
+with (ROOT / "alert_thresholds.json").open() as _f:
+    ALERT_THRESHOLDS = json.load(_f)
+logger.info(
+    "Cost-optimized alert thresholds: RF=%.3f XGB=%.3f LSTM=%.3f (FN cost = %sx FP cost)",
+    ALERT_THRESHOLDS["randomForest"],
+    ALERT_THRESHOLDS["xgboost"],
+    ALERT_THRESHOLDS["lstm"],
+    ALERT_THRESHOLDS["_meta"]["fn_to_fp_ratio"],
+)
 logger.info("All models loaded successfully")
 
 
@@ -243,12 +257,29 @@ def predict_timeseries():
 
         trends = compute_trends(trajectory)
 
+        # Cost-optimized per-window per-model alerts (CREDIT-106). True = PD at
+        # this window crosses the model-specific cost-optimized threshold.
+        cost_thresholds = {
+            "randomForest": ALERT_THRESHOLDS["randomForest"],
+            "xgboost": ALERT_THRESHOLDS["xgboost"],
+            "lstm": ALERT_THRESHOLDS["lstm"],
+        }
+        window_alerts = {
+            model_key: [
+                point["predictions"][model_key] >= cost_thresholds[model_key]
+                for point in trajectory
+            ]
+            for model_key in cost_thresholds
+        }
+
         response = {
             "snapshotDate": None,  # Flask is stateless; backend fills this
             "trajectory": trajectory,
             "trends": trends,
+            "costThresholds": cost_thresholds,
+            "windowAlerts": window_alerts,
         }
-        logger.info(f"Timeseries trends: {trends}")
+        logger.info(f"Timeseries trends: {trends} | windowAlerts: {window_alerts}")
         return jsonify(response), 200
 
     except Exception as e:

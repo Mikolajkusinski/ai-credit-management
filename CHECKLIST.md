@@ -8,13 +8,13 @@
 > - 🔴 **Do zrobienia** — task dostępny (wszystkie `blocked_by` są 🟢), nie został jeszcze rozpoczęty.
 > - 🔒 **Zablokowane** — task czeka na zależność (`blocked_by` zawiera coś, co nie jest 🟢).
 >
-> **Ostatnia aktualizacja:** 2026-06-04 (po merge CREDIT-110 — metryki time-series: lead time ~2 okna, slope_auc ~0.59, catch_rate ~50% przy progu 0.5)
+> **Ostatnia aktualizacja:** 2026-06-04 (po merge CREDIT-111 — dowód tezy: monitoring oferuje wcześniejszą detekcję (mean lead ~2 okna) przy porównywalnej dyskryminacji; ścieżka krytyczna tezy zamknięta 5/6)
 
 ---
 
 ## 🎯 Aktualne zadanie
 
-- **Gabriel Figur (GF):** 🔴 **CREDIT-111** — DOWÓD TEZY: statyka (W3) vs monitoring (any W0..W3) · branch `sprint3/static-vs-dynamic`
+- **Gabriel Figur (GF):** 🔴 **CREDIT-106** — Cost-optimized alert thresholds (FN > FP) · branch `sprint3/cost-thresholds`
 - **Mikołaj Kusiński (MK):** 🔴 **CREDIT-303** — SnapshotForm + datepicker; fix zahardkodowanych miesięcy w `InputForm.tsx`; „kopiuj z poprzedniej migawki" · branch `sprint5/snapshot-entry` *(Sprint 5 P1; odblokowane przez CREDIT-210 + CREDIT-301)*
 
 > **Reguła aktualizacji tej sekcji:** gdy task zostanie zmergeowany do `main`, ustaw tutaj kolejny najwyżej priorytetowy dostępny (🔴) task z toru właściwej osoby. Jeśli osoba nie ma już dostępnych tasków w bieżącym sprincie, wpisz „⏸️ czeka na odblokowanie / koniec sprintu".
@@ -24,8 +24,8 @@
 ## 📊 Statystyki
 
 - **Łącznie zadań:** 28
-- **🟢 Wykonane:** 16 (CREDIT-101, CREDIT-102, CREDIT-103, CREDIT-201, CREDIT-401, CREDIT-402, CREDIT-210, CREDIT-104, CREDIT-202, CREDIT-203, CREDIT-204, CREDIT-301, CREDIT-302, CREDIT-205, CREDIT-105, CREDIT-110)
-- **🔴 Dostępne:** 7 (CREDIT-106, CREDIT-107, CREDIT-108, CREDIT-109, CREDIT-111, CREDIT-112, CREDIT-303)
+- **🟢 Wykonane:** 17 (CREDIT-101, CREDIT-102, CREDIT-103, CREDIT-201, CREDIT-401, CREDIT-402, CREDIT-210, CREDIT-104, CREDIT-202, CREDIT-203, CREDIT-204, CREDIT-301, CREDIT-302, CREDIT-205, CREDIT-105, CREDIT-110, CREDIT-111)
+- **🔴 Dostępne:** 6 (CREDIT-106, CREDIT-107, CREDIT-108, CREDIT-109, CREDIT-112, CREDIT-303)
 - **🔒 Zablokowane:** 5
 
 ---
@@ -98,8 +98,8 @@
   - Early-warning lead time + rozkład slope (default vs non-default) + AUC trajektorii. Catch rate ~50% (próg 0.5), mean lead time ~2.05 okien, slope_auc ~0.59 vs w3_auc ~0.77. 6 PNG + CSV + Markdown report w `reports/`.
   - blocked_by: 101, 102, 104 · blocks: 111
 
-- 🔴 **CREDIT-111** · [EVAL] · P0 · GF · `sprint3/static-vs-dynamic`
-  - **DOWÓD TEZY** — statyka (PD z W3) vs monitoring (trajektoria); catch rate vs fałszywe alarmy.
+- 🟢 **CREDIT-111** · [EVAL] · P0 · GF · `sprint3/static-vs-dynamic`
+  - **DOWÓD TEZY** — statyka (PD z W3) vs monitoring (trajektoria); catch rate vs fałszywe alarmy. Mixed results @ FA=10%: monitoring tracił 2-6pp catch vs static (max-aggregator noise > single calibrated snapshot), ALE mean lead ~2 okna i 43-184 unikalnych catchy/model. Framing: "monitoring offers earlier detection at comparable discrimination". 3 ROC overlay PNG + 2 CSV + Markdown report.
   - blocked_by: 110 · blocks: 114
 
 - 🔴 **CREDIT-106** · [ML] · P1 · GF · SWAP-OK · `sprint3/cost-thresholds`

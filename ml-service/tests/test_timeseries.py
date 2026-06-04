@@ -63,6 +63,7 @@ ARTIFACTS = [
     "rf_model_w3.pkl", "xgb_model_w3.pkl", "scaler_w3.pkl", "features_w3.pkl",
     "lstm_model_w3.keras", "lstm_scalers_w3.pkl",
     "lstm_calibrator_w3.pkl",
+    "alert_thresholds.json",
 ]
 SERVICE_ROOT = Path(__file__).resolve().parent.parent
 
@@ -138,6 +139,31 @@ def test_predict_timeseries_deteriorating_client_flags_increasing_risk(client):
     alerts = {m: body["trends"][m]["alert"] for m in ("randomForest", "xgboost", "lstm")}
     assert "INCREASING_RISK" in alerts.values(), \
         f"Expected at least one INCREASING_RISK on deteriorating sample; got {alerts}"
+
+
+def test_predict_timeseries_returns_cost_thresholds_and_window_alerts(client):
+    """CREDIT-106: response must include costThresholds (echo of per-model thresholds
+    from alert_thresholds.json) and windowAlerts (boolean per window per model)."""
+    resp = client.post("/predict/timeseries", json=SAMPLE_HEALTHY)
+    body = resp.get_json()
+
+    assert "costThresholds" in body
+    assert set(body["costThresholds"].keys()) == {"randomForest", "xgboost", "lstm"}
+    for model_key, threshold in body["costThresholds"].items():
+        assert 0.1 <= threshold <= 0.9, f"{model_key} threshold {threshold} outside DoD bounds (0.1, 0.9)"
+
+    assert "windowAlerts" in body
+    assert set(body["windowAlerts"].keys()) == {"randomForest", "xgboost", "lstm"}
+    for model_key, alerts in body["windowAlerts"].items():
+        assert len(alerts) == 4
+        assert all(isinstance(a, bool) for a in alerts)
+        # Cross-check: alerts must match (predictions >= threshold) for the same model
+        threshold = body["costThresholds"][model_key]
+        expected = [
+            point["predictions"][model_key] >= threshold
+            for point in body["trajectory"]
+        ]
+        assert alerts == expected
 
 
 def test_predict_timeseries_missing_field_returns_400(client):

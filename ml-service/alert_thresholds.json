@@ -1,0 +1,16 @@
+{
+  "_meta": {
+    "fn_cost": 5.0,
+    "fp_cost": 1.0,
+    "fn_to_fp_ratio": 5.0,
+    "bounds": [
+      0.1,
+      0.9
+    ],
+    "resolution": 0.005,
+    "source": "CREDIT-106: optimized on W3 calibrated test split (random_state=42, test_size=0.2)"
+  },
+  "randomForest": 0.14500000000000002,
+  "xgboost": 0.18,
+  "lstm": 0.185
+}
