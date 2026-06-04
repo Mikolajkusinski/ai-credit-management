@@ -23,8 +23,10 @@ def compute_alert(slope: float, threshold: float = SLOPE_THRESHOLD) -> str:
 def compute_trends(trajectory: List[Dict]) -> Dict[str, Dict[str, object]]:
     """Compute (slope, alert) per model from a 4-point trajectory.
 
-    Each element of `trajectory` must have a 'predictions' dict with keys
-    'randomForest', 'xgboost', 'lstm' and float values in [0, 1].
+    Each element of `trajectory` must have a 'predictions' dict whose keys are
+    model identifiers (camelCase) and values are floats in [0, 1]. The set of
+    keys is taken from trajectory[0]['predictions'] -- adding new models in
+    app.py automatically extends trends without code changes here (CREDIT-109).
 
     slope = PD_W3 - PD_W0, rounded to 4 decimals.
     """
@@ -35,5 +37,5 @@ def compute_trends(trajectory: List[Dict]) -> Dict[str, Dict[str, object]]:
             "slope": round(pd_w3[model_key] - pd_w0[model_key], 4),
             "alert": compute_alert(pd_w3[model_key] - pd_w0[model_key]),
         }
-        for model_key in ("randomForest", "xgboost", "lstm")
+        for model_key in pd_w0.keys()
     }

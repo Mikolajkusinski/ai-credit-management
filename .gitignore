@@ -1,10 +1,12 @@
 # ML Model files (too large for git)
 ml-service/*.pkl
 ml-service/*.keras
-# Exceptions: W3 artifacts shipped with the repo (CREDIT-102 / CREDIT-104 / CREDIT-105)
+# Exceptions: W3 artifacts shipped with the repo (CREDIT-102 / CREDIT-104 / CREDIT-105 / CREDIT-109)
 !ml-service/lstm_scalers_w3.pkl
 !ml-service/rf_model_w3.pkl
 !ml-service/xgb_model_w3.pkl
+!ml-service/lightgbm_model_w3.pkl
+!ml-service/catboost_model_w3.pkl
 !ml-service/scaler_w3.pkl
 !ml-service/features_w3.pkl
 !ml-service/lstm_model_w3.keras

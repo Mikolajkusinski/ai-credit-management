@@ -228,7 +228,7 @@ def main() -> None:
     )
     write_report(sweep_per_model, operating_per_model, REPORTS / "static_vs_dynamic_report.md")
 
-    print(f"\nSaved CSVs + report + 3 PNG plots in {REPORTS}/")
+    print(f"\nSaved CSVs + report + {len(MODELS)} PNG plots in {REPORTS}/")
 
 
 if __name__ == "__main__":

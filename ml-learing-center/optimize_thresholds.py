@@ -89,8 +89,12 @@ def score_test_set() -> dict:
 
     rf = joblib.load(HERE / "rf_model_w3.pkl")
     xgb = joblib.load(HERE / "xgb_model_w3.pkl")
+    lgbm = joblib.load(HERE / "lightgbm_model_w3.pkl")
+    cat = joblib.load(HERE / "catboost_model_w3.pkl")
     rf_proba = rf.predict_proba(X_te)[:, 1]
     xgb_proba = xgb.predict_proba(X_te)[:, 1]
+    lgbm_proba = lgbm.predict_proba(X_te)[:, 1]
+    cat_proba = cat.predict_proba(X_te)[:, 1]
 
     X_seq, _ = prepare_lstm_sequences(df, W3)
     _, Xs_te, _, ys_te = train_test_split(X_seq, y, test_size=0.2, stratify=y, random_state=42)
@@ -102,6 +106,8 @@ def score_test_set() -> dict:
         "y_true": y_te.to_numpy(),
         "randomForest": rf_proba,
         "xgboost": xgb_proba,
+        "lightgbm": lgbm_proba,
+        "catboost": cat_proba,
         "lstm": lstm_proba,
     }
 
@@ -112,7 +118,7 @@ def main() -> None:
     y_true = scores["y_true"]
 
     results = {}
-    for model_key in ("randomForest", "xgboost", "lstm"):
+    for model_key in ("randomForest", "xgboost", "lightgbm", "catboost", "lstm"):
         thr, cost, fn, fp = find_optimal_threshold(y_true, scores[model_key])
         results[model_key] = {"threshold": thr, "cost": cost, "fn": fn, "fp": fp}
         print(
@@ -128,12 +134,14 @@ def main() -> None:
             "bounds": list(THRESHOLD_BOUNDS),
             "resolution": THRESHOLD_RESOLUTION,
             "source": (
-                "CREDIT-106: optimized on W3 calibrated test split "
+                "CREDIT-106 + CREDIT-109: optimized on W3 calibrated test split "
                 "(random_state=42, test_size=0.2)"
             ),
         },
         "randomForest": results["randomForest"]["threshold"],
         "xgboost": results["xgboost"]["threshold"],
+        "lightgbm": results["lightgbm"]["threshold"],
+        "catboost": results["catboost"]["threshold"],
         "lstm": results["lstm"]["threshold"],
     }
 

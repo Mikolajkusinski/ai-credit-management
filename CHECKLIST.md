@@ -8,13 +8,13 @@
 > - 🔴 **Do zrobienia** — task dostępny (wszystkie `blocked_by` są 🟢), nie został jeszcze rozpoczęty.
 > - 🔒 **Zablokowane** — task czeka na zależność (`blocked_by` zawiera coś, co nie jest 🟢).
 >
-> **Ostatnia aktualizacja:** 2026-06-04 (po merge CREDIT-111 — dowód tezy: monitoring oferuje wcześniejszą detekcję (mean lead ~2 okna) przy porównywalnej dyskryminacji; ścieżka krytyczna tezy zamknięta 5/6)
+> **Ostatnia aktualizacja:** 2026-06-05 (po merge CREDIT-106 — cost-optimized thresholds RF=0.145/XGB=0.180/LSTM=0.185 (FN=5×FP); Flask response z `costThresholds` + `windowAlerts`)
 
 ---
 
 ## 🎯 Aktualne zadanie
 
-- **Gabriel Figur (GF):** 🔴 **CREDIT-106** — Cost-optimized alert thresholds (FN > FP) · branch `sprint3/cost-thresholds`
+- **Gabriel Figur (GF):** 🔴 **CREDIT-109** — LightGBM + CatBoost na W3 (5 modeli w response, raport rozszerzony) · branch `sprint5/lgbm-catboost`
 - **Mikołaj Kusiński (MK):** 🔴 **CREDIT-303** — SnapshotForm + datepicker; fix zahardkodowanych miesięcy w `InputForm.tsx`; „kopiuj z poprzedniej migawki" · branch `sprint5/snapshot-entry` *(Sprint 5 P1; odblokowane przez CREDIT-210 + CREDIT-301)*
 
 > **Reguła aktualizacji tej sekcji:** gdy task zostanie zmergeowany do `main`, ustaw tutaj kolejny najwyżej priorytetowy dostępny (🔴) task z toru właściwej osoby. Jeśli osoba nie ma już dostępnych tasków w bieżącym sprincie, wpisz „⏸️ czeka na odblokowanie / koniec sprintu".
@@ -24,8 +24,8 @@
 ## 📊 Statystyki
 
 - **Łącznie zadań:** 28
-- **🟢 Wykonane:** 17 (CREDIT-101, CREDIT-102, CREDIT-103, CREDIT-201, CREDIT-401, CREDIT-402, CREDIT-210, CREDIT-104, CREDIT-202, CREDIT-203, CREDIT-204, CREDIT-301, CREDIT-302, CREDIT-205, CREDIT-105, CREDIT-110, CREDIT-111)
-- **🔴 Dostępne:** 6 (CREDIT-106, CREDIT-107, CREDIT-108, CREDIT-109, CREDIT-112, CREDIT-303)
+- **🟢 Wykonane:** 18 (CREDIT-101, CREDIT-102, CREDIT-103, CREDIT-201, CREDIT-401, CREDIT-402, CREDIT-210, CREDIT-104, CREDIT-202, CREDIT-203, CREDIT-204, CREDIT-301, CREDIT-302, CREDIT-205, CREDIT-105, CREDIT-110, CREDIT-111, CREDIT-106)
+- **🔴 Dostępne:** 5 (CREDIT-107, CREDIT-108, CREDIT-109, CREDIT-112, CREDIT-303)
 - **🔒 Zablokowane:** 5
 
 ---
@@ -102,8 +102,8 @@
   - **DOWÓD TEZY** — statyka (PD z W3) vs monitoring (trajektoria); catch rate vs fałszywe alarmy. Mixed results @ FA=10%: monitoring tracił 2-6pp catch vs static (max-aggregator noise > single calibrated snapshot), ALE mean lead ~2 okna i 43-184 unikalnych catchy/model. Framing: "monitoring offers earlier detection at comparable discrimination". 3 ROC overlay PNG + 2 CSV + Markdown report.
   - blocked_by: 110 · blocks: 114
 
-- 🔴 **CREDIT-106** · [ML] · P1 · GF · SWAP-OK · `sprint3/cost-thresholds`
-  - Progi kosztowe (FN > FP); `alert_thresholds.json` w (0.1, 0.9).
+- 🟢 **CREDIT-106** · [ML] · P1 · GF · SWAP-OK · `sprint3/cost-thresholds`
+  - Progi kosztowe (FN > FP); `alert_thresholds.json` w (0.1, 0.9). Per-model optymalne: RF=0.145 / XGB=0.180 / LSTM=0.185 (FN=5×FP). Flask response z `costThresholds` + `windowAlerts` (additive, non-breaking).
   - blocked_by: 105 · blocks: —
 
 - 🟢 **CREDIT-204** · [BE] · P0 · MK · `sprint3/client-history-get`

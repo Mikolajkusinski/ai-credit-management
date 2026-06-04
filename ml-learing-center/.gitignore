@@ -6,5 +6,6 @@ __pycache__/
 .idea/
 .venv/
 .pytest_cache/
+catboost_info/
 
 thesis_figures/output
