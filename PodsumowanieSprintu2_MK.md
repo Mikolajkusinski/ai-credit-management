@@ -23,10 +23,18 @@ trwałości w .NET**:
 |---|---|---|---|
 | **CREDIT-210** | CONTRACT | Kontrakt API monitoringu (wspólnie GF+MK) | 🟢 merged (PR #11) |
 | **CREDIT-202** | BE | `.NET POST /api/v1/monitoring/predict-timeseries` — bezstanowy proxy nad Flaskiem | 🟢 merged (PR #13) |
-| **CREDIT-203** | BE | Repozytoria EF Core + `POST /clients/{ref}/snapshots` — zapis migawki + predykcji + trendów | ✅ PR #14 (CI zielone, oczekuje na review/merge) |
+| **CREDIT-203** | BE | Repozytoria EF Core + `POST /clients/{ref}/snapshots` — zapis migawki + predykcji + trendów | 🟢 merged (PR #14) |
 
-Tor ML/GF w Sprincie 2 (CREDIT-104 Flask `/predict/timeseries` — 🟢, CREDIT-105 kalibracja — 🔴 w toku)
-biegł równolegle. **Mój tor Sprintu 2 jest domknięty.**
+Tor ML/GF w Sprincie 2 (CREDIT-104 Flask `/predict/timeseries` + CREDIT-105 kalibracja izotoniczna) biegł
+równolegle. **Mój tor Sprintu 2 jest domknięty.**
+
+**Update na 2026-06-05** (po napisaniu wersji pierwotnej tego dokumentu):
+- CREDIT-203 zmergeowany do `main` jako PR #14 (commit `24d2067`).
+- **Sprint 2 zamknięty w pełni po obu stronach:** GF dostarczył CREDIT-105 (kalibracja izotoniczna,
+  Brier −19/−24/−23% dla RF/XGB/LSTM, PR #19) i CREDIT-104 (Flask `/predict/timeseries`, PR #12).
+- Sprint 3 mojego toru również zamknięty (CREDIT-204 GET history PR #15, CREDIT-301 Timeline PR #16).
+- Sprint 4 mojego toru również zamknięty (CREDIT-302 client list+history UI PR #17, CREDIT-205
+  Testcontainers persistence tests PR #18).
 
 **Harmonogram:** Sprint 2 planowany 16 cze – 29 cze 2026; mój tor dostarczony do 2026-06-03 (przed
 planem, tak jak Sprint 1).
@@ -106,7 +114,7 @@ labelki) i tłumaczy awarie ML na czytelne statusy HTTP."*
 
 ### CREDIT-203 (BE, MK) — Warstwa trwałości: zapis migawek + predykcji + trendów
 
-**Pliki (13 zmienionych, +610 LoC):** PR #14 (CI zielone).
+**Pliki (13 zmienionych, +610 LoC):** PR #14 (🟢 merged).
 
 | Plik | LoC | Rola |
 |---|---|---|
