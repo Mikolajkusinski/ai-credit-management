@@ -1,10 +1,10 @@
-# RUNNING.md — Instrukcja uruchamiania projektu (krok po kroku)
+spraw# RUNNING.md — Instrukcja uruchamiania projektu (krok po kroku)
 
 > Plik dla developerów (GF i MK). Opisuje kompletną sekwencję kroków potrzebną, żeby postawić środowisko dev, odpalić cały stack (frontend + backend + ml-service) i zweryfikować, że zmiany działają.
 >
 > Architektura, porty i komendy referencyjne: patrz `CLAUDE.md`. Stan backlogu: `TASKS.md`. Postęp prac: `CHECKLIST.md`.
 >
-> **Stan na początek Sprintu 1 (2 cze 2026).** Po wjeździe poszczególnych zadań Sprintu 1 odpowiednie sekcje zostaną oznaczone jako aktywne.
+> **Stan na 2026-06-05** (po zamknięciu Sprintów 1-4 obu torów: 21/28 zadań 🟢; Sprint 4 GF backlog domknięty — patrz `PodsumowanieSprintu1.md`, `PodsumowanieSprintu2_MK.md`, `PodsumowanieSprintu3_GF.md`, `PodsumowanieSprintu4_GF.md`).
 
 ---
 
@@ -16,7 +16,7 @@
 | .NET SDK | 8.0 | `backend/WebApi/` |
 | Node.js | 20+ (LTS) | `frontend/WebApp/` |
 | npm | 10+ | razem z Node.js |
-| Docker Desktop | aktualne | po CREDIT-402 — Postgres + backend |
+| Docker Desktop | aktualne | Postgres + backend przez `docker-compose` (frontend lokalnie) |
 | Git | dowolne | klonowanie repo |
 
 macOS / Windows / Linux — wszystkie wspierane. Na Windowsie zalecane PowerShell lub WSL2.
@@ -30,7 +30,7 @@ cd ai-credit-management
 
 ### 1.2. Globalne narzędzia .NET (jednorazowo)
 
-Po CREDIT-401 (Sprint 1) będzie potrzebne CLI EF Core:
+EF Core CLI (wymagane do migracji bazy):
 
 ```bash
 dotnet tool install --global dotnet-ef
@@ -40,7 +40,10 @@ dotnet tool install --global dotnet-ef
 
 ## 2. ML Service (Flask, port 5001)
 
-Bezstanowy silnik scoringu z 3 modelami (RF, XGBoost, LSTM). Wymaga przedtrenowanych artefaktów.
+Bezstanowy silnik scoringu. **Dwie rodziny modeli:**
+
+- **W3 calibrated (5 modeli):** RandomForest, XGBoost, LightGBM, CatBoost, LSTM — wszystkie skalibrowane izotonicznie (CREDIT-105) i z cost-optimized thresholdami (CREDIT-106). Serwowane na `/predict/timeseries`. **Artefakty są w gicie** (CREDIT-104/109).
+- **Legacy 6-month (3 modele):** RandomForest, XGBoost, LSTM (bez kalibracji). Serwowane na legacy `/predict`. **Artefakty NIE są w gicie** — wymagają lokalnego treningu lub kopii (sekcja 2.2 Opcja A).
 
 ### 2.1. Wirtualne środowisko + zależności
 
@@ -54,30 +57,44 @@ pip install -r requirements.txt
 
 ### 2.2. Skąd wziąć artefakty modeli
 
-Artefakty (`rf_model.pkl`, `xgb_model.pkl`, `lstm_model.keras`, `scaler.pkl`, `lstm_scalers.pkl`, `features.pkl`) **NIE są w gicie**. Trzy opcje:
+**Co jest w gicie (działają od razu po klonie):**
+
+W `ml-service/` (committed przez `.gitignore` exceptions):
+- `rf_model_w3.pkl`, `xgb_model_w3.pkl`, `lightgbm_model_w3.pkl`, `catboost_model_w3.pkl` — skalibrowane wrappery (`CalibratedClassifierCV` + `FrozenEstimator`)
+- `lstm_model_w3.keras` + `lstm_scalers_w3.pkl` + `lstm_calibrator_w3.pkl` (sklearn `IsotonicRegression`)
+- `scaler_w3.pkl`, `features_w3.pkl`
+- `alert_thresholds.json` (CREDIT-106 per-model cost-optimized thresholds + `_meta`)
+
+Endpoint `/predict/timeseries` i `/api/v1/monitoring/...` działają **bez żadnej dodatkowej pracy**.
+
+**Co wymaga lokalnego treningu (do legacy `/predict`):**
+
+Legacy 6-mies. artefakty (`rf_model.pkl`, `xgb_model.pkl`, `lstm_model.keras`, `scaler.pkl`, `lstm_scalers.pkl`, `features.pkl`) **NIE są w gicie**. Dwie opcje:
 
 **Opcja A — wytrenuj lokalnie** (zalecane przy pierwszym setupie zespołowca):
 
 ```bash
 cd ../ml-learing-center
-python -m venv venv
-source venv/bin/activate
-pip install -r ../ml-service/requirements.txt
-# (jeśli brakuje libów do treningu — dopisać do venv: pandas, scikit-learn, xgboost, tensorflow)
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 python main.py
-# Trening trwa ~3–8 min na CPU. Wypisuje AUC dla RF / XGB / LSTM.
+# Trening trwa ~8-15 min na CPU. Wypisuje AUC dla 6-mies. legacy (RF/XGB/LSTM)
+# ORAZ W3 calibrated (RF/XGB/LightGBM/CatBoost/LSTM uncal -> cal).
+# Regeneruje też alert_thresholds.json (CREDIT-106) na wypadek zmiany cost ratio.
 ```
 
-Po zakończeniu skopiuj artefakty do `ml-service/`:
+Po zakończeniu skopiuj **legacy artefakty** do `ml-service/`:
 
 ```bash
 cp rf_model.pkl xgb_model.pkl lstm_model.keras scaler.pkl features.pkl ../ml-service/
-# lstm_scalers.pkl jest już zapisywany bezpośrednio do ../ml-service/ przez main.py
+# lstm_scalers.pkl jest zapisywany bezpośrednio do ../ml-service/ przez main.py.
+# W3 artefakty (z sufiksem _w3) są już w gicie — main.py je nadpisuje lokalnie.
 ```
 
 **Opcja B — pobierz od kolegi z zespołu** (jeśli ktoś już wytrenował).
 
-**Po CREDIT-104 (Sprint 2):** artefakty z sufiksem `_w3` są **commitowane do gita** w `ml-service/` (5 plików + `lstm_scalers_w3.pkl`). Nie musisz ich kopiować — działają od razu po klonie i uruchomieniu Flaska. Endpoint `/predict/timeseries` korzysta z tych modeli. Legacy `/predict` nadal wymaga manualnej kopii 6 artefaktów bez sufiksu (sekcja 2.2 opcja A).
+> **Uwaga:** `/predict/timeseries` (W3 + monitoring) działa **bez** legacy artefaktów — można pominąć trening, jeśli nie używasz legacy endpointu.
 
 ### 2.3. Uruchomienie serwisu
 
@@ -112,7 +129,7 @@ dotnet build
 `backend/WebApi/appsettings.json` zawiera:
 - `FlaskServiceUrl` — domyślnie `http://localhost:5001`.
 
-**Po CREDIT-401 (Sprint 1):** dojdzie sekcja `ConnectionStrings:Default` z URL-em do Postgresa. Domyślnie: `Host=localhost;Port=5432;Database=credit;Username=postgres;Password=postgres`.
+Sekcja `ConnectionStrings:Default` (CREDIT-401) z URL-em do Postgresa. Domyślnie: `Host=localhost;Port=5432;Database=credit;Username=postgres;Password=postgres`.
 
 ### 3.3. Uruchomienie
 
@@ -124,7 +141,15 @@ dotnet run
 
 ### 3.4. Sanity check
 
-Otwórz `http://localhost:5120/swagger` i wyślij testowe `POST /api/predict` z przykładowym payloadem 22 cech.
+Otwórz `http://localhost:5120/swagger`. Dostępne endpointy (CREDIT-202/203/204/302):
+
+- `POST /api/predict` — legacy single-snapshot scoring (6-mies. modele, wymaga legacy artefaktów)
+- `POST /api/v1/monitoring/predict-timeseries` — bezstanowy proxy nad Flaskiem (trajektoria W0..W3 + trends + costThresholds + windowAlerts + shap)
+- `POST /api/v1/monitoring/clients/{ref}/snapshots` — stateful: scoring + zapis migawki + predykcji W3 + upsert trendów (409 na duplikat `(ref, date)`)
+- `GET /api/v1/monitoring/clients/{ref}/history` — chronologiczna trajektoria PD z bazy + bieżące trendy
+- `GET /api/v1/monitoring/clients` — lista klientów z roll-up alert per ostatnia migawka
+
+Kontrakt: `docs/api-contracts/monitoring.md`.
 
 ---
 
@@ -152,7 +177,7 @@ Vite robi hot-module-reload. Edytuj plik w `src/` — przeglądarka odświeża s
 
 ---
 
-## 5. PostgreSQL (po CREDIT-401 / Sprint 1)
+## 5. PostgreSQL (schemat z CREDIT-401)
 
 Dwie ścieżki:
 
@@ -172,7 +197,7 @@ cd backend/WebApi
 dotnet ef database update
 ```
 
-### 5.2. Przez docker-compose (po CREDIT-402)
+### 5.2. Przez docker-compose
 
 ```bash
 docker-compose up -d db backend ml-service
@@ -201,26 +226,30 @@ Trzy terminale (lub pełna izolacja przez docker-compose dla bazy+backendu+ml):
 | 2 | `cd backend/WebApi && dotnet run` | Backend na :5120 |
 | 3 | `cd frontend/WebApp && npm run dev` | Frontend na :5173 |
 
-Otwórz `http://localhost:5173`. Wypełnij formularz (22 pola), kliknij Predict, zobacz wyniki 3 modeli.
+Otwórz `http://localhost:5173`. Frontend ma 2 zakładki (CREDIT-301/302):
+
+- **Prediction** — formularz 22 pól, single-snapshot scoring (5 modeli W3 + 3 legacy).
+- **Monitoring** — lista klientów (z roll-up alertem) → historia per klient (trajektoria PD + alerty semaforowe).
 
 ---
 
 ## 7. Testy
 
-Po wjeździe CREDIT-201 (Sprint 1):
+Infrastruktura CI z CREDIT-201:
 
 ```bash
-# Backend (xUnit)
+# Backend (xUnit + Testcontainers Postgres dla CREDIT-205)
 cd backend && dotnet test
 
-# ML (pytest)
+# ML (pytest — 10 testów: pure-function alert math + endpoint tests dla
+# /predict/timeseries + SHAP shape test)
 cd ml-service && source venv/bin/activate && pytest
 
 # Frontend (Vitest)
 cd frontend/WebApp && npm run test
 ```
 
-CI (`.github/workflows/ci.yml`) odpala wszystkie trzy na każdym PR-ze. **Czerwone CI = blokada merge'a.**
+CI (`.github/workflows/ci.yml`) odpala wszystkie trzy na każdym PR-ze. **Czerwone CI = blokada merge'a.** Endpoint pytest skipuje się gracefully gdy brak artefaktów (CI nie ma legacy artefaktów, ale ma W3).
 
 ---
 
@@ -259,5 +288,11 @@ CI (`.github/workflows/ci.yml`) odpala wszystkie trzy na każdym PR-ze. **Czerwo
 2. `TASKS.md` — sekcja „Metodyka danych" (mapowanie kolumn UCI, okno 3-mies., 4 okna sliding-window).
 3. `plan_sprintow_wariant_B.md` — sekcja „Fundament metodyczny" (dlaczego okno 3-mies., dlaczego trening na W3).
 4. `CHECKLIST.md` — kto co teraz robi.
+5. `docs/api-contracts/monitoring.md` — pełna specyfikacja 4 endpointów monitoring API + typy współdzielone + reguła alertu.
+6. **Sprint summaries** — historia dostarczonych zadań i kluczowe decyzje projektowe:
+   - `PodsumowanieSprintu1.md` — sliding-window + schemat bazy (oba tory)
+   - `PodsumowanieSprintu2_MK.md` — kontrakt API + .NET predict-timeseries + persistence
+   - `PodsumowanieSprintu3_GF.md` — dowód tezy (statyka vs monitoring) + cost thresholds
+   - `PodsumowanieSprintu4_GF.md` — LightGBM/CatBoost + SHAP + Optuna tuning
 
 To wszystko. Powodzenia. 🚀
