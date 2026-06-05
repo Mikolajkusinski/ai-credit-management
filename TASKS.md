@@ -1,4 +1,4 @@
-# TASKS.md — Backlog wykonawczy (Wariant B: monitoring kalendarzowy)
+Zapl# TASKS.md — Backlog wykonawczy (Wariant B: monitoring kalendarzowy)
 
 > Plik dla Claude Code. Architektura, porty i komendy: patrz `CLAUDE.md`. Ten plik zawiera kompletny backlog z ID zadań, sprintami, branchami i zależnościami blokującymi.
 >
@@ -206,6 +206,13 @@ Złamanie tych reguł unieważnia tezę. Stosuj bezwzględnie.
 - Pliki: `ml-learing-center/fairness_audit.py`, `reports/fairness_report.md`.
 - DoD: DPD/EOD per model; ostrzeżenie gdy |różnica| > 0,1.
 
+**CREDIT-115 · [BE] · P2 · GF · branch `feat/backend-5model-dtos`**
+- blocked_by: 109, 202  |  blocks: —
+- Cel: integration follow-up do CREDIT-109. Backend DTO (`WindowPredictions`, `Trends`) z CREDIT-202 są 3-modelowe; po dodaniu LightGBM/CatBoost w Flasku (CREDIT-109) backend silently dropował 2 modele z każdego response. Rozszerzyć DTO + persistence + history mapping o `lightgbm` i `catboost` (passthrough z Flaska). Bez migracji DB (`Prediction.ModelName` to free-form string).
+- Pliki: `backend/WebApi/Models/TimeseriesResponse.cs`, `Models/SnapshotResponse.cs`, `Services/MonitoringService.cs`, 5 plików testowych (Flask stub bodies + per-snapshot count assertions 3 → 5).
+- DoD: `/api/v1/monitoring/predict-timeseries` zwraca 5 modeli w `predictions` + `trends`; `POST .../snapshots` zapisuje 5 predictions + 5 trends per snapshot; `GET .../history` zwraca 5-modelowe punkty trajektorii; 24/24 backend testów zielone.
+- Kontekst: gap odkryty 2026-06-05 podczas weryfikacji live demo do seminarium (curl pokazał 3 model keys zamiast 5). Formalnie powinien być częścią scope'u CREDIT-109; tu osobny task dla audit trail.
+
 ### Sprint 6 — Polish, ensemble, raport, docs (11 sie – 24 sie)
 
 **CREDIT-113 · [ML] · P2 · GF · branch `sprint6/stacking`**
@@ -262,6 +269,7 @@ Złamanie tych reguł unieważnia tezę. Stosuj bezwzględnie.
 | 211 | 5 | P2 | BE/FE | MK | 107,210 | — |
 | 109 | 5 | P2 | ML | GF | 102 | 113 |
 | 112 | 5 | P1 | EVAL | GF | 102 | — |
+| 115 | 5 | P2 | BE | GF | 109,202 | — |
 | 113 | 6 | P2 | ML | GF | 102,105,109 | 114 |
 | 114 | 6 | P0 | EVAL | GF | 103,111,113 | — |
 | 304 | 6 | P2 | FE | MK | 302,303 | — |

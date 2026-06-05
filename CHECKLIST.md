@@ -23,9 +23,9 @@
 
 ## 📊 Statystyki
 
-- **Łącznie zadań:** 28
+- **Łącznie zadań:** 29 (CREDIT-115 dodany 2026-06-05 jako follow-up do CREDIT-109)
 - **🟢 Wykonane:** 21 (CREDIT-101, CREDIT-102, CREDIT-103, CREDIT-201, CREDIT-401, CREDIT-402, CREDIT-210, CREDIT-104, CREDIT-202, CREDIT-203, CREDIT-204, CREDIT-301, CREDIT-302, CREDIT-205, CREDIT-105, CREDIT-110, CREDIT-111, CREDIT-106, CREDIT-109, CREDIT-107, CREDIT-108)
-- **🔴 Dostępne:** 4 (CREDIT-112, CREDIT-113, CREDIT-211, CREDIT-303)
+- **🔴 Dostępne:** 5 (CREDIT-112, CREDIT-113, CREDIT-115, CREDIT-211, CREDIT-303)
 - **🔒 Zablokowane:** 3
 
 ---
@@ -153,6 +153,10 @@
 - 🔴 **CREDIT-112** · [EVAL] · P1 · GF · SWAP-OK · `sprint5/fairness`
   - Audyt fairness (fairlearn) — DPD / EOD względem SEX; ostrzeżenie gdy |różnica| > 0.1.
   - blocked_by: 102 · blocks: —
+
+- 🔴 **CREDIT-115** · [BE] · P2 · GF · `feat/backend-5model-dtos`
+  - Backend DTO follow-up do CREDIT-109: rozszerzenie `WindowPredictions` + `Trends` (.NET) o `lightgbm` + `catboost` — pełen 5-model passthrough z Flaska. Integration gap odkryty 2026-06-05 podczas demo prep (curl pokazał 3 keys zamiast 5). 5 predictions + 5 trends per snapshot persistowane; bez migracji DB. PR #32.
+  - blocked_by: 109, 202 · blocks: —
 
 ---
 
