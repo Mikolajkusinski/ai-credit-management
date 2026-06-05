@@ -169,6 +169,38 @@ def test_predict_timeseries_returns_cost_thresholds_and_window_alerts(client):
         assert alerts == expected
 
 
+def test_predict_timeseries_returns_shap_top_features(client):
+    """CREDIT-107: response.shap must list top-5 features for each tree-based
+    model (RF/XGB/LightGBM/CatBoost). LSTM is intentionally skipped. Each
+    feature has 'feature' (string) and 'value' (float). DoD: total call
+    under 2s (informal check via test runtime; explicit perf check skipped)."""
+    resp = client.post("/predict/timeseries", json=SAMPLE_HEALTHY)
+    body = resp.get_json()
+
+    assert "shap" in body
+    assert body["shap"]["window"] == "W3"
+
+    tree_keys = {"randomForest", "xgboost", "lightgbm", "catboost"}
+    assert tree_keys.issubset(body["shap"].keys())
+    # LSTM intentionally not in SHAP -- TreeExplainer doesn't apply to Keras seq.
+    assert "lstm" not in body["shap"]
+
+    for model_key in tree_keys:
+        entry = body["shap"][model_key]
+        assert "topFeatures" in entry
+        top = entry["topFeatures"]
+        assert len(top) == 5
+        names = []
+        for item in top:
+            assert "feature" in item and isinstance(item["feature"], str)
+            assert "value" in item and isinstance(item["value"], (int, float))
+            names.append(item["feature"])
+        # Top-5 must be distinct features.
+        assert len(set(names)) == 5
+        # Sorted by |value| desc, so |top[0]| >= |top[-1]|.
+        assert abs(top[0]["value"]) >= abs(top[-1]["value"])
+
+
 def test_predict_timeseries_missing_field_returns_400(client):
     incomplete = dict(SAMPLE_HEALTHY)
     del incomplete["PAY_0"]

@@ -179,6 +179,24 @@ Pełna odpowiedź scoringu (z trajektorią + trendami + alertami kosztowymi z CR
     "lightgbm":     [false, false, true,  true],
     "catboost":     [false, false, true,  true],
     "lstm":         [false, false, false, true]
+  },
+
+  // CREDIT-107 (optional, dodane w Sprincie 4) — top-5 cech per model wpływających
+  // najmocniej na predykcję W3 (najnowszego okna). Wartość `value` to surowy SHAP
+  // (znak: + zwiększa PD, - zmniejsza). Tylko modele tree-based (TreeExplainer);
+  // LSTM pominięty (KernelExplainer nie zmieściłby się w budżecie czasu < 2s).
+  "shap": {
+    "window": "W3",
+    "randomForest": { "topFeatures": [
+      { "feature": "PAY_mean",     "value": -0.0310 },
+      { "feature": "PAY_max",      "value": -0.0301 },
+      { "feature": "PAY_AMT_mean", "value": -0.0250 },
+      { "feature": "late_count",   "value": -0.0244 },
+      { "feature": "severe_late",  "value": -0.0240 }
+    ]},
+    "xgboost":  { "topFeatures": [ /* 5 items */ ] },
+    "lightgbm": { "topFeatures": [ /* 5 items */ ] },
+    "catboost": { "topFeatures": [ /* 5 items */ ] }
   }
 }
 ```
