@@ -207,11 +207,18 @@ Złamanie tych reguł unieważnia tezę. Stosuj bezwzględnie.
 - DoD: DPD/EOD per model; ostrzeżenie gdy |różnica| > 0,1.
 
 **CREDIT-115 · [BE] · P2 · GF · branch `feat/backend-5model-dtos`**
-- blocked_by: 109, 202  |  blocks: —
+- blocked_by: 109, 202  |  blocks: 116
 - Cel: integration follow-up do CREDIT-109. Backend DTO (`WindowPredictions`, `Trends`) z CREDIT-202 są 3-modelowe; po dodaniu LightGBM/CatBoost w Flasku (CREDIT-109) backend silently dropował 2 modele z każdego response. Rozszerzyć DTO + persistence + history mapping o `lightgbm` i `catboost` (passthrough z Flaska). Bez migracji DB (`Prediction.ModelName` to free-form string).
 - Pliki: `backend/WebApi/Models/TimeseriesResponse.cs`, `Models/SnapshotResponse.cs`, `Services/MonitoringService.cs`, 5 plików testowych (Flask stub bodies + per-snapshot count assertions 3 → 5).
 - DoD: `/api/v1/monitoring/predict-timeseries` zwraca 5 modeli w `predictions` + `trends`; `POST .../snapshots` zapisuje 5 predictions + 5 trends per snapshot; `GET .../history` zwraca 5-modelowe punkty trajektorii; 24/24 backend testów zielone.
 - Kontekst: gap odkryty 2026-06-05 podczas weryfikacji live demo do seminarium (curl pokazał 3 model keys zamiast 5). Formalnie powinien być częścią scope'u CREDIT-109; tu osobny task dla audit trail.
+
+**CREDIT-116 · [FE] · P2 · GF · branch `feat/frontend-5model-monitoring`**
+- blocked_by: 115, 301  |  blocks: —
+- Cel: dokończenie 5-model UI w zakładce Monitoring po CREDIT-115. Frontend (`ModelKey` w TS + `MODELS` w Recharts + grid columns w TrendAlerts) hardcodowane na 3 modele — UI pokazywało 3 linie / 3 karty zamiast 5 mimo że backend zwracał 5. Rozszerzyć typy + Timeline chart + TrendAlerts + MOCK_TIMESERIES_RESPONSE.
+- Pliki: `frontend/WebApp/src/types/monitoring.ts`, `components/TimelineChart.tsx`, `components/TrendAlerts.tsx`, `api/monitoringApi.ts` (MOCK), 3 test files (`TimelineChart.test.tsx`, `TrendAlerts.test.tsx`, `ClientHistory.test.tsx`).
+- DoD: Timeline rysuje 5 linii (RF/XGB/LightGBM/CatBoost/LSTM z distinct colors — amber/violet dla 2 nowych); TrendAlerts pokazuje 5 kart w responsive grid (`repeat(auto-fit, minmax(220px, 1fr))`); 16/16 vitest passing.
+- Kontekst: odkryty 2026-06-05 podczas re-runu live demo po merge CREDIT-115. Naturalne rozszerzenie scope'u CREDIT-115; osobny task dla audit trail. Prediction tab (legacy `/predict`) nietknięty — endpoint nadal 3-modelowy (LightGBM/CatBoost = W3-only per CREDIT-109).
 
 ### Sprint 6 — Polish, ensemble, raport, docs (11 sie – 24 sie)
 
@@ -269,7 +276,8 @@ Złamanie tych reguł unieważnia tezę. Stosuj bezwzględnie.
 | 211 | 5 | P2 | BE/FE | MK | 107,210 | — |
 | 109 | 5 | P2 | ML | GF | 102 | 113 |
 | 112 | 5 | P1 | EVAL | GF | 102 | — |
-| 115 | 5 | P2 | BE | GF | 109,202 | — |
+| 115 | 5 | P2 | BE | GF | 109,202 | 116 |
+| 116 | 5 | P2 | FE | GF | 115,301 | — |
 | 113 | 6 | P2 | ML | GF | 102,105,109 | 114 |
 | 114 | 6 | P0 | EVAL | GF | 103,111,113 | — |
 | 304 | 6 | P2 | FE | MK | 302,303 | — |

@@ -8,7 +8,7 @@
 > - 🔴 **Do zrobienia** — task dostępny (wszystkie `blocked_by` są 🟢), nie został jeszcze rozpoczęty.
 > - 🔒 **Zablokowane** — task czeka na zależność (`blocked_by` zawiera coś, co nie jest 🟢).
 >
-> **Ostatnia aktualizacja:** 2026-06-05 (po merge CREDIT-108 Optuna+CV — RF +0.0010, XGB +0.0030 test AUC vs default; Sprint 4 GF backlog fully closed: 107 ✅ + 108 ✅ + 109 ✅)
+> **Ostatnia aktualizacja:** 2026-06-05 (po merge CREDIT-115 backend + CREDIT-116 frontend — pełen 5-model passthrough end-to-end; demo UI pokazuje 5 linii w Timeline + 5 kart TrendAlerts dla `seminarium-demo` z 3 migawkami)
 
 ---
 
@@ -23,9 +23,9 @@
 
 ## 📊 Statystyki
 
-- **Łącznie zadań:** 29 (CREDIT-115 dodany 2026-06-05 jako follow-up do CREDIT-109)
-- **🟢 Wykonane:** 21 (CREDIT-101, CREDIT-102, CREDIT-103, CREDIT-201, CREDIT-401, CREDIT-402, CREDIT-210, CREDIT-104, CREDIT-202, CREDIT-203, CREDIT-204, CREDIT-301, CREDIT-302, CREDIT-205, CREDIT-105, CREDIT-110, CREDIT-111, CREDIT-106, CREDIT-109, CREDIT-107, CREDIT-108)
-- **🔴 Dostępne:** 5 (CREDIT-112, CREDIT-113, CREDIT-115, CREDIT-211, CREDIT-303)
+- **Łącznie zadań:** 30 (CREDIT-115 + CREDIT-116 dodane 2026-06-05 jako follow-up do CREDIT-109)
+- **🟢 Wykonane:** 23 (CREDIT-101, CREDIT-102, CREDIT-103, CREDIT-201, CREDIT-401, CREDIT-402, CREDIT-210, CREDIT-104, CREDIT-202, CREDIT-203, CREDIT-204, CREDIT-301, CREDIT-302, CREDIT-205, CREDIT-105, CREDIT-110, CREDIT-111, CREDIT-106, CREDIT-109, CREDIT-107, CREDIT-108, CREDIT-115, CREDIT-116)
+- **🔴 Dostępne:** 4 (CREDIT-112, CREDIT-113, CREDIT-211, CREDIT-303)
 - **🔒 Zablokowane:** 3
 
 ---
@@ -154,9 +154,13 @@
   - Audyt fairness (fairlearn) — DPD / EOD względem SEX; ostrzeżenie gdy |różnica| > 0.1.
   - blocked_by: 102 · blocks: —
 
-- 🔴 **CREDIT-115** · [BE] · P2 · GF · `feat/backend-5model-dtos`
-  - Backend DTO follow-up do CREDIT-109: rozszerzenie `WindowPredictions` + `Trends` (.NET) o `lightgbm` + `catboost` — pełen 5-model passthrough z Flaska. Integration gap odkryty 2026-06-05 podczas demo prep (curl pokazał 3 keys zamiast 5). 5 predictions + 5 trends per snapshot persistowane; bez migracji DB. PR #32.
-  - blocked_by: 109, 202 · blocks: —
+- 🟢 **CREDIT-115** · [BE] · P2 · GF · `feat/backend-5model-dtos`
+  - Backend DTO follow-up do CREDIT-109: rozszerzenie `WindowPredictions` + `Trends` (.NET) o `lightgbm` + `catboost` — pełen 5-model passthrough z Flaska. Integration gap odkryty 2026-06-05 podczas demo prep (curl pokazał 3 keys zamiast 5). 5 predictions + 5 trends per snapshot persistowane; bez migracji DB. PR #32 merged.
+  - blocked_by: 109, 202 · blocks: 116
+
+- 🟢 **CREDIT-116** · [FE] · P2 · GF · `feat/frontend-5model-monitoring`
+  - Frontend follow-up do CREDIT-115: rozszerzenie `ModelKey` + `WindowPredictions` + `Trends` (TS) o `lightgbm` + `catboost`; Timeline chart 5 linii z distinct colors (amber + violet); TrendAlerts 5 kart w responsive grid (`repeat(auto-fit, minmax(220px, 1fr))`); `MOCK_TIMESERIES_RESPONSE` rozszerzony. UI Monitoring tab pokazuje teraz 5/5 modeli (było 3/5 mimo backend 5/5). 16/16 vitest passing. PR #33 merged.
+  - blocked_by: 115, 301 · blocks: —
 
 ---
 
