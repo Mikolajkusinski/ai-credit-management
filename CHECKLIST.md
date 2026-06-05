@@ -8,13 +8,13 @@
 > - 🔴 **Do zrobienia** — task dostępny (wszystkie `blocked_by` są 🟢), nie został jeszcze rozpoczęty.
 > - 🔒 **Zablokowane** — task czeka na zależność (`blocked_by` zawiera coś, co nie jest 🟢).
 >
-> **Ostatnia aktualizacja:** 2026-06-05 (po merge CREDIT-106 — cost-optimized thresholds RF=0.145/XGB=0.180/LSTM=0.185 (FN=5×FP); Flask response z `costThresholds` + `windowAlerts`)
+> **Ostatnia aktualizacja:** 2026-06-05 (po merge CREDIT-109 — LightGBM + CatBoost na W3, 5 modeli w response, CatBoost najlepszy AUC 0.7802/Brier 0.1354; odblokowuje CREDIT-113 stacking)
 
 ---
 
 ## 🎯 Aktualne zadanie
 
-- **Gabriel Figur (GF):** 🔴 **CREDIT-109** — LightGBM + CatBoost na W3 (5 modeli w response, raport rozszerzony) · branch `sprint5/lgbm-catboost`
+- **Gabriel Figur (GF):** 🔴 **CREDIT-113** — Stacked ensemble (6. model = LR meta-learner na 5 bazowych) · branch `sprint6/stacking` *(ostatnie ogniwo przed CREDIT-114 final report)*
 - **Mikołaj Kusiński (MK):** 🔴 **CREDIT-303** — SnapshotForm + datepicker; fix zahardkodowanych miesięcy w `InputForm.tsx`; „kopiuj z poprzedniej migawki" · branch `sprint5/snapshot-entry` *(Sprint 5 P1; odblokowane przez CREDIT-210 + CREDIT-301)*
 
 > **Reguła aktualizacji tej sekcji:** gdy task zostanie zmergeowany do `main`, ustaw tutaj kolejny najwyżej priorytetowy dostępny (🔴) task z toru właściwej osoby. Jeśli osoba nie ma już dostępnych tasków w bieżącym sprincie, wpisz „⏸️ czeka na odblokowanie / koniec sprintu".
@@ -24,9 +24,9 @@
 ## 📊 Statystyki
 
 - **Łącznie zadań:** 28
-- **🟢 Wykonane:** 18 (CREDIT-101, CREDIT-102, CREDIT-103, CREDIT-201, CREDIT-401, CREDIT-402, CREDIT-210, CREDIT-104, CREDIT-202, CREDIT-203, CREDIT-204, CREDIT-301, CREDIT-302, CREDIT-205, CREDIT-105, CREDIT-110, CREDIT-111, CREDIT-106)
-- **🔴 Dostępne:** 5 (CREDIT-107, CREDIT-108, CREDIT-109, CREDIT-112, CREDIT-303)
-- **🔒 Zablokowane:** 5
+- **🟢 Wykonane:** 19 (CREDIT-101, CREDIT-102, CREDIT-103, CREDIT-201, CREDIT-401, CREDIT-402, CREDIT-210, CREDIT-104, CREDIT-202, CREDIT-203, CREDIT-204, CREDIT-301, CREDIT-302, CREDIT-205, CREDIT-105, CREDIT-110, CREDIT-111, CREDIT-106, CREDIT-109)
+- **🔴 Dostępne:** 5 (CREDIT-107, CREDIT-108, CREDIT-112, CREDIT-113, CREDIT-303)
+- **🔒 Zablokowane:** 4
 
 ---
 
@@ -146,8 +146,8 @@
   - SHAP pass-through w .NET DTO + komponent wizualizacji (bar/waterfall).
   - blocked_by: 107, 210 · blocks: —
 
-- 🔴 **CREDIT-109** · [ML] · P2 · GF · `sprint5/lgbm-catboost`
-  - LightGBM + CatBoost na oknach 3-mies.; response z 6 modelami.
+- 🟢 **CREDIT-109** · [ML] · P2 · GF · `sprint5/lgbm-catboost`
+  - LightGBM + CatBoost na oknach 3-mies.; 5 modeli w response Flask. CatBoost najlepszy (AUC 0.7802, Brier 0.1354); cost thresholds rozszerzone do 5 modeli; `compute_trends` iteracyjne po `predictions.keys()`. PR #23, merged 2026-06-05.
   - blocked_by: 102 · blocks: 113
 
 - 🔴 **CREDIT-112** · [EVAL] · P1 · GF · SWAP-OK · `sprint5/fairness`
@@ -158,8 +158,8 @@
 
 ## Sprint 6 — Polish, ensemble, raport, docs (11 sie – 24 sie)
 
-- 🔒 **CREDIT-113** · [ML] · P2 · GF · `sprint6/stacking`
-  - Stacked ensemble (LR meta-learner na 5–6 modelach bazowych).
+- 🔴 **CREDIT-113** · [ML] · P2 · GF · `sprint6/stacking`
+  - Stacked ensemble (LR meta-learner na 5 modelach bazowych). **Ostatnie ogniwo przed CREDIT-114 final report.**
   - blocked_by: 102, 105, 109 · blocks: 114
 
 - 🔒 **CREDIT-114** · [EVAL] · P0 · GF · `sprint6/final-report`
