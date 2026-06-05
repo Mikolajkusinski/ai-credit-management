@@ -26,14 +26,16 @@ public class SnapshotPersistenceTests
     {
       "snapshotDate": null,
       "trajectory": [
-        { "window": "W0", "label": null, "predictions": { "randomForest": 0.18, "xgboost": 0.20, "lstm": 0.15 } },
-        { "window": "W1", "label": null, "predictions": { "randomForest": 0.27, "xgboost": 0.29, "lstm": 0.24 } },
-        { "window": "W2", "label": null, "predictions": { "randomForest": 0.41, "xgboost": 0.44, "lstm": 0.39 } },
-        { "window": "W3", "label": null, "predictions": { "randomForest": 0.58, "xgboost": 0.61, "lstm": 0.55 } }
+        { "window": "W0", "label": null, "predictions": { "randomForest": 0.18, "xgboost": 0.20, "lightgbm": 0.19, "catboost": 0.17, "lstm": 0.15 } },
+        { "window": "W1", "label": null, "predictions": { "randomForest": 0.27, "xgboost": 0.29, "lightgbm": 0.28, "catboost": 0.26, "lstm": 0.24 } },
+        { "window": "W2", "label": null, "predictions": { "randomForest": 0.41, "xgboost": 0.44, "lightgbm": 0.42, "catboost": 0.40, "lstm": 0.39 } },
+        { "window": "W3", "label": null, "predictions": { "randomForest": 0.58, "xgboost": 0.61, "lightgbm": 0.60, "catboost": 0.57, "lstm": 0.55 } }
       ],
       "trends": {
         "randomForest": { "slope": 0.40, "alert": "INCREASING_RISK" },
         "xgboost":      { "slope": 0.41, "alert": "INCREASING_RISK" },
+        "lightgbm":     { "slope": 0.41, "alert": "INCREASING_RISK" },
+        "catboost":     { "slope": 0.40, "alert": "INCREASING_RISK" },
         "lstm":         { "slope": 0.40, "alert": "INCREASING_RISK" }
       }
     }
@@ -92,8 +94,8 @@ public class SnapshotPersistenceTests
         Assert.Equal(new DateOnly(2026, 5, 10), body.SnapshotDate);
         Assert.Equal(4, body.Trajectory.Count);
         Assert.True(body.Persisted.ClientCreated);
-        Assert.Equal(3, body.Persisted.PredictionIds.Count);
-        Assert.Equal(3, body.Persisted.TrendIds.Count);
+        Assert.Equal(5, body.Persisted.PredictionIds.Count);   // CREDIT-109: RF + XGB + LightGBM + CatBoost + LSTM
+        Assert.Equal(5, body.Persisted.TrendIds.Count);
 
         // Verify the rows actually landed in the database.
         using var scope = factory.Services.CreateScope();
@@ -108,7 +110,7 @@ public class SnapshotPersistenceTests
         Assert.Equal(100000, snapshot.LimitBal);
 
         var predictions = await db.Predictions.OrderBy(p => p.Id).ToListAsync();
-        Assert.Equal(3, predictions.Count);
+        Assert.Equal(5, predictions.Count);   // CREDIT-109: RF + XGB + LightGBM + CatBoost + LSTM
         Assert.All(predictions, p => Assert.Equal(snapshot.Id, p.SnapshotId));
         // W3 predictions from the Flask stub, all >= 0.5 → "DEFAULT".
         var rf = Assert.Single(predictions, p => p.ModelName == "randomForest");
@@ -117,7 +119,7 @@ public class SnapshotPersistenceTests
         Assert.Equal(0.55, Assert.Single(predictions, p => p.ModelName == "lstm").DefaultProbability, 3);
 
         var trends = await db.Trends.ToListAsync();
-        Assert.Equal(3, trends.Count);
+        Assert.Equal(5, trends.Count);   // CREDIT-109: one trend per model
         Assert.All(trends, t => Assert.Equal(dbClient.Id, t.ClientId));
         Assert.All(trends, t => Assert.Equal("INCREASING_RISK", t.Alert));
         Assert.Equal(0.40, Assert.Single(trends, t => t.ModelName == "randomForest").Slope, 3);
@@ -144,7 +146,7 @@ public class SnapshotPersistenceTests
         using var scope = factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         Assert.Single(await db.Snapshots.ToListAsync());
-        Assert.Equal(3, await db.Predictions.CountAsync());
+        Assert.Equal(5, await db.Predictions.CountAsync());   // CREDIT-109: 5 model predictions per snapshot
     }
 
     [Fact]
@@ -169,7 +171,7 @@ public class SnapshotPersistenceTests
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         Assert.Single(await db.Clients.ToListAsync());            // one client reused
         Assert.Equal(2, await db.Snapshots.CountAsync());          // two snapshots
-        Assert.Equal(3, await db.Trends.CountAsync());             // trends upserted, not duplicated
+        Assert.Equal(5, await db.Trends.CountAsync());             // trends upserted, not duplicated; CREDIT-109: 5 models
     }
 
     [Fact]

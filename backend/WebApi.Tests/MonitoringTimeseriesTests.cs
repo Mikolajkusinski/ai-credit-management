@@ -20,14 +20,16 @@ public class MonitoringTimeseriesTests
     {
       "snapshotDate": null,
       "trajectory": [
-        { "window": "W0", "label": null, "predictions": { "randomForest": 0.18, "xgboost": 0.20, "lstm": 0.15 } },
-        { "window": "W1", "label": null, "predictions": { "randomForest": 0.27, "xgboost": 0.29, "lstm": 0.24 } },
-        { "window": "W2", "label": null, "predictions": { "randomForest": 0.41, "xgboost": 0.44, "lstm": 0.39 } },
-        { "window": "W3", "label": null, "predictions": { "randomForest": 0.58, "xgboost": 0.61, "lstm": 0.55 } }
+        { "window": "W0", "label": null, "predictions": { "randomForest": 0.18, "xgboost": 0.20, "lightgbm": 0.19, "catboost": 0.17, "lstm": 0.15 } },
+        { "window": "W1", "label": null, "predictions": { "randomForest": 0.27, "xgboost": 0.29, "lightgbm": 0.28, "catboost": 0.26, "lstm": 0.24 } },
+        { "window": "W2", "label": null, "predictions": { "randomForest": 0.41, "xgboost": 0.44, "lightgbm": 0.42, "catboost": 0.40, "lstm": 0.39 } },
+        { "window": "W3", "label": null, "predictions": { "randomForest": 0.58, "xgboost": 0.61, "lightgbm": 0.60, "catboost": 0.57, "lstm": 0.55 } }
       ],
       "trends": {
         "randomForest": { "slope": 0.40, "alert": "INCREASING_RISK" },
         "xgboost":      { "slope": 0.41, "alert": "INCREASING_RISK" },
+        "lightgbm":     { "slope": 0.41, "alert": "INCREASING_RISK" },
+        "catboost":     { "slope": 0.40, "alert": "INCREASING_RISK" },
         "lstm":         { "slope": 0.40, "alert": "INCREASING_RISK" }
       }
     }

@@ -50,14 +50,16 @@ public class PersistenceTests : IAsyncLifetime
     {
       "snapshotDate": null,
       "trajectory": [
-        { "window": "W0", "label": null, "predictions": { "randomForest": 0.18, "xgboost": 0.20, "lstm": 0.15 } },
-        { "window": "W1", "label": null, "predictions": { "randomForest": 0.27, "xgboost": 0.29, "lstm": 0.24 } },
-        { "window": "W2", "label": null, "predictions": { "randomForest": 0.41, "xgboost": 0.44, "lstm": 0.39 } },
-        { "window": "W3", "label": null, "predictions": { "randomForest": 0.58, "xgboost": 0.61, "lstm": 0.55 } }
+        { "window": "W0", "label": null, "predictions": { "randomForest": 0.18, "xgboost": 0.20, "lightgbm": 0.19, "catboost": 0.17, "lstm": 0.15 } },
+        { "window": "W1", "label": null, "predictions": { "randomForest": 0.27, "xgboost": 0.29, "lightgbm": 0.28, "catboost": 0.26, "lstm": 0.24 } },
+        { "window": "W2", "label": null, "predictions": { "randomForest": 0.41, "xgboost": 0.44, "lightgbm": 0.42, "catboost": 0.40, "lstm": 0.39 } },
+        { "window": "W3", "label": null, "predictions": { "randomForest": 0.58, "xgboost": 0.61, "lightgbm": 0.60, "catboost": 0.57, "lstm": 0.55 } }
       ],
       "trends": {
         "randomForest": { "slope": 0.40, "alert": "INCREASING_RISK" },
         "xgboost":      { "slope": 0.41, "alert": "INCREASING_RISK" },
+        "lightgbm":     { "slope": 0.41, "alert": "INCREASING_RISK" },
+        "catboost":     { "slope": 0.40, "alert": "INCREASING_RISK" },
         "lstm":         { "slope": 0.40, "alert": "INCREASING_RISK" }
       }
     }
@@ -68,14 +70,16 @@ public class PersistenceTests : IAsyncLifetime
     {
       "snapshotDate": null,
       "trajectory": [
-        { "window": "W0", "label": null, "predictions": { "randomForest": 0.52, "xgboost": 0.55, "lstm": 0.50 } },
-        { "window": "W1", "label": null, "predictions": { "randomForest": 0.40, "xgboost": 0.43, "lstm": 0.38 } },
-        { "window": "W2", "label": null, "predictions": { "randomForest": 0.30, "xgboost": 0.33, "lstm": 0.28 } },
-        { "window": "W3", "label": null, "predictions": { "randomForest": 0.22, "xgboost": 0.25, "lstm": 0.20 } }
+        { "window": "W0", "label": null, "predictions": { "randomForest": 0.52, "xgboost": 0.55, "lightgbm": 0.54, "catboost": 0.51, "lstm": 0.50 } },
+        { "window": "W1", "label": null, "predictions": { "randomForest": 0.40, "xgboost": 0.43, "lightgbm": 0.42, "catboost": 0.39, "lstm": 0.38 } },
+        { "window": "W2", "label": null, "predictions": { "randomForest": 0.30, "xgboost": 0.33, "lightgbm": 0.32, "catboost": 0.29, "lstm": 0.28 } },
+        { "window": "W3", "label": null, "predictions": { "randomForest": 0.22, "xgboost": 0.25, "lightgbm": 0.24, "catboost": 0.21, "lstm": 0.20 } }
       ],
       "trends": {
         "randomForest": { "slope": -0.30, "alert": "DECREASING_RISK" },
         "xgboost":      { "slope": -0.30, "alert": "DECREASING_RISK" },
+        "lightgbm":     { "slope": -0.30, "alert": "DECREASING_RISK" },
+        "catboost":     { "slope": -0.30, "alert": "DECREASING_RISK" },
         "lstm":         { "slope": -0.30, "alert": "DECREASING_RISK" }
       }
     }
@@ -142,8 +146,8 @@ public class PersistenceTests : IAsyncLifetime
         var body = await response.Content.ReadFromJsonAsync<SnapshotResponse>();
         Assert.NotNull(body);
         Assert.True(body!.Persisted.ClientCreated);
-        Assert.Equal(3, body.Persisted.PredictionIds.Count);
-        Assert.Equal(3, body.Persisted.TrendIds.Count);
+        Assert.Equal(5, body.Persisted.PredictionIds.Count);   // CREDIT-109: RF + XGB + LightGBM + CatBoost + LSTM
+        Assert.Equal(5, body.Persisted.TrendIds.Count);
 
         // Rows landed in real PostgreSQL.
         using (var db = NewDbContext(factory))
@@ -157,14 +161,14 @@ public class PersistenceTests : IAsyncLifetime
             Assert.Equal(100000, snapshot.LimitBal);
 
             var predictions = await db.Predictions.ToListAsync();
-            Assert.Equal(3, predictions.Count);
+            Assert.Equal(5, predictions.Count);   // CREDIT-109: 5 models
             Assert.All(predictions, p => Assert.Equal(snapshot.Id, p.SnapshotId));
             var rf = Assert.Single(predictions, p => p.ModelName == "randomForest");
             Assert.Equal(0.58, rf.DefaultProbability, 3);
             Assert.Equal("DEFAULT", rf.Label);
 
             var trends = await db.Trends.ToListAsync();
-            Assert.Equal(3, trends.Count);
+            Assert.Equal(5, trends.Count);   // CREDIT-109: one trend per model
             Assert.All(trends, t => Assert.Equal(dbClient.Id, t.ClientId));
             Assert.All(trends, t => Assert.Equal("INCREASING_RISK", t.Alert));
         }
@@ -200,7 +204,7 @@ public class PersistenceTests : IAsyncLifetime
         using var db = NewDbContext(factory);
         Assert.Single(await db.Clients.ToListAsync());
         Assert.Equal(3, await db.Snapshots.CountAsync());
-        Assert.Equal(3, await db.Trends.CountAsync());
+        Assert.Equal(5, await db.Trends.CountAsync());   // CREDIT-109: 5 models, 1 trend each
     }
 
     [Fact]
@@ -216,8 +220,8 @@ public class PersistenceTests : IAsyncLifetime
         using (var db = NewDbContext(factory))
         {
             Assert.Equal(2, await db.Snapshots.CountAsync());
-            Assert.Equal(6, await db.Predictions.CountAsync());
-            Assert.Equal(3, await db.Trends.CountAsync());
+            Assert.Equal(10, await db.Predictions.CountAsync());   // CREDIT-109: 2 snapshots × 5 models
+            Assert.Equal(5, await db.Trends.CountAsync());          // CREDIT-109: 5 models, 1 trend each
         }
 
         // Delete only the parent; the DB-enforced ON DELETE CASCADE must remove every child.
@@ -284,8 +288,8 @@ public class PersistenceTests : IAsyncLifetime
 
         using (var db = NewDbContext(factory))
         {
-            // Still exactly one trend row per model for the client — updated, not appended.
-            Assert.Equal(3, await db.Trends.CountAsync());
+            // Still exactly one trend row per model for the client — updated, not appended. CREDIT-109: 5 models.
+            Assert.Equal(5, await db.Trends.CountAsync());
             var rf = await db.Trends.SingleAsync(t => t.ModelName == "randomForest");
             Assert.Equal("DECREASING_RISK", rf.Alert);
             Assert.Equal(-0.30, rf.Slope, 3);
@@ -311,7 +315,7 @@ public class PersistenceTests : IAsyncLifetime
 
         using var db = NewDbContext(factory);
         Assert.Single(await db.Snapshots.ToListAsync());
-        Assert.Equal(3, await db.Predictions.CountAsync());
+        Assert.Equal(5, await db.Predictions.CountAsync());   // CREDIT-109: 5 model predictions per snapshot
     }
 
     [Fact]

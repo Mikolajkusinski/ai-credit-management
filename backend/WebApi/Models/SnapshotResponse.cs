@@ -34,11 +34,11 @@ public class PersistedInfo
     [JsonPropertyName("clientCreated")]
     public bool ClientCreated { get; set; }
 
-    /// <summary>Ids of the 3 persisted W3 predictions (one per model).</summary>
+    /// <summary>Ids of the 5 persisted W3 predictions (one per model: RF, XGB, LightGBM, CatBoost, LSTM — CREDIT-109).</summary>
     [JsonPropertyName("predictionIds")]
     public List<int> PredictionIds { get; set; } = new();
 
-    /// <summary>Ids of the 3 upserted trends (one per model).</summary>
+    /// <summary>Ids of the 5 upserted trends (one per model: RF, XGB, LightGBM, CatBoost, LSTM — CREDIT-109).</summary>
     [JsonPropertyName("trendIds")]
     public List<int> TrendIds { get; set; } = new();
 }
