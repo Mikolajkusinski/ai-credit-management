@@ -8,4 +8,5 @@ lightgbm
 catboost
 tensorflow
 joblib
+shap>=0.45
 pytest

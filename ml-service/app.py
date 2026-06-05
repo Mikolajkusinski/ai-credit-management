@@ -6,6 +6,7 @@ from flask_cors import CORS
 import joblib
 import numpy as np
 import pandas as pd
+import shap
 from tensorflow import keras
 import logging
 
@@ -44,6 +45,30 @@ features_w3 = joblib.load(ROOT / "features_w3.pkl")
 lstm_w3 = keras.models.load_model(ROOT / "lstm_model_w3.keras")
 lstm_scalers_w3 = joblib.load(ROOT / "lstm_scalers_w3.pkl")
 lstm_calibrator_w3 = joblib.load(ROOT / "lstm_calibrator_w3.pkl")
+
+
+def _unwrap_calibrated(calibrated_model):
+    """Unwrap CalibratedClassifierCV(FrozenEstimator(base)) -> base tree estimator.
+
+    SHAP's TreeExplainer needs the underlying tree model; isotonic calibration
+    on top is monotonic so it doesn't change which features matter -- it only
+    rescales the score axis.
+    """
+    cc = calibrated_model.calibrated_classifiers_[0]
+    return getattr(cc.estimator, "estimator", cc.estimator)
+
+
+# Pre-build SHAP explainers once at startup (CREDIT-107). Tree-based only --
+# LSTM is skipped because KernelExplainer with adequate background samples
+# would blow the < 2s budget; tree models cover RF / XGB / LightGBM / CatBoost.
+logger.info("Building SHAP explainers for W3 tree models...")
+SHAP_EXPLAINERS = {
+    "randomForest": shap.TreeExplainer(_unwrap_calibrated(rf_w3)),
+    "xgboost":      shap.TreeExplainer(_unwrap_calibrated(xgb_w3)),
+    "lightgbm":     shap.TreeExplainer(_unwrap_calibrated(lgbm_w3)),
+    "catboost":     shap.TreeExplainer(_unwrap_calibrated(cat_w3)),
+}
+
 
 # Cost-optimized alert thresholds (CREDIT-106). Per-model PD threshold derived
 # under an FN-heavy cost model; used in /predict/timeseries response so frontend
@@ -163,6 +188,51 @@ def prepare_lstm_input_w3(data, window):
     return sequence_scaled.reshape(1, 3, 3)
 
 
+SHAP_TOP_N = 5
+
+
+def _shap_values_positive_class(explainer, X):
+    """Return SHAP values for the positive class as a 1D numpy array (one row).
+
+    Different sklearn / SHAP versions return different shapes:
+    - list of two arrays (one per class) -> take index 1
+    - 3D array (samples, features, classes) -> take last axis
+    - 2D array (samples, features) -> already positive-class
+    """
+    raw = explainer.shap_values(X)
+    if isinstance(raw, list):
+        arr = raw[1] if len(raw) == 2 else raw[0]
+    else:
+        arr = np.asarray(raw)
+        if arr.ndim == 3:
+            arr = arr[..., -1]
+    return np.asarray(arr).reshape(-1)
+
+
+def compute_shap_top_features(data, n_top=SHAP_TOP_N):
+    """For each tree-based W3 model, return top-N features by absolute SHAP value
+    on the W3 window for the given client data (CREDIT-107).
+
+    Returns dict keyed by model name (camelCase). Each value is:
+      { "topFeatures": [ { "feature": "<name>", "value": <float> }, ... ] }
+
+    LSTM is intentionally skipped -- SHAP for sequence Keras model would need
+    KernelExplainer with background samples (slow) and the < 2s DoD would not
+    hold.
+    """
+    X_static = engineer_features_w3(data, W3)
+    out = {}
+    for model_key, explainer in SHAP_EXPLAINERS.items():
+        sv = _shap_values_positive_class(explainer, X_static)
+        order = np.argsort(np.abs(sv))[::-1][:n_top]
+        top = [
+            {"feature": str(features_w3[i]), "value": float(sv[i])}
+            for i in order
+        ]
+        out[model_key] = {"topFeatures": top}
+    return out
+
+
 def predict_single_window(data, window):
     """Score one window with RF/XGBoost/LightGBM/CatBoost/LSTM (CREDIT-109).
     Returns dict of calibrated probabilities keyed by model name."""
@@ -278,12 +348,19 @@ def predict_timeseries():
             for model_key in cost_thresholds
         }
 
+        # SHAP top-5 features per tree-based model on the W3 window (CREDIT-107).
+        shap_payload = compute_shap_top_features(data)
+
         response = {
             "snapshotDate": None,  # Flask is stateless; backend fills this
             "trajectory": trajectory,
             "trends": trends,
             "costThresholds": cost_thresholds,
             "windowAlerts": window_alerts,
+            "shap": {
+                "window": "W3",
+                **shap_payload,
+            },
         }
         logger.info(f"Timeseries trends: {trends} | windowAlerts: {window_alerts}")
         return jsonify(response), 200
