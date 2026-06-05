@@ -8,13 +8,13 @@
 > - 🔴 **Do zrobienia** — task dostępny (wszystkie `blocked_by` są 🟢), nie został jeszcze rozpoczęty.
 > - 🔒 **Zablokowane** — task czeka na zależność (`blocked_by` zawiera coś, co nie jest 🟢).
 >
-> **Ostatnia aktualizacja:** 2026-06-05 (po merge CREDIT-107 SHAP — top-5 cech per tree-based model w response, 102 ms compute; obecnie w toku CREDIT-108 Optuna — closing Sprint 4 backlog before CREDIT-113)
+> **Ostatnia aktualizacja:** 2026-06-05 (po merge CREDIT-108 Optuna+CV — RF +0.0010, XGB +0.0030 test AUC vs default; Sprint 4 GF backlog fully closed: 107 ✅ + 108 ✅ + 109 ✅)
 
 ---
 
 ## 🎯 Aktualne zadanie
 
-- **Gabriel Figur (GF):** 🔴 **CREDIT-108** — Optuna + 5-fold CV (XGBoost/RF), CV-score ze std · branch `sprint4/optuna-cv` *(potem 🔴 CREDIT-113 → CREDIT-114)*
+- **Gabriel Figur (GF):** 🔴 **CREDIT-113** — Stacked ensemble (LR meta-learner na 5 modelach bazowych) · branch `sprint6/stacking` *(ostatnie ogniwo przed CREDIT-114 final report)*
 - **Mikołaj Kusiński (MK):** 🔴 **CREDIT-303** — SnapshotForm + datepicker; fix zahardkodowanych miesięcy w `InputForm.tsx`; „kopiuj z poprzedniej migawki" · branch `sprint5/snapshot-entry` *(Sprint 5 P1; odblokowane przez CREDIT-210 + CREDIT-301)*
 
 > **Reguła aktualizacji tej sekcji:** gdy task zostanie zmergeowany do `main`, ustaw tutaj kolejny najwyżej priorytetowy dostępny (🔴) task z toru właściwej osoby. Jeśli osoba nie ma już dostępnych tasków w bieżącym sprincie, wpisz „⏸️ czeka na odblokowanie / koniec sprintu".
@@ -24,9 +24,9 @@
 ## 📊 Statystyki
 
 - **Łącznie zadań:** 28
-- **🟢 Wykonane:** 19 (CREDIT-101, CREDIT-102, CREDIT-103, CREDIT-201, CREDIT-401, CREDIT-402, CREDIT-210, CREDIT-104, CREDIT-202, CREDIT-203, CREDIT-204, CREDIT-301, CREDIT-302, CREDIT-205, CREDIT-105, CREDIT-110, CREDIT-111, CREDIT-106, CREDIT-109)
-- **🔴 Dostępne:** 5 (CREDIT-107, CREDIT-108, CREDIT-112, CREDIT-113, CREDIT-303)
-- **🔒 Zablokowane:** 4
+- **🟢 Wykonane:** 21 (CREDIT-101, CREDIT-102, CREDIT-103, CREDIT-201, CREDIT-401, CREDIT-402, CREDIT-210, CREDIT-104, CREDIT-202, CREDIT-203, CREDIT-204, CREDIT-301, CREDIT-302, CREDIT-205, CREDIT-105, CREDIT-110, CREDIT-111, CREDIT-106, CREDIT-109, CREDIT-107, CREDIT-108)
+- **🔴 Dostępne:** 4 (CREDIT-112, CREDIT-113, CREDIT-211, CREDIT-303)
+- **🔒 Zablokowane:** 3
 
 ---
 
@@ -126,12 +126,12 @@
   - Wierne testy integracyjne persystencji na realnym PostgreSQL 16 przez Testcontainers (uruchamia prawdziwą migrację Npgsql, nie EF InMemory). Nowy `WebApi.Tests/PersistenceTests.cs` (8 testów) + współdzielony `PostgresFixture` (jeden kontener `postgres:16-alpine` na klasę, `TRUNCATE … RESTART IDENTITY CASCADE` między testami). Reuse harnessu z 203/204 (WebApplicationFactory + stub Flask), podmiana providera InMemory → `UseNpgsql`. Pokrycie tego, czego InMemory nie sprawdza: round-trip zapis→odczyt (Client/Snapshot/3×Prediction W3/3×Trend), historia rosnąco po dacie, **kaskadowe usuwanie FK** (usunięcie klienta czyści snapshoty/predykcje/trendy), unikalny `ExternalRef`, upsert trendów (nadpisanie nie duplikacja + bump `ComputedAt`), 409 na duplikat `(ref, date)`, round-trip `timestamptz`↔`DateOnly` (Kind=Utc), serwerowe defaulty `NOW()`. Tylko testy — kod produkcyjny nietknięty (atomowa transakcja pozostaje świadomie odłożona). Backend: 16 → 24 testów, CI zielone.
   - blocked_by: 203, 201 · blocks: —
 
-- 🔴 **CREDIT-107** · [ML] · P2 · GF · SWAP-OK · `sprint4/shap`
-  - SHAP top-5 cech per predykcja (RF/XGB/LR); `shap.topFeatures` w response.
+- 🟢 **CREDIT-107** · [ML] · P2 · GF · SWAP-OK · `sprint4/shap`
+  - SHAP top-5 cech per predykcja (RF/XGB/LightGBM/CatBoost; LSTM pominięty — TreeExplainer N/A); `shap.topFeatures` w response. 102 ms compute (20× pod DoD < 2s). PR #26.
   - blocked_by: 102 · blocks: 211
 
-- 🔴 **CREDIT-108** · [ML] · P2 · GF · `sprint4/optuna-cv`
-  - 5-fold CV + tuning Optuna (XGBoost/RF) na oknach 3-mies.
+- 🟢 **CREDIT-108** · [ML] · P2 · GF · `sprint4/optuna-cv`
+  - 5-fold CV + Optuna tuning (XGBoost/RF), 30 trials, TPESampler. Test AUC: RF +0.0010 / XGB +0.0030 vs default. Best XGB: lr=0.0075, depth=3, n_est=1000. Scope: academic — tuned bases NIE promoted do produkcji. PR #27.
   - blocked_by: 102 · blocks: —
 
 ---
@@ -142,8 +142,8 @@
   - SnapshotForm + datepicker; fix zahardkodowanych miesięcy w `InputForm.tsx`; „kopiuj z poprzedniej migawki".
   - blocked_by: 210, 301 · blocks: 304
 
-- 🔒 **CREDIT-211** · [BE/FE] · P2 · MK · SWAP-OK · `sprint5/shap-ui`
-  - SHAP pass-through w .NET DTO + komponent wizualizacji (bar/waterfall).
+- 🔴 **CREDIT-211** · [BE/FE] · P2 · MK · SWAP-OK · `sprint5/shap-ui`
+  - SHAP pass-through w .NET DTO + komponent wizualizacji (bar/waterfall). Odblokowane przez CREDIT-107 merge.
   - blocked_by: 107, 210 · blocks: —
 
 - 🟢 **CREDIT-109** · [ML] · P2 · GF · `sprint5/lgbm-catboost`
