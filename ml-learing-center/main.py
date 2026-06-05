@@ -438,3 +438,19 @@ _thr_payload = {
 with open("../ml-service/alert_thresholds.json", "w") as _f:
     _json.dump(_thr_payload, _f, indent=2)
 print("Saved: ../ml-service/alert_thresholds.json")
+
+
+# ========== CREDIT-108: HYPERPARAMETER TUNING ==========
+# 5-fold CV + Optuna sweep for XGBoost and RandomForest lives in a separate
+# standalone runner so `python main.py` stays a ~5-min production retrain.
+# Tuning is academic exploration only (best params do NOT get promoted to the
+# shipped W3 artifacts without redoing CREDIT-105 calibration + CREDIT-106
+# thresholds + CREDIT-109 LightGBM/CatBoost).
+#
+# Run with:
+#   python optuna_tuning.py
+#
+# Output:
+#   reports/optuna_study.md     -- per-model CV-AUC mean +/- std (default vs tuned)
+#                                  + test-AUC delta + best hyperparameters
+#   reports/optuna_trials.csv   -- full n_trials x per-model sweep

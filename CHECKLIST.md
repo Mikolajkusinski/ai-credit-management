@@ -8,13 +8,13 @@
 > - 🔴 **Do zrobienia** — task dostępny (wszystkie `blocked_by` są 🟢), nie został jeszcze rozpoczęty.
 > - 🔒 **Zablokowane** — task czeka na zależność (`blocked_by` zawiera coś, co nie jest 🟢).
 >
-> **Ostatnia aktualizacja:** 2026-06-05 (po merge CREDIT-109 — LightGBM + CatBoost na W3; obecnie w toku: CREDIT-107 SHAP + CREDIT-108 Optuna — closing Sprint 4 backlog before CREDIT-113)
+> **Ostatnia aktualizacja:** 2026-06-05 (po merge CREDIT-107 SHAP — top-5 cech per tree-based model w response, 102 ms compute; obecnie w toku CREDIT-108 Optuna — closing Sprint 4 backlog before CREDIT-113)
 
 ---
 
 ## 🎯 Aktualne zadanie
 
-- **Gabriel Figur (GF):** 🔴 **CREDIT-107** — SHAP top-5 cech per predykcja (RF/XGB/LightGBM/CatBoost) · branch `sprint4/shap` *(potem 🔴 CREDIT-108 → CREDIT-113 → CREDIT-114)*
+- **Gabriel Figur (GF):** 🔴 **CREDIT-108** — Optuna + 5-fold CV (XGBoost/RF), CV-score ze std · branch `sprint4/optuna-cv` *(potem 🔴 CREDIT-113 → CREDIT-114)*
 - **Mikołaj Kusiński (MK):** 🔴 **CREDIT-303** — SnapshotForm + datepicker; fix zahardkodowanych miesięcy w `InputForm.tsx`; „kopiuj z poprzedniej migawki" · branch `sprint5/snapshot-entry` *(Sprint 5 P1; odblokowane przez CREDIT-210 + CREDIT-301)*
 
 > **Reguła aktualizacji tej sekcji:** gdy task zostanie zmergeowany do `main`, ustaw tutaj kolejny najwyżej priorytetowy dostępny (🔴) task z toru właściwej osoby. Jeśli osoba nie ma już dostępnych tasków w bieżącym sprincie, wpisz „⏸️ czeka na odblokowanie / koniec sprintu".
