@@ -49,27 +49,29 @@ export const MOCK_TIMESERIES_RESPONSE: TimeseriesResponse = {
     {
       window: 'W0',
       label: 'Jan-Mar 2026',
-      predictions: { randomForest: 0.18, xgboost: 0.2, lstm: 0.15 },
+      predictions: { randomForest: 0.18, xgboost: 0.2, lightgbm: 0.19, catboost: 0.17, lstm: 0.15 },
     },
     {
       window: 'W1',
       label: 'Feb-Apr 2026',
-      predictions: { randomForest: 0.27, xgboost: 0.29, lstm: 0.24 },
+      predictions: { randomForest: 0.27, xgboost: 0.29, lightgbm: 0.28, catboost: 0.26, lstm: 0.24 },
     },
     {
       window: 'W2',
       label: 'Mar-May 2026',
-      predictions: { randomForest: 0.41, xgboost: 0.44, lstm: 0.39 },
+      predictions: { randomForest: 0.41, xgboost: 0.44, lightgbm: 0.42, catboost: 0.4, lstm: 0.39 },
     },
     {
       window: 'W3',
       label: 'Apr-Jun 2026',
-      predictions: { randomForest: 0.58, xgboost: 0.61, lstm: 0.55 },
+      predictions: { randomForest: 0.58, xgboost: 0.61, lightgbm: 0.6, catboost: 0.57, lstm: 0.55 },
     },
   ],
   trends: {
     randomForest: { slope: 0.4, alert: 'INCREASING_RISK' },
     xgboost: { slope: 0.41, alert: 'INCREASING_RISK' },
+    lightgbm: { slope: 0.41, alert: 'INCREASING_RISK' },
+    catboost: { slope: 0.4, alert: 'INCREASING_RISK' },
     lstm: { slope: 0.4, alert: 'INCREASING_RISK' },
   },
 };

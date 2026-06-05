@@ -2,16 +2,19 @@ import { PredictRequest } from './prediction';
 
 // Types mirroring the CREDIT-210 monitoring API contract
 // (docs/api-contracts/monitoring.md + backend/WebApi/Models/TimeseriesResponse.cs).
-// JSON is camelCase; model keys are randomForest / xgboost / lstm; alert enum is
-// SCREAMING_SNAKE_CASE. Keep these in lockstep with the contract.
+// JSON is camelCase; model keys are randomForest / xgboost / lightgbm / catboost / lstm
+// (CREDIT-109 + CREDIT-115); alert enum is SCREAMING_SNAKE_CASE.
+// Keep these in lockstep with the contract.
 
-export type ModelKey = 'randomForest' | 'xgboost' | 'lstm';
+export type ModelKey = 'randomForest' | 'xgboost' | 'lightgbm' | 'catboost' | 'lstm';
 
 export type AlertType = 'INCREASING_RISK' | 'DECREASING_RISK' | 'STABLE';
 
 export interface WindowPredictions {
   randomForest: number;
   xgboost: number;
+  lightgbm: number;
+  catboost: number;
   lstm: number;
 }
 
@@ -29,6 +32,8 @@ export interface TrendInfo {
 export interface Trends {
   randomForest: TrendInfo;
   xgboost: TrendInfo;
+  lightgbm: TrendInfo;
+  catboost: TrendInfo;
   lstm: TrendInfo;
 }
 

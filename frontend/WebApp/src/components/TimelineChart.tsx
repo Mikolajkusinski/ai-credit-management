@@ -12,12 +12,17 @@ interface ChartRow {
   label: string;
   randomForest: number;
   xgboost: number;
+  lightgbm: number;
+  catboost: number;
   lstm: number;
 }
 
+// CREDIT-109 + CREDIT-115: 5-model family. Distinct hues so all 5 lines are readable.
 const MODELS: { key: ModelKey; name: string; color: string }[] = [
   { key: 'randomForest', name: 'Random Forest', color: '#34d399' },
   { key: 'xgboost', name: 'XGBoost', color: '#60a5fa' },
+  { key: 'lightgbm', name: 'LightGBM', color: '#fbbf24' },
+  { key: 'catboost', name: 'CatBoost', color: '#a78bfa' },
   { key: 'lstm', name: 'LSTM', color: '#f472b6' },
 ];
 
@@ -30,6 +35,8 @@ export const buildChartData = (trajectory: TrajectoryPoint[]): ChartRow[] =>
     label: point.label ?? point.window,
     randomForest: point.predictions.randomForest,
     xgboost: point.predictions.xgboost,
+    lightgbm: point.predictions.lightgbm,
+    catboost: point.predictions.catboost,
     lstm: point.predictions.lstm,
   }));
 

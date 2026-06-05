@@ -4,9 +4,12 @@ interface TrendAlertsProps {
   trends: Trends;
 }
 
+// CREDIT-109 + CREDIT-115: 5-model family in the monitoring API.
 const MODELS: { key: ModelKey; name: string }[] = [
   { key: 'randomForest', name: 'Random Forest' },
   { key: 'xgboost', name: 'XGBoost' },
+  { key: 'lightgbm', name: 'LightGBM' },
+  { key: 'catboost', name: 'CatBoost' },
   { key: 'lstm', name: 'LSTM' },
 ];
 
@@ -21,7 +24,8 @@ const formatSlope = (slope: number) => `${slope >= 0 ? '+' : ''}${slope.toFixed(
 const TrendAlerts = ({ trends }: TrendAlertsProps) => (
   <div style={{
     display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
+    // auto-fit: 5 kart na szerokim ekranie, zwija się gracefully gdy wąsko (CREDIT-115).
+    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
     gap: '24px'
   }}>
     {MODELS.map(({ key, name }) => {
