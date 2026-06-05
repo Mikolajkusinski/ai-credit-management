@@ -107,12 +107,14 @@ public class MonitoringService
         var snapshot = await _snapshotRepository.AddAsync(MapToSnapshot(
             client.Id, snapshotDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc), request.Features));
 
-        // Persist the W3 predictions (one row per model).
+        // Persist the W3 predictions (one row per model). CREDIT-109 added LightGBM + CatBoost.
         var w3 = scored.Trajectory.First(p => p.Window == LabelledWindow).Predictions;
         var predictions = await _predictionRepository.AddRangeAsync(snapshot.Id, new[]
         {
             ToPrediction("randomForest", w3.RandomForest),
             ToPrediction("xgboost", w3.Xgboost),
+            ToPrediction("lightgbm", w3.Lightgbm),
+            ToPrediction("catboost", w3.Catboost),
             ToPrediction("lstm", w3.Lstm),
         });
 
@@ -121,6 +123,8 @@ public class MonitoringService
         {
             ("randomForest", scored.Trends.RandomForest.Slope, scored.Trends.RandomForest.Alert),
             ("xgboost", scored.Trends.Xgboost.Slope, scored.Trends.Xgboost.Alert),
+            ("lightgbm", scored.Trends.Lightgbm.Slope, scored.Trends.Lightgbm.Alert),
+            ("catboost", scored.Trends.Catboost.Slope, scored.Trends.Catboost.Alert),
             ("lstm", scored.Trends.Lstm.Slope, scored.Trends.Lstm.Alert),
         });
 
@@ -214,6 +218,8 @@ public class MonitoringService
         {
             RandomForest = ProbabilityFor(s.Predictions, "randomForest"),
             Xgboost = ProbabilityFor(s.Predictions, "xgboost"),
+            Lightgbm = ProbabilityFor(s.Predictions, "lightgbm"),
+            Catboost = ProbabilityFor(s.Predictions, "catboost"),
             Lstm = ProbabilityFor(s.Predictions, "lstm"),
         },
     };
@@ -225,6 +231,8 @@ public class MonitoringService
     {
         RandomForest = TrendInfoFor(trends, "randomForest"),
         Xgboost = TrendInfoFor(trends, "xgboost"),
+        Lightgbm = TrendInfoFor(trends, "lightgbm"),
+        Catboost = TrendInfoFor(trends, "catboost"),
         Lstm = TrendInfoFor(trends, "lstm"),
     };
 

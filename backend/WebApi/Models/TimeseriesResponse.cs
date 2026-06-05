@@ -44,6 +44,14 @@ public class WindowPredictions
     [JsonPropertyName("xgboost")]
     public double Xgboost { get; set; }
 
+    /// <summary>CREDIT-109: LightGBM W3 calibrated prediction.</summary>
+    [JsonPropertyName("lightgbm")]
+    public double Lightgbm { get; set; }
+
+    /// <summary>CREDIT-109: CatBoost W3 calibrated prediction.</summary>
+    [JsonPropertyName("catboost")]
+    public double Catboost { get; set; }
+
     [JsonPropertyName("lstm")]
     public double Lstm { get; set; }
 }
@@ -55,6 +63,14 @@ public class Trends
 
     [JsonPropertyName("xgboost")]
     public TrendInfo Xgboost { get; set; } = new();
+
+    /// <summary>CREDIT-109: LightGBM slope + alert.</summary>
+    [JsonPropertyName("lightgbm")]
+    public TrendInfo Lightgbm { get; set; } = new();
+
+    /// <summary>CREDIT-109: CatBoost slope + alert.</summary>
+    [JsonPropertyName("catboost")]
+    public TrendInfo Catboost { get; set; } = new();
 
     [JsonPropertyName("lstm")]
     public TrendInfo Lstm { get; set; } = new();

@@ -231,6 +231,45 @@ cost-optimized thresholds — frontend gotowy do kolorowania Timeline per model.
 
 ---
 
+## 4.1. Post-discovery integration fix — CREDIT-115 (BE)
+
+**Kontekst:** podczas weryfikacji live demo do seminarium (2026-06-05) `curl` na
+`POST /api/v1/monitoring/predict-timeseries` zwrócił tylko **3 modele** w `predictions` / `trends`
+zamiast oczekiwanych 5. Flask `/predict/timeseries` zwracał poprawnie 5; backend DTO (`WindowPredictions`,
+`Trends` z CREDIT-202, napisane gdy istniały tylko RF/XGB/LSTM) **silently dropował** LightGBM
+i CatBoost przy deserializacji JSON do C# obiektów.
+
+**Honest framing:** ten passthrough **powinien być w scope'ie CREDIT-109** (DoD „response zawiera
+lightgbm, catboost" implicytnie obejmuje backend, bo to backend jest konsumentem Flaska). Nie został.
+Formalnie zatrackowany jako osobny **CREDIT-115** dla audit trail; chronologicznie wykonany w post-
+Sprint 4 window jako follow-up.
+
+**Co zrobiłem (PR #32):**
+- `WindowPredictions` + `Trends` (.NET DTO): dodane `Lightgbm` + `Catboost` properties z
+  `[JsonPropertyName]` matching kontrakt §3.2/§3.4.
+- `MonitoringService.ScoreAndPersistAsync`: persistuje **5 predictions + 5 trends** per snapshot
+  (było 3 + 3).
+- `MapHistoryPoint` + `MapTrends`: czytają 5 modeli z bazy zamiast 3.
+- **5 Flask stub bodies** w testach rozszerzonych o `lightgbm` + `catboost` (inaczej deserializacja
+  defaultowałaby do pustego `TrendInfo` z `Alert=""` i `Assert.All(...INCREASING_RISK)` by padło).
+- Per-snapshot count assertions: `Equal(3, ...)` → `Equal(5, ...)`; cascade test
+  `Equal(6, predictions)` → `Equal(10, ...)` (2 snapshots × 5 modeli).
+- **Bez migracji DB** — `Prediction.ModelName` to free-form string, więc nowe wiersze `"lightgbm"` /
+  `"catboost"` mieszczą się w istniejącym schemacie.
+
+**Verified:** 24/24 backend testów ✅, curl pokazuje wszystkie 5 modeli w response z spójnymi
+`INCREASING_RISK` (slope +0.58 do +0.63) dla pogarszającego się klienta demo.
+
+**Frontend impact:** Recharts `LineChart` w `TimelineChart.tsx` auto-discoveruje model keys z
+response (per CREDIT-301 design). 5 linii na wykresie zamiast 3 — **bez zmian frontendu**. Custom
+per-model legend colours dla LightGBM/CatBoost ewentualnie jako oddzielny follow-up.
+
+**Slajd:** *„Found and fixed during demo prep — integration gap między CREDIT-109 (Flask 5 modeli)
+a CREDIT-202 (backend 3-model DTO). Dwa modele były silently dropowane w response. Live demo
+pokazuje teraz 5 linii Timeline zgodnie z claim'em '5 modeli W3 calibrated'."*
+
+---
+
 ## 5. Statystyki mojego Sprintu 4 (kalendarzowo)
 
 | Wskaźnik | Wartość |
