@@ -14,12 +14,14 @@ const history: HistoryResponse = {
   clientRef: 'alpha',
   createdAt: '2026-05-01T00:00:00Z',
   history: [
-    { snapshotId: 11, snapshotDate: '2026-05-10', predictions: { randomForest: 0.18, xgboost: 0.2, lstm: 0.15 } },
-    { snapshotId: 12, snapshotDate: '2026-05-24', predictions: { randomForest: 0.58, xgboost: 0.61, lstm: 0.55 } },
+    { snapshotId: 11, snapshotDate: '2026-05-10', predictions: { randomForest: 0.18, xgboost: 0.2, lightgbm: 0.19, catboost: 0.17, lstm: 0.15 } },
+    { snapshotId: 12, snapshotDate: '2026-05-24', predictions: { randomForest: 0.58, xgboost: 0.61, lightgbm: 0.6, catboost: 0.57, lstm: 0.55 } },
   ],
   trends: {
     randomForest: { slope: 0.4, alert: 'INCREASING_RISK' },
     xgboost: { slope: 0.41, alert: 'INCREASING_RISK' },
+    lightgbm: { slope: 0.41, alert: 'INCREASING_RISK' },
+    catboost: { slope: 0.4, alert: 'INCREASING_RISK' },
     lstm: { slope: 0.4, alert: 'INCREASING_RISK' },
   },
 };
