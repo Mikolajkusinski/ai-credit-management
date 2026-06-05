@@ -260,15 +260,15 @@ order, patrz `PodsumowanieSprintu4_GF.md`), żeby odblokować ten finałowy ła�
 
 ## 7. Co dalej — Sprint 4 i Sprint 5 (mój tor)
 
-Mój Sprint 4 GF plan (CREDIT-107 SHAP + CREDIT-108 Optuna+CV, oba P2) został odłożony na rzecz
-**ścieżki krytycznej do CREDIT-114** — patrz `PodsumowanieSprintu4_GF.md`. Zamiast 107/108 zrobiłem
-**CREDIT-109** (LightGBM + CatBoost), żeby odblokować CREDIT-113 → CREDIT-114.
+Sprint 4 (mój tor) — patrz `PodsumowanieSprintu4_GF.md`. Krótko: najpierw pivot na **CREDIT-109**
+(LightGBM + CatBoost, Sprint 5 P2 wzięte out-of-order, żeby odblokować łańcuch krytyczny do
+CREDIT-114). Potem powrót po pierwotne P2: **CREDIT-107 (SHAP)** i **CREDIT-108 (Optuna + CV)**.
+**Sprint 4 GF zamknięty 3/3** (107 ✅ + 108 ✅ + 109 ✅).
 
-Następne po obecnym stanie (CREDIT-109 done):
+Następne po Sprincie 4:
 - **CREDIT-113** (stacking ensemble, P2, blocks CREDIT-114) — kolejny GF task
 - **CREDIT-114** (final report, P0) — zamknięcie tezy + komplet wykresów do prezentacji
-- **CREDIT-107, 108, 112** (P2/P1) — opcjonalne uzupełnienia (SHAP, Optuna, fairness audit) jeśli
-  zostanie czas po 113/114
+- **CREDIT-112** (fairness audit per SEX, P1 SWAP-OK) — opcjonalne, można równolegle
 
 ---
 
