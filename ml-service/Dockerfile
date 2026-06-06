@@ -17,9 +17,10 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy all model files and application code
-COPY *.pkl .
-COPY *.keras .
-COPY app.py .
+COPY *.pkl ./
+COPY *.keras ./
+COPY *.py ./
+COPY alert_thresholds.json ./
 
 # Expose port 5001
 EXPOSE 5001
