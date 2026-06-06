@@ -37,6 +37,37 @@ public class SnapshotPersistenceTests
         "lightgbm":     { "slope": 0.41, "alert": "INCREASING_RISK" },
         "catboost":     { "slope": 0.40, "alert": "INCREASING_RISK" },
         "lstm":         { "slope": 0.40, "alert": "INCREASING_RISK" }
+      },
+      "shap": {
+        "window": "W3",
+        "randomForest": { "topFeatures": [
+          { "feature": "PAY_mean",     "value":  0.031 },
+          { "feature": "PAY_max",      "value":  0.030 },
+          { "feature": "PAY_AMT_mean", "value": -0.025 },
+          { "feature": "late_count",   "value":  0.024 },
+          { "feature": "utilization_rate", "value": -0.018 }
+        ]},
+        "xgboost":  { "topFeatures": [
+          { "feature": "PAY_max",      "value":  0.041 },
+          { "feature": "PAY_mean",     "value":  0.033 },
+          { "feature": "severe_late",  "value":  0.027 },
+          { "feature": "PAY_AMT_mean", "value": -0.022 },
+          { "feature": "BILL_trend",   "value":  0.015 }
+        ]},
+        "lightgbm": { "topFeatures": [
+          { "feature": "PAY_mean",     "value":  0.036 },
+          { "feature": "late_count",   "value":  0.028 },
+          { "feature": "PAY_AMT_mean", "value": -0.024 },
+          { "feature": "PAY_max",      "value":  0.021 },
+          { "feature": "utilization_rate", "value": -0.016 }
+        ]},
+        "catboost": { "topFeatures": [
+          { "feature": "PAY_max",       "value":  0.038 },
+          { "feature": "PAY_mean",      "value":  0.032 },
+          { "feature": "payment_ratio", "value": -0.026 },
+          { "feature": "late_count",    "value":  0.020 },
+          { "feature": "BILL_mean",     "value": -0.014 }
+        ]}
       }
     }
     """;
@@ -96,6 +127,12 @@ public class SnapshotPersistenceTests
         Assert.True(body.Persisted.ClientCreated);
         Assert.Equal(5, body.Persisted.PredictionIds.Count);   // CREDIT-109: RF + XGB + LightGBM + CatBoost + LSTM
         Assert.Equal(5, body.Persisted.TrendIds.Count);
+
+        // SHAP passes through on the write path too (CREDIT-211); scoring-time only, not persisted.
+        Assert.NotNull(body.Shap);
+        Assert.Equal("W3", body.Shap!.Window);
+        Assert.NotNull(body.Shap.Xgboost);
+        Assert.Equal(5, body.Shap.Xgboost!.TopFeatures.Count);
 
         // Verify the rows actually landed in the database.
         using var scope = factory.Services.CreateScope();

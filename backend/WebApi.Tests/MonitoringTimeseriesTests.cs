@@ -31,6 +31,37 @@ public class MonitoringTimeseriesTests
         "lightgbm":     { "slope": 0.41, "alert": "INCREASING_RISK" },
         "catboost":     { "slope": 0.40, "alert": "INCREASING_RISK" },
         "lstm":         { "slope": 0.40, "alert": "INCREASING_RISK" }
+      },
+      "shap": {
+        "window": "W3",
+        "randomForest": { "topFeatures": [
+          { "feature": "PAY_mean",     "value":  0.031 },
+          { "feature": "PAY_max",      "value":  0.030 },
+          { "feature": "PAY_AMT_mean", "value": -0.025 },
+          { "feature": "late_count",   "value":  0.024 },
+          { "feature": "utilization_rate", "value": -0.018 }
+        ]},
+        "xgboost":  { "topFeatures": [
+          { "feature": "PAY_max",      "value":  0.041 },
+          { "feature": "PAY_mean",     "value":  0.033 },
+          { "feature": "severe_late",  "value":  0.027 },
+          { "feature": "PAY_AMT_mean", "value": -0.022 },
+          { "feature": "BILL_trend",   "value":  0.015 }
+        ]},
+        "lightgbm": { "topFeatures": [
+          { "feature": "PAY_mean",     "value":  0.036 },
+          { "feature": "late_count",   "value":  0.028 },
+          { "feature": "PAY_AMT_mean", "value": -0.024 },
+          { "feature": "PAY_max",      "value":  0.021 },
+          { "feature": "utilization_rate", "value": -0.016 }
+        ]},
+        "catboost": { "topFeatures": [
+          { "feature": "PAY_max",       "value":  0.038 },
+          { "feature": "PAY_mean",      "value":  0.032 },
+          { "feature": "payment_ratio", "value": -0.026 },
+          { "feature": "late_count",    "value":  0.020 },
+          { "feature": "BILL_mean",     "value": -0.014 }
+        ]}
       }
     }
     """;
@@ -99,6 +130,17 @@ public class MonitoringTimeseriesTests
         Assert.Equal("INCREASING_RISK", body.Trends.RandomForest.Alert);
         Assert.Equal(0.40, body.Trends.RandomForest.Slope, 3);
         Assert.Equal("INCREASING_RISK", body.Trends.Lstm.Alert);
+
+        // SHAP passed through from Flask (CREDIT-211): 4 tree models, top-5 each, signs preserved, no LSTM.
+        Assert.NotNull(body.Shap);
+        Assert.Equal("W3", body.Shap!.Window);
+        Assert.NotNull(body.Shap.RandomForest);
+        Assert.Equal(5, body.Shap.RandomForest!.TopFeatures.Count);
+        Assert.Equal("PAY_mean", body.Shap.RandomForest.TopFeatures[0].Feature);
+        Assert.Equal(0.031, body.Shap.RandomForest.TopFeatures[0].Value, 3);   // positive → raises PD
+        Assert.Equal(-0.025, body.Shap.RandomForest.TopFeatures[2].Value, 3);  // negative → lowers PD
+        Assert.NotNull(body.Shap.Catboost);
+        Assert.Equal(5, body.Shap.Catboost!.TopFeatures.Count);
     }
 
     [Fact]

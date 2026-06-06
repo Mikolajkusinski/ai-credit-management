@@ -37,11 +37,34 @@ export interface Trends {
   lstm: TrendInfo;
 }
 
+// --- SHAP explanation (CREDIT-107/211, contract 3.5) ---
+// Top-5 features per tree-based model for the W3 window. LSTM is intentionally excluded
+// (TreeExplainer only), so the SHAP model key set is a subset of ModelKey.
+export type ShapModelKey = 'randomForest' | 'xgboost' | 'lightgbm' | 'catboost';
+
+export interface ShapFeature {
+  feature: string;
+  value: number; // raw SHAP: positive raises PD (toward DEFAULT), negative lowers it
+}
+
+export interface ShapModel {
+  topFeatures: ShapFeature[];
+}
+
+export interface ShapExplanation {
+  window: string; // always "W3"
+  randomForest?: ShapModel;
+  xgboost?: ShapModel;
+  lightgbm?: ShapModel;
+  catboost?: ShapModel;
+}
+
 export interface TimeseriesResponse {
   clientRef?: string;
   snapshotDate?: string; // ISO date, e.g. "2026-06-03"
   trajectory: TrajectoryPoint[];
   trends: Trends;
+  shap?: ShapExplanation; // present on scoring responses; absent on history reads
 }
 
 // The 22-feature snapshot has the same shape as PredictRequest.
@@ -100,6 +123,7 @@ export interface CreateSnapshotResponse {
   snapshotDate: string;
   trajectory: TrajectoryPoint[];
   trends: Trends;
+  shap?: ShapExplanation; // SHAP for the just-scored W3 window (CREDIT-211)
   persisted: {
     clientCreated: boolean; // true when this request auto-created the client
     predictionIds: number[]; // 5 W3 predictions (RF/XGB/LightGBM/CatBoost/LSTM)

@@ -90,4 +90,45 @@ export const MOCK_TIMESERIES_RESPONSE: TimeseriesResponse = {
     catboost: { slope: 0.4, alert: 'INCREASING_RISK' },
     lstm: { slope: 0.4, alert: 'INCREASING_RISK' },
   },
+  // CREDIT-107/211: top-5 SHAP features per tree-based model on W3 (contract 3.5). Mix of +/−
+  // so the diverging-bar viz shows both red (raises PD) and green (lowers PD). No LSTM.
+  shap: {
+    window: 'W3',
+    randomForest: {
+      topFeatures: [
+        { feature: 'PAY_mean', value: 0.031 },
+        { feature: 'PAY_max', value: 0.03 },
+        { feature: 'PAY_AMT_mean', value: -0.025 },
+        { feature: 'late_count', value: 0.024 },
+        { feature: 'utilization_rate', value: -0.018 },
+      ],
+    },
+    xgboost: {
+      topFeatures: [
+        { feature: 'PAY_max', value: 0.041 },
+        { feature: 'PAY_mean', value: 0.033 },
+        { feature: 'severe_late', value: 0.027 },
+        { feature: 'PAY_AMT_mean', value: -0.022 },
+        { feature: 'BILL_trend', value: 0.015 },
+      ],
+    },
+    lightgbm: {
+      topFeatures: [
+        { feature: 'PAY_mean', value: 0.036 },
+        { feature: 'late_count', value: 0.028 },
+        { feature: 'PAY_AMT_mean', value: -0.024 },
+        { feature: 'PAY_max', value: 0.021 },
+        { feature: 'utilization_rate', value: -0.016 },
+      ],
+    },
+    catboost: {
+      topFeatures: [
+        { feature: 'PAY_max', value: 0.038 },
+        { feature: 'PAY_mean', value: 0.032 },
+        { feature: 'payment_ratio', value: -0.026 },
+        { feature: 'late_count', value: 0.02 },
+        { feature: 'BILL_mean', value: -0.014 },
+      ],
+    },
+  },
 };

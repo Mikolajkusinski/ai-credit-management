@@ -139,6 +139,7 @@ public class MonitoringService
             SnapshotDate = snapshotDate,
             Trajectory = scored.Trajectory,
             Trends = scored.Trends,
+            Shap = scored.Shap, // CREDIT-211: pass SHAP through (scoring-time only, not persisted)
             Persisted = new PersistedInfo
             {
                 ClientCreated = clientCreated,
