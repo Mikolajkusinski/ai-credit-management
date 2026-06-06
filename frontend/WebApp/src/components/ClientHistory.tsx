@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { HistoryPoint, HistoryResponse, TrajectoryPoint } from '../types/monitoring';
+import { PredictRequest } from '../types/prediction';
 import { getClientHistory } from '../api/monitoringApi';
 import TimelineChart from './TimelineChart';
 import TrendAlerts from './TrendAlerts';
+import SnapshotForm from './SnapshotForm';
 
 interface ClientHistoryProps {
   clientRef: string;
@@ -44,6 +46,10 @@ const ClientHistory = ({ clientRef, onBack }: ClientHistoryProps) => {
   const [data, setData] = useState<HistoryResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  // Session memory for SnapshotForm's "copy from previous" — the last features entered for this
+  // client. (The history endpoint returns only PD values, not raw features, so we remember them here.)
+  const [lastFeatures, setLastFeatures] = useState<PredictRequest | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -60,6 +66,12 @@ const ClientHistory = ({ clientRef, onBack }: ClientHistoryProps) => {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Reset form visibility + copy-from-previous memory when switching clients.
+  useEffect(() => {
+    setShowForm(false);
+    setLastFeatures(null);
+  }, [clientRef]);
 
   const points = data ? historyToTrajectory(data.history) : [];
 
@@ -78,24 +90,53 @@ const ClientHistory = ({ clientRef, onBack }: ClientHistoryProps) => {
                 : 'Client history'}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={onBack}
-          style={{
-            padding: '8px 20px',
-            borderRadius: '9999px',
-            border: '1px solid rgba(255, 255, 255, 0.12)',
-            backgroundColor: 'rgba(255, 255, 255, 0.05)',
-            color: '#e2e8f0',
-            fontSize: '14px',
-            fontWeight: 600,
-            cursor: 'pointer',
-            flexShrink: 0,
-          }}
-        >
-          ← Back to clients
-        </button>
+        <div style={{ display: 'flex', gap: '12px', flexShrink: 0 }}>
+          <button
+            type="button"
+            onClick={() => setShowForm((s) => !s)}
+            style={{
+              padding: '8px 20px',
+              borderRadius: '9999px',
+              border: `1px solid ${showForm ? '#7c3aed' : 'rgba(167, 139, 250, 0.4)'}`,
+              backgroundColor: showForm ? 'rgba(124, 58, 237, 0.25)' : '#7c3aed',
+              color: '#f1f5f9',
+              fontSize: '14px',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            {showForm ? 'Close form' : '+ Add snapshot'}
+          </button>
+          <button
+            type="button"
+            onClick={onBack}
+            style={{
+              padding: '8px 20px',
+              borderRadius: '9999px',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              color: '#e2e8f0',
+              fontSize: '14px',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            ← Back to clients
+          </button>
+        </div>
       </div>
+
+      {showForm && (
+        <SnapshotForm
+          clientRef={clientRef}
+          previousFeatures={lastFeatures}
+          onClose={() => setShowForm(false)}
+          onSubmitted={(features) => {
+            setLastFeatures(features);
+            load();
+          }}
+        />
+      )}
 
       {error && (
         <div style={{

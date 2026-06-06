@@ -86,3 +86,23 @@ export interface HistoryQuery {
   to?: string;
   limit?: number;
 }
+
+// --- Snapshot entry (contract 4.3: POST clients/{ref}/snapshots) ---
+// Stateful: scores the 22 features, persists the snapshot + W3 predictions + trends.
+export interface CreateSnapshotRequest {
+  snapshotDate?: string; // ISO yyyy-mm-dd; backend defaults to today
+  features: Snapshot22Features;
+}
+
+export interface CreateSnapshotResponse {
+  snapshotId: number;
+  clientRef: string;
+  snapshotDate: string;
+  trajectory: TrajectoryPoint[];
+  trends: Trends;
+  persisted: {
+    clientCreated: boolean; // true when this request auto-created the client
+    predictionIds: number[]; // 5 W3 predictions (RF/XGB/LightGBM/CatBoost/LSTM)
+    trendIds: number[]; // 5 upserted trends
+  };
+}

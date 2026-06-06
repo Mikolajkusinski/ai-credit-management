@@ -1,6 +1,8 @@
 import axios from 'axios';
 import {
   ClientListResponse,
+  CreateSnapshotRequest,
+  CreateSnapshotResponse,
   HistoryQuery,
   HistoryResponse,
   TimeseriesRequest,
@@ -35,6 +37,20 @@ export const getClientHistory = async (
   const response = await axios.get<HistoryResponse>(
     `${API_BASE_URL}/clients/${encodeURIComponent(clientRef)}/history`,
     { params: query },
+  );
+  return response.data;
+};
+
+// Score + persist a dated snapshot for a client (contract 4.3). Auto-creates the client when
+// {ref} is new. Drives the SnapshotForm (CREDIT-303). Throws on 400/409/502/503 — callers map
+// the HTTP status to a message.
+export const createSnapshot = async (
+  clientRef: string,
+  body: CreateSnapshotRequest,
+): Promise<CreateSnapshotResponse> => {
+  const response = await axios.post<CreateSnapshotResponse>(
+    `${API_BASE_URL}/clients/${encodeURIComponent(clientRef)}/snapshots`,
+    body,
   );
   return response.data;
 };

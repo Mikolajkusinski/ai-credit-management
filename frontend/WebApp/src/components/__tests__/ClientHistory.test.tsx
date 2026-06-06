@@ -4,8 +4,11 @@ import ClientHistory, { historyToTrajectory, formatSnapshotLabel } from '../Clie
 import { getClientHistory } from '../../api/monitoringApi';
 import type { HistoryResponse } from '../../types/monitoring';
 
+// ClientHistory now imports SnapshotForm, which imports createSnapshot — include it in the mock
+// so the module's named exports resolve.
 vi.mock('../../api/monitoringApi', () => ({
   getClientHistory: vi.fn(),
+  createSnapshot: vi.fn(),
 }));
 
 const mockedGet = vi.mocked(getClientHistory);
@@ -68,5 +71,13 @@ describe('ClientHistory', () => {
     render(<ClientHistory clientRef="alpha" onBack={() => {}} />);
 
     expect(await screen.findByText(/no snapshots for this client yet/i)).toBeInTheDocument();
+  });
+
+  it('reveals the snapshot form when "Add snapshot" is clicked', async () => {
+    mockedGet.mockResolvedValue(history);
+    render(<ClientHistory clientRef="alpha" onBack={() => {}} />);
+
+    fireEvent.click(await screen.findByRole('button', { name: /add snapshot/i }));
+    expect(screen.getByLabelText(/snapshot date/i)).toBeInTheDocument();
   });
 });

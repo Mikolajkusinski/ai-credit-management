@@ -4,34 +4,59 @@ import { PredictRequest } from '../types/prediction';
 interface InputFormProps {
   onSubmit: (data: PredictRequest) => void;
   loading: boolean;
+  initialValues?: PredictRequest; // seed the 22 fields (e.g. copy-from-previous in SnapshotForm)
+  referenceDate?: Date; // anchors the month labels; defaults to today
+  submitLabel?: string;
+  submittingLabel?: string;
 }
 
-const InputForm = ({ onSubmit, loading }: InputFormProps) => {
-  const [formData, setFormData] = useState<PredictRequest>({
-    limitBal: 50000,
-    sex: 2,
-    education: 2,
-    marriage: 1,
-    age: 35,
-    pay0: 0,
-    pay2: 0,
-    pay3: -1,
-    pay4: 0,
-    pay5: -1,
-    pay6: -1,
-    billAmt1: 40000,
-    billAmt2: 38000,
-    billAmt3: 35000,
-    billAmt4: 33000,
-    billAmt5: 30000,
-    billAmt6: 28000,
-    payAmt1: 2000,
-    payAmt2: 1500,
-    payAmt3: 1800,
-    payAmt4: 1200,
-    payAmt5: 1000,
-    payAmt6: 900
-  });
+// Sensible defaults for a fresh form. Exported so SnapshotForm can start from the same baseline.
+export const DEFAULT_FEATURES: PredictRequest = {
+  limitBal: 50000,
+  sex: 2,
+  education: 2,
+  marriage: 1,
+  age: 35,
+  pay0: 0,
+  pay2: 0,
+  pay3: -1,
+  pay4: 0,
+  pay5: -1,
+  pay6: -1,
+  billAmt1: 40000,
+  billAmt2: 38000,
+  billAmt3: 35000,
+  billAmt4: 33000,
+  billAmt5: 30000,
+  billAmt6: 28000,
+  payAmt1: 2000,
+  payAmt2: 1500,
+  payAmt3: 1800,
+  payAmt4: 1200,
+  payAmt5: 1000,
+  payAmt6: 900
+};
+
+// The 6 most recent calendar month names (newest → oldest) relative to `reference`.
+// Index 0 = newest, maps to pay0 / billAmt1 / payAmt1; index 5 = oldest, maps to pay6 / billAmt6 /
+// payAmt6. Building each date on day 1 avoids month-rollover bugs (e.g. setMonth on the 31st).
+export const deriveMonthLabels = (reference: Date): string[] =>
+  Array.from({ length: 6 }, (_, i) =>
+    new Date(reference.getFullYear(), reference.getMonth() - i, 1).toLocaleString('en-US', {
+      month: 'long',
+    }),
+  );
+
+const InputForm = ({
+  onSubmit,
+  loading,
+  initialValues,
+  referenceDate,
+  submitLabel = 'Predict Default Risk',
+  submittingLabel = 'Predicting...',
+}: InputFormProps) => {
+  const [formData, setFormData] = useState<PredictRequest>(initialValues ?? DEFAULT_FEATURES);
+  const months = deriveMonthLabels(referenceDate ?? new Date());
 
   const handleChange = (field: keyof PredictRequest, value: number) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -153,18 +178,8 @@ const InputForm = ({ onSubmit, loading }: InputFormProps) => {
               Payment Status<br />(Last 6 Months)
             </h3>
           </div>
-          {/*
-           * TODO: Should the month labels here be dynamically derived from the current date
-           * (i.e. always the 6 most recent calendar months) rather than hardcoded to
-           * ['September', ..., 'April']? If so, replace the static array with something like:
-           *   Array.from({ length: 6 }, (_, i) => {
-           *     const d = new Date(); d.setMonth(d.getMonth() - i);
-           *     return d.toLocaleString('default', { month: 'long' });
-           *   })
-           * This would keep the labels accurate regardless of when the app is used.
-           */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {['September', 'August', 'July', 'June', 'May', 'April'].map((month, idx) => {
+            {months.map((month, idx) => {
               const field = `pay${idx === 0 ? '0' : idx === 1 ? '2' : idx + 1}` as keyof PredictRequest;
               return (
                 <div key={month}>
@@ -195,18 +210,8 @@ const InputForm = ({ onSubmit, loading }: InputFormProps) => {
               Bill Amounts<br />(Last 6 Months, NT$)
             </h3>
           </div>
-          {/*
-           * TODO: Should the month labels here be dynamically derived from the current date
-           * (i.e. always the 6 most recent calendar months) rather than hardcoded to
-           * ['September', ..., 'April']? If so, replace the static array with something like:
-           *   Array.from({ length: 6 }, (_, i) => {
-           *     const d = new Date(); d.setMonth(d.getMonth() - i);
-           *     return d.toLocaleString('default', { month: 'long' });
-           *   })
-           * This would keep the labels accurate regardless of when the app is used.
-           */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {['September', 'August', 'July', 'June', 'May', 'April'].map((month, idx) => {
+            {months.map((month, idx) => {
               const field = `billAmt${idx + 1}` as keyof PredictRequest;
               return (
                 <div key={month}>
@@ -231,18 +236,8 @@ const InputForm = ({ onSubmit, loading }: InputFormProps) => {
               Payment Amounts<br />(Last 6 Months, NT$)
             </h3>
           </div>
-          {/*
-           * TODO: Should the month labels here be dynamically derived from the current date
-           * (i.e. always the 6 most recent calendar months) rather than hardcoded to
-           * ['September', ..., 'April']? If so, replace the static array with something like:
-           *   Array.from({ length: 6 }, (_, i) => {
-           *     const d = new Date(); d.setMonth(d.getMonth() - i);
-           *     return d.toLocaleString('default', { month: 'long' });
-           *   })
-           * This would keep the labels accurate regardless of when the app is used.
-           */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {['September', 'August', 'July', 'June', 'May', 'April'].map((month, idx) => {
+            {months.map((month, idx) => {
               const field = `payAmt${idx + 1}` as keyof PredictRequest;
               return (
                 <div key={month}>
@@ -278,7 +273,7 @@ const InputForm = ({ onSubmit, loading }: InputFormProps) => {
           boxShadow: loading ? 'none' : '0 4px 24px rgba(124, 58, 237, 0.4)'
         }}
       >
-        {loading ? 'Predicting...' : 'Predict Default Risk'}
+        {loading ? submittingLabel : submitLabel}
       </button>
     </form>
   );
