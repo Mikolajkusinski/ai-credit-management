@@ -8,7 +8,7 @@
 > - 🔴 **Do zrobienia** — task dostępny (wszystkie `blocked_by` są 🟢), nie został jeszcze rozpoczęty.
 > - 🔒 **Zablokowane** — task czeka na zależność (`blocked_by` zawiera coś, co nie jest 🟢).
 >
-> **Ostatnia aktualizacja:** 2026-06-06 (po merge CREDIT-211 — SHAP pass-through w .NET DTO (`TimeseriesResponse`/`SnapshotResponse` + `MonitoringService`) + komponent `ShapExplanation.tsx` z diverging bars dla 4 modeli tree-based (czerwone +, zielone −), zasilany z `createSnapshot` w `SnapshotForm`; backend 24/24, frontend 27→34 vitest)
+> **Ostatnia aktualizacja:** 2026-06-06 (po merge CREDIT-112 — audyt fairness (fairlearn) na W3: DPD/EOD per 5 modeli przy progach cost-opt z CREDIT-106; wszystkie modele |diff| ≤ 0.1 (max DPD 0.039 CatBoost; LSTM najbliżej parytetu — DPD 0.007, EOD 0.015); `reports/fairness_report.md` + `fairness_metrics_w3.csv` + 2 PNG)
 
 ---
 
@@ -24,8 +24,8 @@
 ## 📊 Statystyki
 
 - **Łącznie zadań:** 30 (CREDIT-115 + CREDIT-116 dodane 2026-06-05 jako follow-up do CREDIT-109)
-- **🟢 Wykonane:** 25 (CREDIT-101, CREDIT-102, CREDIT-103, CREDIT-201, CREDIT-401, CREDIT-402, CREDIT-210, CREDIT-104, CREDIT-202, CREDIT-203, CREDIT-204, CREDIT-301, CREDIT-302, CREDIT-205, CREDIT-105, CREDIT-110, CREDIT-111, CREDIT-106, CREDIT-109, CREDIT-107, CREDIT-108, CREDIT-115, CREDIT-116, CREDIT-303, CREDIT-211)
-- **🔴 Dostępne:** 3 (CREDIT-112, CREDIT-113, CREDIT-304)
+- **🟢 Wykonane:** 26 (CREDIT-101, CREDIT-102, CREDIT-103, CREDIT-201, CREDIT-401, CREDIT-402, CREDIT-210, CREDIT-104, CREDIT-202, CREDIT-203, CREDIT-204, CREDIT-301, CREDIT-302, CREDIT-205, CREDIT-105, CREDIT-110, CREDIT-111, CREDIT-106, CREDIT-109, CREDIT-107, CREDIT-108, CREDIT-115, CREDIT-116, CREDIT-303, CREDIT-211, CREDIT-112)
+- **🔴 Dostępne:** 2 (CREDIT-113, CREDIT-304)
 - **🔒 Zablokowane:** 2
 
 ---
@@ -150,8 +150,8 @@
   - LightGBM + CatBoost na oknach 3-mies.; 5 modeli w response Flask. CatBoost najlepszy (AUC 0.7802, Brier 0.1354); cost thresholds rozszerzone do 5 modeli; `compute_trends` iteracyjne po `predictions.keys()`. PR #23, merged 2026-06-05.
   - blocked_by: 102 · blocks: 113
 
-- 🔴 **CREDIT-112** · [EVAL] · P1 · GF · SWAP-OK · `sprint5/fairness`
-  - Audyt fairness (fairlearn) — DPD / EOD względem SEX; ostrzeżenie gdy |różnica| > 0.1.
+- 🟢 **CREDIT-112** · [EVAL] · P1 · GF · SWAP-OK · `sprint5/fairness`
+  - Audyt fairness (fairlearn) — DPD (demographic parity diff) i EOD (equalized odds diff) względem SEX dla 5 modeli W3, przy progach binaryzacji z `alert_thresholds.json` (cost-opt, FN=5×FP). Wszystkie modele |DPD| oraz |EOD| ≤ 0.1; DPD dodatnie (mężczyźni nieco częściej flagowani, zgodnie z wyższym base rate defaultów w grupie SEX=1). Max DPD CatBoost (0.039), min LSTM (0.007). Pliki: `ml-learing-center/fairness_audit.py`, `reports/fairness_report.md`, `reports/fairness_metrics_w3.csv`, `reports/fairness_selection_rate_w3.png`, `reports/fairness_tpr_fpr_w3.png`; dependency `fairlearn>=0.10` w `requirements.txt`.
   - blocked_by: 102 · blocks: —
 
 - 🟢 **CREDIT-115** · [BE] · P2 · GF · `feat/backend-5model-dtos`

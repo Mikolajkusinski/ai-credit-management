@@ -11,4 +11,5 @@ matplotlib>=3.8
 seaborn>=0.13
 shap>=0.45
 optuna>=3.4
+fairlearn>=0.10
 pytest>=7.4
