@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { PredictRequest } from '../types/prediction';
+import { ShapExplanation as ShapExplanationType } from '../types/monitoring';
 import { createSnapshot } from '../api/monitoringApi';
 import InputForm, { DEFAULT_FEATURES } from './InputForm';
+import ShapExplanation from './ShapExplanation';
 
 interface SnapshotFormProps {
   clientRef: string;
@@ -67,6 +69,8 @@ const SnapshotForm = ({ clientRef, previousFeatures, onSubmitted, onClose }: Sna
   const [snapshotDate, setSnapshotDate] = useState<string>(todayISO());
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // SHAP for the most recently scored snapshot (CREDIT-211). Shown until the next submit.
+  const [shap, setShap] = useState<ShapExplanationType | null>(null);
   // `seed` remounts InputForm so it re-initialises from `initialValues` (used by copy-from-previous).
   const [initialValues, setInitialValues] = useState<PredictRequest>(DEFAULT_FEATURES);
   const [seed, setSeed] = useState(0);
@@ -80,8 +84,10 @@ const SnapshotForm = ({ clientRef, previousFeatures, onSubmitted, onClose }: Sna
   const handleAdd = async (features: PredictRequest) => {
     setSubmitting(true);
     setError(null);
+    setShap(null);
     try {
-      await createSnapshot(clientRef, { snapshotDate, features });
+      const result = await createSnapshot(clientRef, { snapshotDate, features });
+      setShap(result.shap ?? null);
       onSubmitted(features);
     } catch (err) {
       setError(messageForError(err));
@@ -182,6 +188,13 @@ const SnapshotForm = ({ clientRef, previousFeatures, onSubmitted, onClose }: Sna
         loading={submitting}
         onSubmit={handleAdd}
       />
+
+      {shap && (
+        <ShapExplanation
+          shap={shap}
+          subtitle="Top-5 SHAP features per model for the snapshot you just added (W3)"
+        />
+      )}
     </div>
   );
 };

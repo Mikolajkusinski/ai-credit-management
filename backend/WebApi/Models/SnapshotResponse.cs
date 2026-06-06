@@ -24,6 +24,14 @@ public class SnapshotResponse
     [JsonPropertyName("trends")]
     public Trends Trends { get; set; } = new();
 
+    /// <summary>
+    /// CREDIT-107/211: top-5 SHAP features per tree-based model for the W3 window, passed through
+    /// from the scoring response. Computed at scoring time only and not persisted, so it is present
+    /// here (the write path) but absent from <c>GET .../history</c>.
+    /// </summary>
+    [JsonPropertyName("shap")]
+    public ShapExplanation? Shap { get; set; }
+
     [JsonPropertyName("persisted")]
     public PersistedInfo Persisted { get; set; } = new();
 }

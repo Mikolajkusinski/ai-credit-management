@@ -8,14 +8,14 @@
 > - 🔴 **Do zrobienia** — task dostępny (wszystkie `blocked_by` są 🟢), nie został jeszcze rozpoczęty.
 > - 🔒 **Zablokowane** — task czeka na zależność (`blocked_by` zawiera coś, co nie jest 🟢).
 >
-> **Ostatnia aktualizacja:** 2026-06-06 (po merge CREDIT-303 — SnapshotForm z datepickerem w zakładce Monitoring; dynamiczne miesiące w `InputForm.tsx` (fix 3× hardcoded `['September'…'April']`); „kopiuj z poprzedniej migawki"; odblokowane CREDIT-304)
+> **Ostatnia aktualizacja:** 2026-06-06 (po merge CREDIT-211 — SHAP pass-through w .NET DTO (`TimeseriesResponse`/`SnapshotResponse` + `MonitoringService`) + komponent `ShapExplanation.tsx` z diverging bars dla 4 modeli tree-based (czerwone +, zielone −), zasilany z `createSnapshot` w `SnapshotForm`; backend 24/24, frontend 27→34 vitest)
 
 ---
 
 ## 🎯 Aktualne zadanie
 
 - **Gabriel Figur (GF):** 🔴 **CREDIT-113** — Stacked ensemble (LR meta-learner na 5 modelach bazowych) · branch `sprint6/stacking` *(ostatnie ogniwo przed CREDIT-114 final report)*
-- **Mikołaj Kusiński (MK):** 🔴 **CREDIT-211** — SHAP pass-through w .NET DTO + komponent wizualizacji (bar/waterfall) · branch `sprint5/shap-ui` *(Sprint 5 P2 SWAP-OK; odblokowane przez CREDIT-107 + CREDIT-210)*
+- **Mikołaj Kusiński (MK):** 🔴 **CREDIT-304** — UI polish (responsive 1024/1440/1920, a11y Lighthouse ≥ 90, dark mode, tooltipy modeli) · branch `sprint6/ui-polish` *(Sprint 6 P2; odblokowane przez CREDIT-302 + CREDIT-303 — ostatni task toru MK)*
 
 > **Reguła aktualizacji tej sekcji:** gdy task zostanie zmergeowany do `main`, ustaw tutaj kolejny najwyżej priorytetowy dostępny (🔴) task z toru właściwej osoby. Jeśli osoba nie ma już dostępnych tasków w bieżącym sprincie, wpisz „⏸️ czeka na odblokowanie / koniec sprintu".
 
@@ -24,8 +24,8 @@
 ## 📊 Statystyki
 
 - **Łącznie zadań:** 30 (CREDIT-115 + CREDIT-116 dodane 2026-06-05 jako follow-up do CREDIT-109)
-- **🟢 Wykonane:** 24 (CREDIT-101, CREDIT-102, CREDIT-103, CREDIT-201, CREDIT-401, CREDIT-402, CREDIT-210, CREDIT-104, CREDIT-202, CREDIT-203, CREDIT-204, CREDIT-301, CREDIT-302, CREDIT-205, CREDIT-105, CREDIT-110, CREDIT-111, CREDIT-106, CREDIT-109, CREDIT-107, CREDIT-108, CREDIT-115, CREDIT-116, CREDIT-303)
-- **🔴 Dostępne:** 4 (CREDIT-112, CREDIT-113, CREDIT-211, CREDIT-304)
+- **🟢 Wykonane:** 25 (CREDIT-101, CREDIT-102, CREDIT-103, CREDIT-201, CREDIT-401, CREDIT-402, CREDIT-210, CREDIT-104, CREDIT-202, CREDIT-203, CREDIT-204, CREDIT-301, CREDIT-302, CREDIT-205, CREDIT-105, CREDIT-110, CREDIT-111, CREDIT-106, CREDIT-109, CREDIT-107, CREDIT-108, CREDIT-115, CREDIT-116, CREDIT-303, CREDIT-211)
+- **🔴 Dostępne:** 3 (CREDIT-112, CREDIT-113, CREDIT-304)
 - **🔒 Zablokowane:** 2
 
 ---
@@ -142,8 +142,8 @@
   - SnapshotForm (reuse `InputForm` + natywny `<input type="date">`) w zakładce Monitoring: przycisk „+ Add snapshot" w `ClientHistory` odsłania datowany formularz 22 cech → `POST /clients/{ref}/snapshots` (nowy `createSnapshot` w `monitoringApi.ts` + typy `CreateSnapshotRequest/Response`) → reload trajektorii; mapowanie błędów 400/409/502/503 (409 = „snapshot już istnieje dla tej daty"). Fix 3× zahardkodowanych miesięcy w `InputForm.tsx` → `deriveMonthLabels(referenceDate)` (rollover-safe, miesiące względem wybranej daty migawki). „Kopiuj z poprzedniej migawki" jako pamięć sesji w `ClientHistory` (history endpoint zwraca tylko PD, nie surowe cechy). `InputForm` wstecznie kompatybilny (nowe propsy opcjonalne — zakładka Prediction bez zmian). Testy Vitest 16 → 27 (InputForm +5, SnapshotForm +5, ClientHistory +1).
   - blocked_by: 210, 301 · blocks: 304
 
-- 🔴 **CREDIT-211** · [BE/FE] · P2 · MK · SWAP-OK · `sprint5/shap-ui`
-  - SHAP pass-through w .NET DTO + komponent wizualizacji (bar/waterfall). Odblokowane przez CREDIT-107 merge.
+- 🟢 **CREDIT-211** · [BE/FE] · P2 · MK · SWAP-OK · `sprint5/shap-ui`
+  - SHAP pass-through w .NET DTO + komponent wizualizacji. Gap j.w. CREDIT-115: Flask `/predict/timeseries` zwracał `shap` (4 modele tree-based × top-5 cech, contract §3.5) ale backend DTO go silently dropował przy deserializacji. Backend: `ShapExplanation`/`ShapModel`/`ShapFeature` w `TimeseriesResponse.cs`, `Shap` w `SnapshotResponse.cs`, `Shap = scored.Shap` w `MonitoringService.ScoreAndPersistAsync` (additive, bez migracji DB — SHAP scoring-time only, nieperzystowany). Frontend: typy SHAP w `monitoring.ts` (+`shap?` na `TimeseriesResponse`/`CreateSnapshotResponse`), `MOCK_TIMESERIES_RESPONSE` z blokiem `shap`, nowy `ShapExplanation.tsx` (diverging horizontal bars dla 4 modeli, czerwone + = podnosi PD, zielone − = obniża; długość ∝ |value|/max). Wpięte w `SnapshotForm` — po dodaniu migawki SHAP renderuje się pod formularzem („why this score?"). Testy: backend +2 asserty (`MonitoringTimeseriesTests` + `SnapshotPersistenceTests`, 24/24), frontend +`ShapExplanation.test.tsx` (27→34 vitest). LSTM pominięty (TreeExplainer N/A — zgodnie z CREDIT-107).
   - blocked_by: 107, 210 · blocks: —
 
 - 🟢 **CREDIT-109** · [ML] · P2 · GF · `sprint5/lgbm-catboost`
