@@ -8,14 +8,14 @@
 > - 🔴 **Do zrobienia** — task dostępny (wszystkie `blocked_by` są 🟢), nie został jeszcze rozpoczęty.
 > - 🔒 **Zablokowane** — task czeka na zależność (`blocked_by` zawiera coś, co nie jest 🟢).
 >
-> **Ostatnia aktualizacja:** 2026-06-05 (po merge CREDIT-115 backend + CREDIT-116 frontend — pełen 5-model passthrough end-to-end; demo UI pokazuje 5 linii w Timeline + 5 kart TrendAlerts dla `seminarium-demo` z 3 migawkami)
+> **Ostatnia aktualizacja:** 2026-06-06 (po merge CREDIT-303 — SnapshotForm z datepickerem w zakładce Monitoring; dynamiczne miesiące w `InputForm.tsx` (fix 3× hardcoded `['September'…'April']`); „kopiuj z poprzedniej migawki"; odblokowane CREDIT-304)
 
 ---
 
 ## 🎯 Aktualne zadanie
 
 - **Gabriel Figur (GF):** 🔴 **CREDIT-113** — Stacked ensemble (LR meta-learner na 5 modelach bazowych) · branch `sprint6/stacking` *(ostatnie ogniwo przed CREDIT-114 final report)*
-- **Mikołaj Kusiński (MK):** 🔴 **CREDIT-303** — SnapshotForm + datepicker; fix zahardkodowanych miesięcy w `InputForm.tsx`; „kopiuj z poprzedniej migawki" · branch `sprint5/snapshot-entry` *(Sprint 5 P1; odblokowane przez CREDIT-210 + CREDIT-301)*
+- **Mikołaj Kusiński (MK):** 🔴 **CREDIT-211** — SHAP pass-through w .NET DTO + komponent wizualizacji (bar/waterfall) · branch `sprint5/shap-ui` *(Sprint 5 P2 SWAP-OK; odblokowane przez CREDIT-107 + CREDIT-210)*
 
 > **Reguła aktualizacji tej sekcji:** gdy task zostanie zmergeowany do `main`, ustaw tutaj kolejny najwyżej priorytetowy dostępny (🔴) task z toru właściwej osoby. Jeśli osoba nie ma już dostępnych tasków w bieżącym sprincie, wpisz „⏸️ czeka na odblokowanie / koniec sprintu".
 
@@ -24,9 +24,9 @@
 ## 📊 Statystyki
 
 - **Łącznie zadań:** 30 (CREDIT-115 + CREDIT-116 dodane 2026-06-05 jako follow-up do CREDIT-109)
-- **🟢 Wykonane:** 23 (CREDIT-101, CREDIT-102, CREDIT-103, CREDIT-201, CREDIT-401, CREDIT-402, CREDIT-210, CREDIT-104, CREDIT-202, CREDIT-203, CREDIT-204, CREDIT-301, CREDIT-302, CREDIT-205, CREDIT-105, CREDIT-110, CREDIT-111, CREDIT-106, CREDIT-109, CREDIT-107, CREDIT-108, CREDIT-115, CREDIT-116)
-- **🔴 Dostępne:** 4 (CREDIT-112, CREDIT-113, CREDIT-211, CREDIT-303)
-- **🔒 Zablokowane:** 3
+- **🟢 Wykonane:** 24 (CREDIT-101, CREDIT-102, CREDIT-103, CREDIT-201, CREDIT-401, CREDIT-402, CREDIT-210, CREDIT-104, CREDIT-202, CREDIT-203, CREDIT-204, CREDIT-301, CREDIT-302, CREDIT-205, CREDIT-105, CREDIT-110, CREDIT-111, CREDIT-106, CREDIT-109, CREDIT-107, CREDIT-108, CREDIT-115, CREDIT-116, CREDIT-303)
+- **🔴 Dostępne:** 4 (CREDIT-112, CREDIT-113, CREDIT-211, CREDIT-304)
+- **🔒 Zablokowane:** 2
 
 ---
 
@@ -138,8 +138,8 @@
 
 ## Sprint 5 — UX migawek, alerty, modele, fairness (28 lip – 10 sie)
 
-- 🔴 **CREDIT-303** · [FE] · P1 · MK · `sprint5/snapshot-entry`
-  - SnapshotForm + datepicker; fix zahardkodowanych miesięcy w `InputForm.tsx`; „kopiuj z poprzedniej migawki".
+- 🟢 **CREDIT-303** · [FE] · P1 · MK · `sprint5/snapshot-entry`
+  - SnapshotForm (reuse `InputForm` + natywny `<input type="date">`) w zakładce Monitoring: przycisk „+ Add snapshot" w `ClientHistory` odsłania datowany formularz 22 cech → `POST /clients/{ref}/snapshots` (nowy `createSnapshot` w `monitoringApi.ts` + typy `CreateSnapshotRequest/Response`) → reload trajektorii; mapowanie błędów 400/409/502/503 (409 = „snapshot już istnieje dla tej daty"). Fix 3× zahardkodowanych miesięcy w `InputForm.tsx` → `deriveMonthLabels(referenceDate)` (rollover-safe, miesiące względem wybranej daty migawki). „Kopiuj z poprzedniej migawki" jako pamięć sesji w `ClientHistory` (history endpoint zwraca tylko PD, nie surowe cechy). `InputForm` wstecznie kompatybilny (nowe propsy opcjonalne — zakładka Prediction bez zmian). Testy Vitest 16 → 27 (InputForm +5, SnapshotForm +5, ClientHistory +1).
   - blocked_by: 210, 301 · blocks: 304
 
 - 🔴 **CREDIT-211** · [BE/FE] · P2 · MK · SWAP-OK · `sprint5/shap-ui`
@@ -174,7 +174,7 @@
   - Raport końcowy + komplet wykresów do slajdów obrony.
   - blocked_by: 103, 111, 113 · blocks: —
 
-- 🔒 **CREDIT-304** · [FE] · P2 · MK · `sprint6/ui-polish`
+- 🔴 **CREDIT-304** · [FE] · P2 · MK · `sprint6/ui-polish`
   - Responsive (1024/1440/1920), a11y (Lighthouse ≥ 90), dark mode, tooltipy modeli.
   - blocked_by: 302, 303 · blocks: —
 
