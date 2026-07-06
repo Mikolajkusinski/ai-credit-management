@@ -5,12 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="500ce533-bc1c-44b5-89b2-adbf95755bc0" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Praca Magisterska-3.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Praca Magisterska-6.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Praca Magisterska-7.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Praca Magisterska-8.pdf" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ml-service/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/ml-service/Dockerfile" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
