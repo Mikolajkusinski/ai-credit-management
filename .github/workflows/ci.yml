@@ -71,10 +71,10 @@ jobs:
       # stack (tensorflow/catboost, ~2 GB) here would serve tests that never
       # import it.
       - name: Install minimal dependencies
-        run: pip install pandas numpy scikit-learn pytest
+        run: pip install pandas numpy scikit-learn pytest pypdf
 
       - name: Run pytest
-        run: python -m pytest sliding_window_test.py -v
+        run: python -m pytest sliding_window_test.py validate_thesis_test.py -v
 
   frontend-tests:
     name: Frontend (React / Vitest)
