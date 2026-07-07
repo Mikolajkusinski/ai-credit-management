@@ -16,6 +16,19 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
+# Fixed category domains from the UCI dataset. get_dummies derives dummy columns
+# from values OBSERVED in the frame, so a single-row frame (Flask inference) would
+# produce exactly one dummy per column and drop_first=True would remove it --
+# silently zeroing all demographics (train/serve skew, Fable5_Task3.md U1/U2).
+# Casting to Categorical with the full domain makes the dummy set independent of
+# batch composition; values outside the domain become NaN -> all-zero dummies
+# (baseline category), never a shifted column.
+UCI_CATEGORIES: Dict[str, List[int]] = {
+    "SEX": [1, 2],
+    "EDUCATION": [0, 1, 2, 3, 4, 5, 6],
+    "MARRIAGE": [0, 1, 2, 3],
+}
+
 
 def engineer_features(
     df: pd.DataFrame, window: Dict[str, List[str]]
@@ -53,6 +66,8 @@ def engineer_features(
     # Most recent payment status inside the window.
     out["recent_pay_status"] = out[pay_cols[-1]]
 
+    for col, cats in UCI_CATEGORIES.items():
+        out[col] = pd.Categorical(out[col].astype(int), categories=cats)
     out = pd.get_dummies(out, columns=["EDUCATION", "MARRIAGE", "SEX"], drop_first=True)
     categorical_cols = [
         c for c in out.columns
