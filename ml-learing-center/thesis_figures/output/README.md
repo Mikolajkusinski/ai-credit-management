@@ -53,3 +53,4 @@ _Ostatnia aktualizacja: 2026-04-19 15:19_
 - **fig_5_7_interpretowalnosc** — Heatmapa 5×3 prezentująca interpretowalność trzech modeli w pięciu wymiarach — pod nią oceny sumaryczne (LSTM = niska, RF i XGB = średnio/wysoka).
 - **fig_5_8_weryfikacja_hipotez** — [PLACEHOLDER] Tabela wizualna weryfikacji hipotez — hipoteza → wynik → status (potwierdzona/częściowo/odrzucona). Podmień HYPOTHESES w pliku generatora na rzeczywiste hipotezy z pracy.
 - **fig_5_9_wnioski_kierunki** — [PLACEHOLDER] Mind-map wniosków i kierunków dalszych badań. Podmień treści w listach CONCLUSIONS i FUTURE_WORK na własne.
+- **fig_5_10_audyt_fairness** — Audyt fairlearn DPD/EOD wrt SEX dla 5 modeli W3 przy progach kosztowych; wszystkie |diff| <= 0.04 przy limicie 0.10; panel (a) pokazuje też lukę strukturalną ~0.021 z różnicy base rate.
