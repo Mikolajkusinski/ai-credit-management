@@ -100,11 +100,11 @@
   - blocked_by: 101, 102, 104 · blocks: 111
 
 - 🟢 **CREDIT-111** · [EVAL] · P0 · GF · `sprint3/static-vs-dynamic`
-  - **DOWÓD TEZY** — statyka (PD z W3) vs monitoring (trajektoria); catch rate vs fałszywe alarmy. Mixed results @ FA=10%: monitoring tracił 2-6pp catch vs static (max-aggregator noise > single calibrated snapshot), ALE mean lead ~2 okna i 43-184 unikalnych catchy/model. Framing: "monitoring offers earlier detection at comparable discrimination". 3 ROC overlay PNG + 2 CSV + Markdown report.
+  - **DOWÓD TEZY** — statyka (PD z W3) vs monitoring (trajektoria); catch rate vs fałszywe alarmy. Mixed results @ FA=10% *(liczby po leakage-fix 2026-07-07)*: monitoring traci 5-11pp catch vs static dla 4 modeli statycznych, ALE **LSTM jako jedyny wygrywa monitoringiem (+2.6pp)**; mean lead ~2 okna i 39-74 unikalnych catchy/model. Framing: "monitoring offers earlier detection at comparable discrimination". 5 ROC overlay PNG + 2 CSV + Markdown report + `threshold_leakage_fix.md`.
   - blocked_by: 110 · blocks: 114
 
 - 🟢 **CREDIT-106** · [ML] · P1 · GF · SWAP-OK · `sprint3/cost-thresholds`
-  - Progi kosztowe (FN > FP); `alert_thresholds.json` w (0.1, 0.9). Per-model optymalne: RF=0.145 / XGB=0.180 / LSTM=0.185 (FN=5×FP). Flask response z `costThresholds` + `windowAlerts` (additive, non-breaking).
+  - Progi kosztowe (FN > FP); `alert_thresholds.json` w (0.1, 0.9). Per-model optymalne *(po leakage-fix 2026-07-07: optymalizacja na splicie kalibracyjnym, nie testowym)*: RF=0.145 / XGB=0.165 / LGBM=0.160 / CatBoost=0.160 / LSTM=0.155 (FN=5×FP). Flask response z `costThresholds` + `windowAlerts` (additive, non-breaking).
   - blocked_by: 105 · blocks: —
 
 - 🟢 **CREDIT-204** · [BE] · P0 · MK · `sprint3/client-history-get`
@@ -148,7 +148,7 @@
   - blocked_by: 107, 210 · blocks: —
 
 - 🟢 **CREDIT-109** · [ML] · P2 · GF · `sprint5/lgbm-catboost`
-  - LightGBM + CatBoost na oknach 3-mies.; 5 modeli w response Flask. CatBoost najlepszy (AUC 0.7802, Brier 0.1354); cost thresholds rozszerzone do 5 modeli; `compute_trends` iteracyjne po `predictions.keys()`. PR #23, merged 2026-06-05.
+  - LightGBM + CatBoost na oknach 3-mies.; 5 modeli w response Flask. CatBoost najlepszy (AUC 0.7793, Brier 0.1357 *po leakage-fix 2026-07-07*; pierwotnie 0.7802/0.1354); cost thresholds rozszerzone do 5 modeli; `compute_trends` iteracyjne po `predictions.keys()`. PR #23, merged 2026-06-05.
   - blocked_by: 102 · blocks: 113
 
 - 🟢 **CREDIT-112** · [EVAL] · P1 · GF · SWAP-OK · `sprint5/fairness`

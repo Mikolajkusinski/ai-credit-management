@@ -1,5 +1,12 @@
 # Podsumowanie Sprintu 4 — tor GF (Gabriel Figur)
 
+> ⚠️ **ERRATA 2026-07-07:** liczby AUC/Brier/progi w tym dokumencie (m.in. CatBoost
+> AUC 0.7802 / Brier 0.1354, progi 0.130–0.185) pochodzą z runu sprzed naprawy wycieków
+> metodologicznych. Kanoniczne wartości: `reports/metrics_w3.csv` (CatBoost 0.7793/0.1357)
+> i `ml-service/alert_thresholds.json` (RF 0.145 / XGB 0.165 / LGBM 0.160 / CatBoost 0.160 /
+> LSTM 0.155). Szczegóły: `reports/{threshold,scaler}_leakage_fix.md`.
+> Dokument pozostawiono bez przepisywania jako zapis historyczny sprintu.
+
 > Dokument dla seminarium magisterskiego (2026). Streszcza **mój wkład (GF)** w Sprint 4 projektu
 > `ai-credit-management`. **Sprint 4 GF zamknięty w 3/3 zadaniach** (107, 108, 109) — najpierw pivot
 > na 109 dla ścieżki krytycznej, potem powrót po 107+108 zgodnie z planem.

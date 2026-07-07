@@ -1,5 +1,15 @@
 # Podsumowanie Sprintu 3 — tor GF (Gabriel Figur)
 
+> ⚠️ **ERRATA 2026-07-07:** liczby w tym dokumencie (progi 0.145/0.180/0.185, delty
+> static-vs-dynamic „−2 do −6 pp", „43-184 unikalnych catchy") pochodzą z runu sprzed
+> naprawy wycieków metodologicznych (progi liczone na teście, skalery przed splitem)
+> i sprzed rozszerzenia do 5 modeli. **Kanoniczne wartości:** `reports/metrics_w3.csv`,
+> `ml-service/alert_thresholds.json` (RF 0.145 / XGB 0.165 / LGBM 0.160 / CatBoost 0.160 /
+> LSTM 0.155), `reports/static_vs_dynamic_report.md` (straty 5–11 pp dla 4 modeli,
+> **LSTM +2.6 pp — jedyny wygrywający monitoringiem**, 39–74 unikalnych catchy).
+> Szczegóły: `reports/threshold_leakage_fix.md` + `reports/scaler_leakage_fix.md`.
+> Dokument pozostawiono bez przepisywania jako zapis historyczny sprintu.
+
 > Dokument dla seminarium magisterskiego (2026). Streszcza **mój wkład (GF)** w Sprint 3 projektu
 > `ai-credit-management`: metryki time-series, dowód tezy „statyka vs monitoring" i progi alertu
 > oparte o model kosztów.

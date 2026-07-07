@@ -1,5 +1,13 @@
 # Podsumowanie Sprintu 5 — tor GF (Gabriel Figur)
 
+> ⚠️ **ERRATA 2026-07-07:** liczby fairness i progi w tym dokumencie (m.in. XGB próg 0.180,
+> CatBoost 0.130, DPD/EOD z tabeli §2) pochodzą z runu sprzed naprawy wycieków metodologicznych
+> (progi liczone na zbiorze testowym — tym samym, na którym audytowano fairness). Kanoniczne
+> wartości po naprawie: `reports/fairness_metrics_w3.csv` (wszystkie |DPD|/|EOD| ≤ 0.04,
+> werdykt bez zmian; LSTM DPD 0.006/EOD 0.021, CatBoost DPD 0.039/EOD 0.033) przy progach
+> z `ml-service/alert_thresholds.json`. Szczegóły: `reports/threshold_leakage_fix.md`.
+> Dokument pozostawiono bez przepisywania jako zapis historyczny sprintu.
+
 > Dokument dla seminarium magisterskiego (2026). Streszcza **mój wkład (GF)** w Sprint 5 projektu
 > `ai-credit-management`. **Sprint 5 GF zamknięty 1/1 zadania świeżego** (CREDIT-112 fairness audit)
 > + 2 follow-upy do CREDIT-109 (CREDIT-115 BE i CREDIT-116 FE) potraktowane jako audit-trail tasks
