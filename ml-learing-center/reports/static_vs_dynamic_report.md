@@ -2,7 +2,7 @@
 
 The Variant B thesis claims that **monitoring** (the alert fires if any of W0..W3 crosses the threshold) detects defaults more reliably and/or earlier than the **static** rule (alert based on W3 alone). This document interprets the results honestly.
 
-Test set: 6000 clients (1327 defaulters), W3-calibrated RF/XGB/LSTM, alert thresholds swept across 19 values in [0.05, 0.95].
+Test set: 6000 clients (1327 defaulters), W3-calibrated RF/XGBoost/LightGBM/CatBoost/LSTM, alert thresholds swept across 19 values in [0.05, 0.95].
 
 ---
 

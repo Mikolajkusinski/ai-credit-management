@@ -317,7 +317,7 @@ def extract_windows(row):
 
 ## SPRINT 6 — Polish, ensemble, raport, dokumentacja (11 sie – 24 sie)
 
-### CREDIT-113 [ML] Stacked ensemble (meta-learner)
+### CREDIT-113 [ML] Stacked ensemble (meta-learner) — ⚪ DESCOPED 2026-07-07 (backlog po obronie; nie blokuje już CREDIT-114)
 - Priorytet: **P2** · Owner: GF · Branch: `sprint6/stacking`
 - Deps: 102, 105, 109 · Blokuje: 114
 - Pliki: `main.py`, `app.py`.

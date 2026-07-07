@@ -8,13 +8,13 @@
 > - 🔴 **Do zrobienia** — task dostępny (wszystkie `blocked_by` są 🟢), nie został jeszcze rozpoczęty.
 > - 🔒 **Zablokowane** — task czeka na zależność (`blocked_by` zawiera coś, co nie jest 🟢).
 >
-> **Ostatnia aktualizacja:** 2026-06-06 (po merge CREDIT-112 — audyt fairness (fairlearn) na W3: DPD/EOD per 5 modeli przy progach cost-opt z CREDIT-106; wszystkie modele |diff| ≤ 0.1 (max DPD 0.039 CatBoost; LSTM najbliżej parytetu — DPD 0.007, EOD 0.015); `reports/fairness_report.md` + `fairness_metrics_w3.csv` + 2 PNG)
+> **Ostatnia aktualizacja:** 2026-07-07 (descope CREDIT-113 — świadoma decyzja zakresu: stacking nie wnosi do dowodu tezy H1/H2/H3, a poprawna realizacja wymaga protokołu OOF + rekalibracji; przeniesiony do backlogu po obronie. CREDIT-114 odblokowany — blocked_by zredukowane do 103, 111, oba 🟢)
 
 ---
 
 ## 🎯 Aktualne zadanie
 
-- **Gabriel Figur (GF):** 🔴 **CREDIT-113** — Stacked ensemble (LR meta-learner na 5 modelach bazowych) · branch `sprint6/stacking` *(ostatnie ogniwo przed CREDIT-114 final report)*
+- **Gabriel Figur (GF):** 🔴 **CREDIT-114** — Raport końcowy + komplet wykresów do slajdów obrony · branch `sprint6/final-report` *(P0, ostatnie ogniwo ścieżki krytycznej tezy; odblokowany po descope CREDIT-113)*
 - **Mikołaj Kusiński (MK):** 🔴 **CREDIT-304** — UI polish (responsive 1024/1440/1920, a11y Lighthouse ≥ 90, dark mode, tooltipy modeli) · branch `sprint6/ui-polish` *(Sprint 6 P2; odblokowane przez CREDIT-302 + CREDIT-303 — ostatni task toru MK)*
 
 > **Reguła aktualizacji tej sekcji:** gdy task zostanie zmergeowany do `main`, ustaw tutaj kolejny najwyżej priorytetowy dostępny (🔴) task z toru właściwej osoby. Jeśli osoba nie ma już dostępnych tasków w bieżącym sprincie, wpisz „⏸️ czeka na odblokowanie / koniec sprintu".
@@ -25,8 +25,9 @@
 
 - **Łącznie zadań:** 30 (CREDIT-115 + CREDIT-116 dodane 2026-06-05 jako follow-up do CREDIT-109)
 - **🟢 Wykonane:** 26 (CREDIT-101, CREDIT-102, CREDIT-103, CREDIT-201, CREDIT-401, CREDIT-402, CREDIT-210, CREDIT-104, CREDIT-202, CREDIT-203, CREDIT-204, CREDIT-301, CREDIT-302, CREDIT-205, CREDIT-105, CREDIT-110, CREDIT-111, CREDIT-106, CREDIT-109, CREDIT-107, CREDIT-108, CREDIT-115, CREDIT-116, CREDIT-303, CREDIT-211, CREDIT-112)
-- **🔴 Dostępne:** 2 (CREDIT-113, CREDIT-304)
-- **🔒 Zablokowane:** 2
+- **🔴 Dostępne:** 2 (CREDIT-114, CREDIT-304)
+- **🔒 Zablokowane:** 1 (CREDIT-501)
+- **⚪ Descoped:** 1 (CREDIT-113 — decyzja 2026-07-07, backlog po obronie)
 
 ---
 
@@ -166,13 +167,9 @@
 
 ## Sprint 6 — Polish, ensemble, raport, docs (11 sie – 24 sie)
 
-- 🔴 **CREDIT-113** · [ML] · P2 · GF · `sprint6/stacking`
-  - Stacked ensemble (LR meta-learner na 5 modelach bazowych). **Ostatnie ogniwo przed CREDIT-114 final report.**
-  - blocked_by: 102, 105, 109 · blocks: 114
-
-- 🔒 **CREDIT-114** · [EVAL] · P0 · GF · `sprint6/final-report`
+- 🔴 **CREDIT-114** · [EVAL] · P0 · GF · `sprint6/final-report`
   - Raport końcowy + komplet wykresów do slajdów obrony.
-  - blocked_by: 103, 111, 113 · blocks: —
+  - blocked_by: 103, 111 · blocks: — *(113 usunięte z blocked_by po descope 2026-07-07)*
 
 - 🔴 **CREDIT-304** · [FE] · P2 · MK · `sprint6/ui-polish`
   - Responsive (1024/1440/1920), a11y (Lighthouse ≥ 90), dark mode, tooltipy modeli.
@@ -181,6 +178,15 @@
 - 🔒 **CREDIT-501** · [DOCS] · P0 · GF+MK · `sprint6/docs`
   - README + Model Card + Architecture + aktualizacja `CLAUDE.md` (nowe endpointy, baza, okno 3-mies.).
   - blocked_by: ~all · blocks: —
+
+---
+
+## ⚪ Descoped / Backlog po obronie
+
+- ⚪ **CREDIT-113** · [ML] · P2 · GF · `sprint6/stacking`
+  - Stacked ensemble (LR meta-learner na 5 modelach bazowych).
+  - **Świadoma decyzja zakresu 2026-07-07:** stacking nie wnosi do dowodu tezy (H1/H2/H3 nie wymagają ensemble), a poprawna realizacja wymaga protokołu out-of-fold + rekalibracji meta-modelu (bez OOF = wyciek). Przeniesione do kierunków dalszych badań w pracy; w razie powrotu — protokół w `Fable_Task4.md` (prompt P6).
+  - blocked_by: 102, 105, 109 · blocks: — *(usunięte z blocked_by CREDIT-114)*
 
 ---
 
