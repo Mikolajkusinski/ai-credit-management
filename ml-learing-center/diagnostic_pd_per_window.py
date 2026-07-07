@@ -1,5 +1,5 @@
 """
-B1 (Fable5_Task1 / plan 2026-07-07): PD-per-window diagnostic.
+B1 (Fable5-zmiany.md Task1 / plan 2026-07-07): PD-per-window diagnostic.
 
 Answers the committee question behind the lead-time histogram: is the dominance
 of first alerts at the OLDEST window W0 evidence of risk building up early, or

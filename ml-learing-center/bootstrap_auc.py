@@ -1,5 +1,5 @@
 """
-B3 (Fable5_Task1 / plan 2026-07-07): bootstrap variance of test AUC.
+B3 (Fable5-zmiany.md Task1 / plan 2026-07-07): bootstrap variance of test AUC.
 
 Delivers the "40 bootstrapped repetitions of the test set" promised by thesis
 section 4.5. Reuses the exact prediction pipeline of the fairness audit

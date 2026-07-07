@@ -38,7 +38,7 @@ THR_KEY = {
     "LSTM": "lstm",
 }
 
-# Legacy 6-month baseline AUCs (CREDIT-102 log, PodsumowanieSprintu1) used for H1.
+# Legacy 6-month baseline AUCs (CREDIT-102 log, PodsumowanieSprintow.md, sekcja Sprint 1) used for H1.
 # These are historical reference points -- the W3 numbers below come from files.
 LEGACY_6M_AUC = {"Random Forest": 0.7792, "XGBoost": 0.7818, "LSTM": 0.7686}
 

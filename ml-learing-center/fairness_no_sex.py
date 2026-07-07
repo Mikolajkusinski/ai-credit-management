@@ -1,5 +1,5 @@
 """
-B4/F1 (Fable5_Task1/Task2 / plan 2026-07-07): fairness counter-experiment
+B4/F1 (Fable5-zmiany.md Task1/Task2 / plan 2026-07-07): fairness counter-experiment
 WITHOUT the protected attribute in the feature vector.
 
 Repeats the exact W3 training protocol from main.py (60/20/20 split,

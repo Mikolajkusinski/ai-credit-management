@@ -68,7 +68,7 @@ i 39–74 unikalnych wykryć/model (`FINAL_REPORT.md` §2).
 Dodatnie DPD interpretować względem luki strukturalnej ~0.021 (base rate defaultu:
 M 23.4% vs F 21.3% w teście). LSTM — jedyny model bez wejść demograficznych —
 jest najbliżej parytetu (naturalny dowód ablacyjny). Mechanizm mitygacji
-warunkowej (ThresholdOptimizer, equalized odds) opisany w `Fable5_Task2.md` §4.
+warunkowej (ThresholdOptimizer, equalized odds) opisany w `Fable5-zmiany.md` §4.
 
 ## Ograniczenia i właściwe użycie
 

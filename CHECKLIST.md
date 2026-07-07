@@ -8,13 +8,13 @@
 > - 🔴 **Do zrobienia** — task dostępny (wszystkie `blocked_by` są 🟢), nie został jeszcze rozpoczęty.
 > - 🔒 **Zablokowane** — task czeka na zależność (`blocked_by` zawiera coś, co nie jest 🟢).
 >
-> **Ostatnia aktualizacja:** 2026-07-07 (po merge CREDIT-114 final report + CREDIT-501 docs; wcześniej tego dnia: descope CREDIT-113, naprawy train/serve skew U1 i wycieków metodologicznych z atomowym retrainem — `reports/{threshold,scaler}_leakage_fix.md`, transakcja atomowa w zapisie migawki + test rollbacku, job CI dla ml-learing-center)
+> **Ostatnia aktualizacja:** 2026-07-07 (porządki w dokumentach repo: podsumowania sprintów scalone → `PodsumowanieSprintow.md`; audyty Fable 5 + lista zadań scalone → `Fable5-zmiany.md`; usunięte stare PDF-y pracy v3/v6/v7 (zostaje v8), `DokumentRoznice.md`, `WalidacjaPDFv7.md` — wszystko w historii gita. Kroki do obrony: `TO-DO-OBRONA.md`. Wcześniej tego dnia: CREDIT-114 + CREDIT-501 🟢, descope CREDIT-113, naprawy U1/wycieków z atomowym retrainem, transakcja atomowa zapisu, job CI dla warstwy treningowej)
 
 ---
 
 ## 🎯 Aktualne zadanie
 
-- **Gabriel Figur (GF):** ⏸️ wszystkie zadania toru GF wykonane (ścieżka krytyczna tezy domknięta: 101→102→104→110→111→114 ✅); dalej: teksty pracy (rozdz. 3/5) + eksperymenty dowodowe na obronę (plan: `Fable_Task4.md` / plik planu)
+- **Gabriel Figur (GF):** ⏸️ wszystkie zadania toru GF wykonane (ścieżka krytyczna tezy domknięta: 101→102→104→110→111→114 ✅); dalej: teksty pracy (rozdz. 3/5) + eksperymenty dowodowe na obronę (plan: `Fable5-zmiany.md` / plik planu)
 - **Mikołaj Kusiński (MK):** 🔴 **CREDIT-304** — UI polish (responsive 1024/1440/1920, a11y Lighthouse ≥ 90, dark mode, tooltipy modeli) · branch `sprint6/ui-polish` *(Sprint 6 P2; ostatni otwarty task projektu)*
 
 > **Reguła aktualizacji tej sekcji:** gdy task zostanie zmergeowany do `main`, ustaw tutaj kolejny najwyżej priorytetowy dostępny (🔴) task z toru właściwej osoby. Jeśli osoba nie ma już dostępnych tasków w bieżącym sprincie, wpisz „⏸️ czeka na odblokowanie / koniec sprintu".
@@ -185,7 +185,7 @@
 
 - ⚪ **CREDIT-113** · [ML] · P2 · GF · `sprint6/stacking`
   - Stacked ensemble (LR meta-learner na 5 modelach bazowych).
-  - **Świadoma decyzja zakresu 2026-07-07:** stacking nie wnosi do dowodu tezy (H1/H2/H3 nie wymagają ensemble), a poprawna realizacja wymaga protokołu out-of-fold + rekalibracji meta-modelu (bez OOF = wyciek). Przeniesione do kierunków dalszych badań w pracy; w razie powrotu — protokół w `Fable_Task4.md` (prompt P6).
+  - **Świadoma decyzja zakresu 2026-07-07:** stacking nie wnosi do dowodu tezy (H1/H2/H3 nie wymagają ensemble), a poprawna realizacja wymaga protokołu out-of-fold + rekalibracji meta-modelu (bez OOF = wyciek). Przeniesione do kierunków dalszych badań w pracy; w razie powrotu — protokół w `Fable5-zmiany.md` (prompt P6).
   - blocked_by: 102, 105, 109 · blocks: — *(usunięte z blocked_by CREDIT-114)*
 
 ---

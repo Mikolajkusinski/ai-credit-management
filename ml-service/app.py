@@ -136,7 +136,7 @@ def engineer_features(data):
 
     # Fixed category domains -- without this a 1-row frame yields zero dummy
     # columns after drop_first (all demographics silently zeroed; see
-    # features.UCI_CATEGORIES and Fable5_Task3.md U1).
+    # features.UCI_CATEGORIES and Fable5-zmiany.md U1).
     for col, cats in UCI_CATEGORIES.items():
         df[col] = pd.Categorical(df[col].astype(int), categories=cats)
     df = pd.get_dummies(df, columns=["SEX", "EDUCATION", "MARRIAGE"], drop_first=True)

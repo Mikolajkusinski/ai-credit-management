@@ -1,6 +1,6 @@
 # Leakage fix 2026-07-07 — skalery fitowane po splicie (tylko na części treningowej)
 
-**Problem (Fable5_Task3 U4):** `StandardScaler` (statyczny `scaler_w3`) oraz
+**Problem (Fable5-zmiany.md Task3 U4):** `StandardScaler` (statyczny `scaler_w3`) oraz
 3 skalery kanałowe LSTM (`lstm_scalers_w3`) były fitowane na PEŁNYM zbiorze
 30 000 wierszy PRZED podziałem train/calib/test — statystyki (mean/std)
 zawierały wiersze testowe, co przeczy deklaracji „zamrożonego" zbioru testowego.

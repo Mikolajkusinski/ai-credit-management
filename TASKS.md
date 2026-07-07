@@ -227,7 +227,7 @@ Złamanie tych reguł unieważnia tezę. Stosuj bezwzględnie.
 - Cel: stacked ensemble (LR meta-learner na predykcjach modeli bazowych).
 - Pliki: `main.py`, `app.py`.
 - DoD: AUC ensemble ≥ najlepszy pojedynczy; klucz `ensemble` w response.
-- **Decyzja zakresu:** przeniesione do backlogu po obronie — stacking nie wnosi do dowodu tezy (H1/H2/H3 nie wymagają ensemble), a poprawna realizacja wymaga protokołu out-of-fold + rekalibracji meta-modelu (bez OOF = wyciek). W pracy: jedno zdanie w „kierunkach dalszych badań". Protokół realizacji w razie powrotu: `Fable_Task4.md` prompt P6.
+- **Decyzja zakresu:** przeniesione do backlogu po obronie — stacking nie wnosi do dowodu tezy (H1/H2/H3 nie wymagają ensemble), a poprawna realizacja wymaga protokołu out-of-fold + rekalibracji meta-modelu (bez OOF = wyciek). W pracy: jedno zdanie w „kierunkach dalszych badań". Protokół realizacji w razie powrotu: `Fable5-zmiany.md` prompt P6.
 
 **CREDIT-114 · [EVAL] · P0 · GF · branch `sprint6/final-report`**
 - blocked_by: 103, 111  |  blocks: —

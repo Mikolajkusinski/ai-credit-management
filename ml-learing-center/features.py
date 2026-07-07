@@ -19,7 +19,7 @@ from sklearn.preprocessing import StandardScaler
 # Fixed category domains from the UCI dataset. get_dummies derives dummy columns
 # from values OBSERVED in the frame, so a single-row frame (Flask inference) would
 # produce exactly one dummy per column and drop_first=True would remove it --
-# silently zeroing all demographics (train/serve skew, Fable5_Task3.md U1/U2).
+# silently zeroing all demographics (train/serve skew, Fable5-zmiany.md U1/U2).
 # Casting to Categorical with the full domain makes the dummy set independent of
 # batch composition; values outside the domain become NaN -> all-zero dummies
 # (baseline category), never a shifted column.

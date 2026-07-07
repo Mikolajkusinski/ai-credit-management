@@ -1,6 +1,6 @@
 # Leakage fix 2026-07-07 — progi kosztowe przeniesione ze zbioru testowego na split kalibracyjny
 
-**Problem (Fable5_Task3/Task4, R2):** progi alertu CREDIT-106 były optymalizowane na
+**Problem (Fable5-zmiany.md Task3/Task4, R2):** progi alertu CREDIT-106 były optymalizowane na
 zbiorze TESTOWYM (`main.py`, `_y_te_arr`), a następnie ten sam zbiór służył do ewaluacji,
 audytu fairness (CREDIT-112) i porównania static-vs-dynamic (CREDIT-111) — dokładnie ten
 wyciek, przed którym praca ostrzega w sekcji 4.1.1.

@@ -127,8 +127,9 @@ configured in `backend/WebApi/appsettings.json` under `FlaskServiceUrl`.
 - `ml-learing-center` vs `ml-service`: training vs inference. Shared logic is
   duplicated by file copy; any edit to `features.py`/`sliding_window.py` must land
   in both (parity guarded by tests).
-- Project audit reports with findings, defense Q&A and executable fix prompts:
-  `Fable5_Task1.md` (thesis vs code), `Fable5_Task2.md` (fairness), `Fable5_Task3.md`
-  (ML correctness), `Fable5_Task4.md` (sprint execution audit).
+- Project audit reports (findings, defense Q&A, executed fix prompts) are merged
+  into `Fable5-zmiany.md` — Task 1: thesis vs code, Task 2: fairness, Task 3: ML
+  correctness, Task 4: sprint execution audit. Sprint summaries merged into
+  `PodsumowanieSprintow.md`. Remaining defense steps: `TO-DO-OBRONA.md`.
 - Task tracking: `TASKS.md` + `CHECKLIST.md` (statuses, dependency graph, update
   workflow at the bottom of CHECKLIST).

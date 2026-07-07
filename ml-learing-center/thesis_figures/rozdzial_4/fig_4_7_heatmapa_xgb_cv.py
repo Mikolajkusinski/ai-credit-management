@@ -1,6 +1,6 @@
 """Rysunek 4.7 — XGBoost: wpływ learning_rate × max_depth na CV-AUC (train, 5-fold).
 
-Zastępuje heatmapę liczoną na AUC testowym (strojenie-na-teście, Fable5_Task1 #7).
+Zastępuje heatmapę liczoną na AUC testowym (strojenie-na-teście, Fable5-zmiany.md Task1 #7).
 Trenuje WYŁĄCZNIE modele pomocnicze figur — niczego nie zapisuje poza PNG/CSV.
 """
 import sys

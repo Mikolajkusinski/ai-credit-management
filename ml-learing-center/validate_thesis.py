@@ -1,4 +1,4 @@
-"""Walidator PDF pracy magisterskiej (lista R3 z Fable5_Task1.md).
+"""Walidator PDF pracy magisterskiej (lista R3 z Fable5-zmiany.md).
 
 Użycie:
     .venv/bin/python validate_thesis.py "../Praca Magisterska-9.pdf"

@@ -1,4 +1,4 @@
-"""Train/serve parity tests (Fable5_Task3.md O2).
+"""Train/serve parity tests (Fable5-zmiany.md O2).
 
 Guards against the U1/U2 regression: pd.get_dummies(drop_first=True) on a
 single-row frame used to yield ZERO dummy columns (the only observed category

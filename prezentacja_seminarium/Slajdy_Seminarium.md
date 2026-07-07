@@ -334,8 +334,8 @@ rosnące (przekraczające próg alertu w pewnym momencie).
 - `docs/api-contracts/monitoring.md` — kontrakt API (4 endpointy + 6 typów + reguła alertu)
 - `TASKS.md` — backlog 28 zadań z zależnościami
 - `plan_sprintow_wariant_B.md` — metodyka + ryzyka + harmonogram
-- `PodsumowanieSprintu1.md`, `PodsumowanieSprintu2_MK.md`, `PodsumowanieSprintu3_GF.md`,
-  `PodsumowanieSprintu4_GF.md` — narrative per sprint dla seminarium
+- `PodsumowanieSprintow.md`, `PodsumowanieSprintow.md`, `PodsumowanieSprintow.md`,
+  `PodsumowanieSprintow.md` — narrative per sprint dla seminarium
 
 ### Lista wszystkich wykresów (w `ml-learing-center/reports/`)
 - Comparison: roc / pr / calibration (3 PNG, 5 modeli na każdym)

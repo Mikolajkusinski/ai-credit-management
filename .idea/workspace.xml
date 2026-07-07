@@ -5,12 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="500ce533-bc1c-44b5-89b2-adbf95755bc0" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Praca Magisterska-3.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Praca Magisterska-6.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Praca Magisterska-7.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Praca Magisterska-8.pdf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/prezentacja_seminarium/demo_zapas/01_prediction.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/prezentacja_seminarium/demo_zapas/02_trajektoria.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/prezentacja_seminarium/demo_zapas/03_lista_klientow.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/prezentacja_seminarium/demo_zapas/04_rising_historia.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/prezentacja_seminarium/demo_zapas/05_snapshot_form.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/prezentacja_seminarium/demo_zapas/06_shap.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ml-service/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/ml-service/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Uzyj-Fable5-Zanim-Zniknie.md" beforeDir="false" afterPath="$PROJECT_DIR$/Uzyj-Fable5-Zanim-Zniknie.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -37,32 +39,33 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
-    &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;sprint5/fairness&quot;,
-    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
-    &quot;show.migrate.to.gradle.popup&quot;: &quot;false&quot;,
-    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "dart.analysis.tool.window.visible": "false",
+    "git-widget-placeholder": "Sprint5-Fable",
+    "junie.onboarding.icon.badge.shown": "true",
+    "kotlin-language-version-configured": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "show.migrate.to.gradle.popup": "false",
+    "to.speed.mode.migration.done": "true",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/prezentacja_seminarium/demo_zapas" />
       <recent name="$PROJECT_DIR$" />
     </key>
   </component>
