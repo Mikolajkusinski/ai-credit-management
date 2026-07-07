@@ -33,17 +33,17 @@ _Ostatnia aktualizacja: 2026-04-19 15:19_
 - **fig_3_9_stos_technologiczny** — Stos technologiczny projektu w układzie warstwowym — prezentacja (React), aplikacja (.NET), ML (Flask), modele (sklearn/XGB/TF), dane (pandas/CSV) i infrastruktura (Docker).
 
 ## Rozdział 4
-- **fig_4_1_podzial_danych** — Podział zbioru UCI na 56% trenowania / 14% walidacji / 30% testu — stratyfikowany, zgodny z konfiguracją w main.py.
 - **fig_4_2_smote** — Porównanie przed/po zastosowaniu SMOTE: górny wiersz — rozkład klas, dolny — rzut 2D-PCA 5000 próbek z widocznym zagęszczeniem klasy mniejszościowej po oversamplingu.
-- **fig_4_3_krzywe_uczenia_lstm** — Krzywe accuracy i loss dla LSTM (train vs walidacja) w kolejnych epokach — pozwala ocenić przeuczenie/niedouczenie i moment aktywacji EarlyStopping.
 - **fig_4_4_hiperparametry_lstm** — Trzy panele wpływu hiperparametrów LSTM (liczba epok, batch size, liczba jednostek) na AUC walidacji — czerwone okręgi zaznaczają konfigurację optymalną.
 - **fig_4_5_rf_hiperparametry** — Heatmapa AUC testowego dla Random Forest w siatce n_estimators × max_depth — czerwone obramowanie wskazuje konfigurację z maksymalnym AUC.
-- **fig_4_6_feature_importance_rf** — Top-20 cech wg istotności (Gini) z wytrenowanego Random Forest — dominują cechy związane z ostatnim statusem płatności (PAY_0) oraz inżynierowane wskaźniki opóźnień.
 - **fig_4_7_grid_search_xgb** — Heatmapa wyników grid search dla XGBoost (learning_rate × max_depth) — zielone obramowanie wskazuje konfigurację z maksymalnym AUC na zbiorze testowym.
-- **fig_4_8_shap_xgb** — Wartości SHAP dla 1000 próbek testowych z wytrenowanego XGBoost — beeswarm (lewo) pokazuje kierunek i rozkład wpływu cech, bar (prawo) średnią globalną istotność.
 - **fig_4_9_cross_validation** — Schemat 5-fold walidacji krzyżowej — w każdej z 5 iteracji inny fold pełni rolę zbioru walidacyjnego (kolor czerwony), pozostałe cztery trenują model.
 - **fig_4_5_heatmapa_rf_cv** — RF: CV-AUC 5-fold na treningu W3; czerwona ramka = konfiguracja z main.py (500, 10).
 - **fig_4_7_heatmapa_xgb_cv** — XGB: CV-AUC 5-fold na treningu W3; zielona ramka = konfiguracja z main.py (lr=0.02, depth=4).
+- **fig_4_1_podzial_danych** — Trójdzielny split 60/20/20 (18 000 / 6 000 / 6 000) z osobną częścią kalibracyjną; zgodny z main.py po leakage-fix 2026-07-07.
+- **fig_4_3_krzywe_uczenia_lstm** — Krzywe uczenia finalnego LSTM W3 (EarlyStopping na val_auc); retrening deterministyczny wyłącznie po history, model niezapisywany.
+- **fig_4_6_feature_importance_rf** — Top-20 cech wg istotności (Gini) finalnego RF W3 (estymator bazowy spod kalibracji) — dominują świeże zachowania płatnicze i inżynierowane wskaźniki opóźnień.
+- **fig_4_8_shap_xgb** — Wartości SHAP finalnego XGB W3 (estymator bazowy, n=1000 z testu) — beeswarm pokazuje kierunek i rozkład wpływu cech, bar średnią globalną istotność.
 
 ## Rozdział 5
 - **fig_5_1_metryki_modeli** — Zestawienie pięciu metryk klasyfikacji (accuracy, precision, recall, F1, ROC-AUC) dla LSTM, Random Forest i XGBoost — wykres słupkowy z pełną tabelą liczbową pod spodem.

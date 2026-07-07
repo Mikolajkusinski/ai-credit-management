@@ -1,18 +1,22 @@
-"""Rysunek 4.6 — Feature importance Random Forest."""
+"""Rysunek 4.6 — Feature importance Random Forest (finalny artefakt W3).
+
+Ważności Gini estymatora bazowego spod CalibratedClassifierCV (kalibracja
+izotoniczna jest monotoniczna — nie zmienia rankingu cech).
+"""
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import numpy as np
 import matplotlib.pyplot as plt
-from common import apply_style, save_figure, PALETTE, load_rf, load_feature_list
+from common import apply_style, save_figure, PALETTE, load_rf_w3, load_feature_list_w3
 
 apply_style()
 
 
 def build():
-    rf = load_rf()
-    features = load_feature_list()
+    rf = load_rf_w3(base=True)
+    features = load_feature_list_w3()
     importances = rf.feature_importances_
 
     idx = np.argsort(importances)[-20:][::-1]
@@ -26,7 +30,7 @@ def build():
     ax.set_yticklabels(names)
     ax.invert_yaxis()
     ax.set_xlabel("Istotność cechy (Gini importance)")
-    ax.set_title("Top 20 cech wg istotności w modelu Random Forest")
+    ax.set_title("Top 20 cech wg istotności w modelu Random Forest (W3)")
     for bar, v in zip(bars, vals):
         ax.text(v + max(vals) * 0.01, bar.get_y() + bar.get_height()/2,
                 f"{v:.3f}", va="center", fontsize=9)
@@ -38,5 +42,5 @@ def build():
 if __name__ == "__main__":
     fig = build()
     save_figure(fig, chapter=4, idx="6", name="feature_importance_rf",
-                comment="Top-20 cech wg istotności (Gini) z wytrenowanego Random Forest — dominują cechy związane z ostatnim statusem płatności (PAY_0) oraz inżynierowane wskaźniki opóźnień.")
+                comment="Top-20 cech wg istotności (Gini) finalnego RF W3 (estymator bazowy spod kalibracji) — dominują świeże zachowania płatnicze i inżynierowane wskaźniki opóźnień.")
     plt.close(fig)

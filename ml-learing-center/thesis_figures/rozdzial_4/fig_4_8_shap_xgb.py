@@ -1,33 +1,55 @@
-"""Rysunek 4.8 — Wartości SHAP dla modelu XGBoost."""
+"""Rysunek 4.8 — Wartości SHAP dla modelu XGBoost (finalny artefakt W3).
+
+TreeExplainer na estymatorze bazowym spod CalibratedClassifierCV (skala margin
+modelu bazowego; kalibracja monotoniczna nie zmienia rankingu cech).
+"""
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))   # thesis_figures/
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))   # ml-learing-center/
 
 import numpy as np
 import matplotlib.pyplot as plt
 import shap
-from common import apply_style, save_figure, cached_pickle, get_train_test, load_xgb, load_feature_list
+from common import (apply_style, save_figure, cached_pickle,
+                    load_xgb_w3, load_feature_list_w3, load_static_scaler_w3)
 
 apply_style()
+HERE = Path(__file__).resolve().parents[2]
 
 
-@cached_pickle("shap_xgb")
+@cached_pickle("shap_xgb_w3")
 def compute_shap():
-    X_train, X_test, _, _, _, _ = get_train_test()
-    features = load_feature_list()
-    xgb = load_xgb()
+    import pandas as pd
+    from sklearn.model_selection import train_test_split
+    from features import engineer_features
+    from sliding_window import WINDOW_DEFS
 
-    # Background z 200 próbek trenujących, eksplanacja dla 1000 z testu
+    df = pd.read_csv(HERE / "default_of_credit_card_clients.csv", header=1)
+    df.rename(columns={"default payment next month": "Default"}, inplace=True)
+    df.drop(columns=["ID"], inplace=True)
+    for c in ["EDUCATION", "MARRIAGE", "SEX"]:
+        df[c] = df[c].astype(int)
+    y = df["Default"]
+    features = load_feature_list_w3()
+    X, _ = engineer_features(df, WINDOW_DEFS[3])
+    scaler = load_static_scaler_w3()
+    _, X_te, _, _ = train_test_split(X[features], y, test_size=0.2,
+                                     stratify=y, random_state=42)
+
     rng = np.random.RandomState(42)
-    bg_idx = rng.choice(len(X_train), 200, replace=False)
-    sample_idx = rng.choice(len(X_test), 1000, replace=False)
+    sample_idx = rng.choice(len(X_te), 1000, replace=False)
+    X_sample = scaler.transform(X_te.iloc[sample_idx])
 
-    explainer = shap.TreeExplainer(xgb, X_train[bg_idx])
-    shap_values = explainer.shap_values(X_test[sample_idx])
+    xgb = load_xgb_w3(base=True)
+    shap_values = shap.TreeExplainer(xgb).shap_values(X_sample)
+    shap_values = np.asarray(shap_values)
+    if shap_values.ndim == 3:
+        shap_values = shap_values[..., -1]
 
     return {
         "shap_values": shap_values,
-        "X_sample": X_test[sample_idx],
+        "X_sample": X_sample,
         "features": features,
     }
 
@@ -55,7 +77,7 @@ def build():
     plt.title("Średnia |SHAP| — globalna istotność cech",
               fontsize=11, fontweight="bold")
 
-    plt.suptitle("Wyjaśnialność modelu XGBoost — wartości SHAP (n=1000)",
+    plt.suptitle("Wyjaśnialność modelu XGBoost (W3) — wartości SHAP (n=1000 z testu)",
                  fontsize=14, fontweight="bold", y=1.02)
     plt.tight_layout()
     return plt.gcf()
@@ -64,5 +86,5 @@ def build():
 if __name__ == "__main__":
     fig = build()
     save_figure(fig, chapter=4, idx="8", name="shap_xgb",
-                comment="Wartości SHAP dla 1000 próbek testowych z wytrenowanego XGBoost — beeswarm (lewo) pokazuje kierunek i rozkład wpływu cech, bar (prawo) średnią globalną istotność.")
+                comment="Wartości SHAP finalnego XGB W3 (estymator bazowy, n=1000 z testu) — beeswarm pokazuje kierunek i rozkład wpływu cech, bar średnią globalną istotność.")
     plt.close(fig)
