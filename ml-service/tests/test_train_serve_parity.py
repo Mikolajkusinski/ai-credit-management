@@ -143,16 +143,29 @@ def test_predict_parity_static(client):
     assert abs(served - expected) < 1e-9
 
 
-def test_demographics_change_prediction(client):
+def test_demographics_reach_the_model_input():
     """Pre-fix, SEX/EDUCATION/MARRIAGE were zeroed for every request, so any
-    two clients differing only in demographics scored identically. At least
-    one of the 4 tree models must now produce a different W3 PD."""
-    a = client.post("/predict/timeseries", json=_base_payload(SEX=1, EDUCATION=1, MARRIAGE=1))
-    b = client.post("/predict/timeseries", json=_base_payload(SEX=2, EDUCATION=6, MARRIAGE=3))
-    pa = a.get_json()["trajectory"][3]["predictions"]
-    pb = b.get_json()["trajectory"][3]["predictions"]
-    diffs = [abs(pa[k] - pb[k]) for k in ("randomForest", "xgboost", "lightgbm", "catboost")]
-    assert max(diffs) > 0, "demographics have no effect on any tree model -- U1 regression?"
+    two clients differing only in demographics produced an IDENTICAL scaled
+    feature vector. Assert the serving layer passes demographics through to
+    the model input. (Deliberately NOT asserting on PD differences: trees may
+    legitimately not split on demographics along a given path, which made a
+    model-level canary flaky across retrains.)"""
+    _require_artifacts()
+    import app as service
+
+    feats = joblib.load(SERVICE_ROOT / "features_w3.pkl")
+    dummy_idx = [i for i, f in enumerate(feats)
+                 if f.startswith(("SEX_", "EDUCATION_", "MARRIAGE_"))]
+
+    Xa = service.engineer_features_w3(_base_payload(SEX=1, EDUCATION=1, MARRIAGE=1), service.W3)
+    Xb = service.engineer_features_w3(_base_payload(SEX=2, EDUCATION=6, MARRIAGE=3), service.W3)
+
+    non_dummy = [i for i in range(len(feats)) if i not in dummy_idx]
+    np.testing.assert_allclose(Xa[0, non_dummy], Xb[0, non_dummy], atol=1e-12)
+    assert np.abs(Xa[0, dummy_idx] - Xb[0, dummy_idx]).max() > 0, (
+        "demographic dummies identical for different SEX/EDUCATION/MARRIAGE "
+        "-- U1 regression?"
+    )
 
 
 def test_lstm_axes():

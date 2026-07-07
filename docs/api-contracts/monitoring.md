@@ -479,6 +479,17 @@ Non-breaking addition do kontraktu (nowy endpoint, bez zmiany istniejących).
 | 5 | Rate limiting | Brak | Spike po Sprincie 6 |
 | 6 | OpenAPI/Swagger spec | Auto-generowane przez Swashbuckle w CREDIT-202 | Sprint 2 |
 
+### Data note — snapshoty sprzed 2026-07-07 (train/serve skew fix)
+
+Predykcje zapisane w bazie **przed 2026-07-07** zostały policzone przez serwis
+z bugiem zerowania cech demograficznych (`Fable5_Task3.md` U1) i na artefaktach
+sprzed naprawy wycieków (progi/skalery — `reports/*_leakage_fix.md`). Tabela
+`Snapshot` przechowuje pełne 22 cechy wejściowe, więc dane dają się przeliczyć.
+**Przy pierwszym uruchomieniu środowiska demo po tej dacie:** wyczyścić stary
+wolumen (`docker compose down -v`, kasuje `pg_data`) i ponownie zseedować
+(`python ml-learing-center/seed_demo_clients.py`) — albo przeliczyć istniejące
+snapshoty ponownym POST-em z tych samych 22 cech pod nowym `clientRef`.
+
 ---
 
 ## 8. Confirmation

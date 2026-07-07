@@ -86,16 +86,24 @@ def engineer_features(
 
 
 def prepare_lstm_sequences(
-    df: pd.DataFrame, window: Dict[str, List[str]]
+    df: pd.DataFrame,
+    window: Dict[str, List[str]],
+    scalers: List[StandardScaler] | None = None,
 ) -> Tuple[np.ndarray, List[StandardScaler]]:
     """Build the LSTM input tensor (N, 3, 3) and the per-channel scalers.
 
     Channels: 0 = PAY status, 1 = BILL amount, 2 = PAY amount.
     Time axis: oldest -> newest inside the window.
 
+    Args:
+        scalers: When provided, the 3 per-channel scalers are used with
+            `transform` only (no refit) -- pass scalers fitted on the training
+            rows to avoid preprocessing leakage. When None (legacy behaviour),
+            scalers are fitted on `df` itself.
+
     Returns:
         (X_seq, scalers) where X_seq has shape (len(df), 3, 3) and `scalers`
-        is a list of 3 fitted StandardScalers (one per channel).
+        is the list of 3 StandardScalers actually used (one per channel).
     """
     pay_cols = window["pay"]
     bill_cols = window["bill"]
@@ -107,11 +115,15 @@ def prepare_lstm_sequences(
         X_seq[:, t, 1] = df[bill_cols[t]].to_numpy()
         X_seq[:, t, 2] = df[amt_cols[t]].to_numpy()
 
-    scalers: List[StandardScaler] = []
+    if scalers is None:
+        scalers = []
+        for f in range(3):
+            sc = StandardScaler()
+            sc.fit(X_seq[:, :, f].reshape(-1, 1))
+            scalers.append(sc)
+
     for f in range(3):
-        sc = StandardScaler()
         flat = X_seq[:, :, f].reshape(-1, 1)
-        X_seq[:, :, f] = sc.fit_transform(flat).reshape(len(df), 3)
-        scalers.append(sc)
+        X_seq[:, :, f] = scalers[f].transform(flat).reshape(len(df), 3)
 
     return X_seq, scalers
