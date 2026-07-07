@@ -8,14 +8,14 @@
 > - 🔴 **Do zrobienia** — task dostępny (wszystkie `blocked_by` są 🟢), nie został jeszcze rozpoczęty.
 > - 🔒 **Zablokowane** — task czeka na zależność (`blocked_by` zawiera coś, co nie jest 🟢).
 >
-> **Ostatnia aktualizacja:** 2026-07-07 (descope CREDIT-113 — świadoma decyzja zakresu: stacking nie wnosi do dowodu tezy H1/H2/H3, a poprawna realizacja wymaga protokołu OOF + rekalibracji; przeniesiony do backlogu po obronie. CREDIT-114 odblokowany — blocked_by zredukowane do 103, 111, oba 🟢)
+> **Ostatnia aktualizacja:** 2026-07-07 (po merge CREDIT-114 final report + CREDIT-501 docs; wcześniej tego dnia: descope CREDIT-113, naprawy train/serve skew U1 i wycieków metodologicznych z atomowym retrainem — `reports/{threshold,scaler}_leakage_fix.md`, transakcja atomowa w zapisie migawki + test rollbacku, job CI dla ml-learing-center)
 
 ---
 
 ## 🎯 Aktualne zadanie
 
-- **Gabriel Figur (GF):** 🔴 **CREDIT-114** — Raport końcowy + komplet wykresów do slajdów obrony · branch `sprint6/final-report` *(P0, ostatnie ogniwo ścieżki krytycznej tezy; odblokowany po descope CREDIT-113)*
-- **Mikołaj Kusiński (MK):** 🔴 **CREDIT-304** — UI polish (responsive 1024/1440/1920, a11y Lighthouse ≥ 90, dark mode, tooltipy modeli) · branch `sprint6/ui-polish` *(Sprint 6 P2; odblokowane przez CREDIT-302 + CREDIT-303 — ostatni task toru MK)*
+- **Gabriel Figur (GF):** ⏸️ wszystkie zadania toru GF wykonane (ścieżka krytyczna tezy domknięta: 101→102→104→110→111→114 ✅); dalej: teksty pracy (rozdz. 3/5) + eksperymenty dowodowe na obronę (plan: `Fable_Task4.md` / plik planu)
+- **Mikołaj Kusiński (MK):** 🔴 **CREDIT-304** — UI polish (responsive 1024/1440/1920, a11y Lighthouse ≥ 90, dark mode, tooltipy modeli) · branch `sprint6/ui-polish` *(Sprint 6 P2; ostatni otwarty task projektu)*
 
 > **Reguła aktualizacji tej sekcji:** gdy task zostanie zmergeowany do `main`, ustaw tutaj kolejny najwyżej priorytetowy dostępny (🔴) task z toru właściwej osoby. Jeśli osoba nie ma już dostępnych tasków w bieżącym sprincie, wpisz „⏸️ czeka na odblokowanie / koniec sprintu".
 
@@ -24,9 +24,9 @@
 ## 📊 Statystyki
 
 - **Łącznie zadań:** 30 (CREDIT-115 + CREDIT-116 dodane 2026-06-05 jako follow-up do CREDIT-109)
-- **🟢 Wykonane:** 26 (CREDIT-101, CREDIT-102, CREDIT-103, CREDIT-201, CREDIT-401, CREDIT-402, CREDIT-210, CREDIT-104, CREDIT-202, CREDIT-203, CREDIT-204, CREDIT-301, CREDIT-302, CREDIT-205, CREDIT-105, CREDIT-110, CREDIT-111, CREDIT-106, CREDIT-109, CREDIT-107, CREDIT-108, CREDIT-115, CREDIT-116, CREDIT-303, CREDIT-211, CREDIT-112)
-- **🔴 Dostępne:** 2 (CREDIT-114, CREDIT-304)
-- **🔒 Zablokowane:** 1 (CREDIT-501)
+- **🟢 Wykonane:** 28 (CREDIT-101, CREDIT-102, CREDIT-103, CREDIT-201, CREDIT-401, CREDIT-402, CREDIT-210, CREDIT-104, CREDIT-202, CREDIT-203, CREDIT-204, CREDIT-301, CREDIT-302, CREDIT-205, CREDIT-105, CREDIT-110, CREDIT-111, CREDIT-106, CREDIT-109, CREDIT-107, CREDIT-108, CREDIT-115, CREDIT-116, CREDIT-303, CREDIT-211, CREDIT-112, **CREDIT-114**, **CREDIT-501**)
+- **🔴 Dostępne:** 1 (CREDIT-304)
+- **🔒 Zablokowane:** 0
 - **⚪ Descoped:** 1 (CREDIT-113 — decyzja 2026-07-07, backlog po obronie)
 
 ---
@@ -167,16 +167,16 @@
 
 ## Sprint 6 — Polish, ensemble, raport, docs (11 sie – 24 sie)
 
-- 🔴 **CREDIT-114** · [EVAL] · P0 · GF · `sprint6/final-report`
-  - Raport końcowy + komplet wykresów do slajdów obrony.
+- 🟢 **CREDIT-114** · [EVAL] · P0 · GF · `sprint6/final-report`
+  - Raport końcowy: `ml-learing-center/final_report.py` → `reports/FINAL_REPORT.md` (sekcje 1:1 pod rozdz. 5: tabela 5 modeli, statyka vs monitoring z uczciwym werdyktem, fairness, weryfikacja H1/H2/H3, ograniczenia, mapa artefaktów→sekcje). Każda liczba czytana z plików `reports/`, zero ręcznych wartości. Wykonane 2026-07-07 po leakage-fix.
   - blocked_by: 103, 111 · blocks: — *(113 usunięte z blocked_by po descope 2026-07-07)*
 
 - 🔴 **CREDIT-304** · [FE] · P2 · MK · `sprint6/ui-polish`
   - Responsive (1024/1440/1920), a11y (Lighthouse ≥ 90), dark mode, tooltipy modeli.
   - blocked_by: 302, 303 · blocks: —
 
-- 🔒 **CREDIT-501** · [DOCS] · P0 · GF+MK · `sprint6/docs`
-  - README + Model Card + Architecture + aktualizacja `CLAUDE.md` (nowe endpointy, baza, okno 3-mies.).
+- 🟢 **CREDIT-501** · [DOCS] · P0 · GF+MK · `sprint6/docs`
+  - README + Model Card + Architecture + aktualizacja `CLAUDE.md` (nowe endpointy, baza, okno 3-mies.). Wykonane 2026-07-07: nowy `README.md` (uruchomienie end-to-end + kluczowe wyniki), `docs/MODEL_CARD.md` (dane/trening/metryki/fairness/ograniczenia — liczby z reports/), `docs/ARCHITECTURE.md` (przepływ + decyzje projektowe), `CLAUDE.md` przepisany na stan 5-modelowy z Postgres i monitoringiem.
   - blocked_by: ~all · blocks: —
 
 ---

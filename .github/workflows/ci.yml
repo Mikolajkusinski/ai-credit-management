@@ -52,6 +52,30 @@ jobs:
       - name: Run pytest
         run: pytest
 
+  ml-training-tests:
+    name: ML Training (Python / pytest)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ml-learing-center
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # Deliberately minimal: sliding_window_test.py needs only pandas+pytest;
+      # sklearn/numpy cover features.py imports. Installing the full training
+      # stack (tensorflow/catboost, ~2 GB) here would serve tests that never
+      # import it.
+      - name: Install minimal dependencies
+        run: pip install pandas numpy scikit-learn pytest
+
+      - name: Run pytest
+        run: python -m pytest sliding_window_test.py -v
+
   frontend-tests:
     name: Frontend (React / Vitest)
     runs-on: ubuntu-latest
