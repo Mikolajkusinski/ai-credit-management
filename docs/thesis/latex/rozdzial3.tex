@@ -1,0 +1,293 @@
+% Rozdział 3 — Metodologia badań i projekt systemu
+% Konwencje: numeracja sekcji z klasy dokumentu (plik zakłada \chapter/\section
+% w szablonie pracy); istniejące pozycje bibliografii cytowane literalnie [n]
+% jak w całej pracy; NOWE pozycje przez \cite{...} — klucze w bibliografia_nowe.tex.
+% Nazwy cech/kolumn w \texttt{...} z eskejpowanym podkreślnikiem.
+
+\section{Cel i zakres badań}
+
+Celem pracy jest zbadanie, czy i w jakim stopniu dynamiczne, kalendarzowe
+monitorowanie ryzyka niewykonania zobowiązania przewyższa klasyczną, jednorazową
+ocenę statyczną. Rozdziały 1 i 2 wykazały, że zarówno wymogi regulacyjne (art.~70
+Prawa bankowego, wytyczne EBA dotyczące monitorowania kredytów [9]), jak i rozwój
+metod uczenia maszynowego przesuwają akcent z pojedynczej decyzji kredytowej ku
+ciągłej obserwacji ekspozycji. Część badawcza operacjonalizuje tę obserwację
+w~postaci schematu, w~którym ta sama ekspozycja oceniana jest wielokrotnie na
+przesuwanym oknie historii płatniczej, a~wynikiem jest trajektoria
+prawdopodobieństwa niewykonania zobowiązania (PD) zamiast pojedynczego wyniku.
+
+Zakres badań obejmuje: (1)~konstrukcję panelu danych z~przesuwanym oknem na bazie
+publicznego zbioru UCI \emph{default of credit card clients} [13];
+(2)~trening i~kalibrację pięciu klasyfikatorów reprezentujących odmienne rodziny
+algorytmiczne (las losowy, XGBoost, LightGBM, CatBoost --- ujęcie statyczne;
+LSTM --- ujęcie sekwencyjne); (3)~budowę kompletnego systemu eksperymentalnego
+(frontend, backend, serwis predykcyjny, baza danych) realizującego monitoring
+trajektorii wraz z~progami alertu i~wyjaśnieniami predykcji; (4)~ewaluację
+porównawczą reguły statycznej i~monitorującej oraz audyt sprawiedliwości.
+Poza zakresem pozostają: dane dochodowe (nieobecne w~zbiorze --- ograniczenie
+omówione we Wstępie), dane alternatywne oraz zespoły typu stacking (świadoma
+decyzja zakresu; kierunek dalszych badań).
+
+\section{Postawione hipotezy badawcze}
+
+Pytania badawcze sformułowane we Wstępie skonkretyzowano w~postaci trzech
+weryfikowalnych hipotez:
+
+\textbf{H1 (zachowanie jakości przy krótszym oknie).} \emph{Modele trenowane na
+3-miesięcznym oknie obserwacji (W3) zachowują zdolność dyskryminacyjną modeli
+6-miesięcznych: strata AUC nie przekracza 1~punktu procentowego.} Hipoteza
+warunkuje wykonalność całego schematu monitoringu --- okno 3-miesięczne jest ceną
+za możliwość zbudowania czterech punktów trajektorii z~dostępnych 6~miesięcy
+historii.
+
+\textbf{H2 (wartość monitoringu).} \emph{Kalendarzowa reguła monitorująca ---
+alert, gdy PD w~którymkolwiek z~okien W0..W3 przekracza próg --- oferuje
+wcześniejszą detekcję pogarszającej się sytuacji dłużnika oraz wykrycia
+niedostępne regule statycznej (opartej wyłącznie na najnowszym oknie W3), przy
+porównywalnej ogólnej zdolności dyskryminacyjnej.} Hipoteza celowo nie postuluje
+wyższej czułości przy stałym budżecie fałszywych alarmów: agregacja maksimum po
+czterech skorelowanych oknach zwiększa ekspozycję na szum, a~wartością
+monitoringu jest wyprzedzenie czasowe i~komplementarność, nie substytucja oceny
+statycznej.
+
+\textbf{H3 (sprawiedliwość).} \emph{Modele zachowują parytet względem atrybutu
+chronionego SEX: różnica parytetu demograficznego (DPD) oraz różnica wyrównanych
+szans (EOD) nie przekraczają 0,10 przy binaryzacji progami produkcyjnymi.}
+Wybór metryk i~progu omówiono w~rozdziale~5.5; wymóg nawiązuje do klasyfikacji
+scoringu kredytowego jako zastosowania wysokiego ryzyka w~rozporządzeniu
+o~sztucznej inteligencji [25].
+
+Weryfikację hipotez przedstawia rozdział~5.6.
+
+\section{Struktura i charakterystyka danych dłużników}
+
+\subsection{Źródła i sposób pozyskania danych}
+
+Wykorzystano publiczny zbiór \emph{default of credit card clients} (UCI Machine
+Learning Repository), obejmujący 30~000 posiadaczy kart kredytowych tajwańskiego
+banku [13]. Każdy rekord zawiera 23~zmienne objaśniające oraz binarną etykietę
+niewykonania zobowiązania w~październiku 2005~r. (22,1\% obserwacji pozytywnych).
+Zbiór jest standardowym benchmarkiem w~literaturze credit scoringu, co umożliwia
+odniesienie wyników do wcześniejszych badań [10], [13].
+
+\subsection{Opis zmiennych wejściowych i zmiennej docelowej}
+
+Zmienne dzielą się na trzy grupy: (1)~profil klienta --- limit kredytowy
+(\texttt{LIMIT\_BAL}), płeć (\texttt{SEX}: 1~=~mężczyzna, 2~=~kobieta),
+wykształcenie (\texttt{EDUCATION}), stan cywilny (\texttt{MARRIAGE}), wiek
+(\texttt{AGE}); (2)~historia płatnicza za sześć kolejnych miesięcy
+(kwiecień--wrzesień 2005): statusy płatności \texttt{PAY\_*}, salda rachunków
+\texttt{BILL\_AMT1..6}, kwoty wpłat \texttt{PAY\_AMT1..6}; (3)~zmienna docelowa
+\texttt{Default}. Istotną cechą zbioru jest przesunięta numeracja: najnowszy
+miesiąc (wrzesień) opisują kolumny \texttt{PAY\_0}, \texttt{BILL\_AMT1}
+i~\texttt{PAY\_AMT1}, a~kolumna \texttt{PAY\_1} nie istnieje. Mapowanie kolumn
+na oś czasu przedstawia tabela~\ref{tab:mapowanie-kolumn}.
+
+\begin{table}[htbp]
+\centering
+\caption{Mapowanie kolumn UCI na miesiące kalendarzowe.}
+\label{tab:mapowanie-kolumn}
+\begin{tabular}{llll}
+\toprule
+Miesiąc & Status płatności & Saldo rachunku & Kwota wpłaty \\
+\midrule
+wrzesień (najnowszy) & \texttt{PAY\_0} & \texttt{BILL\_AMT1} & \texttt{PAY\_AMT1} \\
+sierpień             & \texttt{PAY\_2} & \texttt{BILL\_AMT2} & \texttt{PAY\_AMT2} \\
+lipiec               & \texttt{PAY\_3} & \texttt{BILL\_AMT3} & \texttt{PAY\_AMT3} \\
+czerwiec             & \texttt{PAY\_4} & \texttt{BILL\_AMT4} & \texttt{PAY\_AMT4} \\
+maj                  & \texttt{PAY\_5} & \texttt{BILL\_AMT5} & \texttt{PAY\_AMT5} \\
+kwiecień (najstarszy)& \texttt{PAY\_6} & \texttt{BILL\_AMT6} & \texttt{PAY\_AMT6} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Preprocessing danych: czyszczenie, normalizacja, inżynieria cech}
+
+Dla modeli statycznych z~każdego okna obserwacji wyliczane jest 13~cech
+pochodnych (m.in. \texttt{PAY\_mean}, \texttt{PAY\_max}, \texttt{BILL\_mean},
+\texttt{BILL\_std}, \texttt{BILL\_trend}, \texttt{utilization\_rate} =
+\texttt{BILL\_mean}~/~\texttt{LIMIT\_BAL}, \texttt{payment\_ratio},
+\texttt{late\_count}, \texttt{severe\_late}, \texttt{recent\_pay\_status}),
+uzupełnionych o~9~surowych kolumn okna oraz zmienne demograficzne kodowane
+one-hot. Funkcja \texttt{engineer\_features(df, window)} jest sparametryzowana
+oknem --- te same definicje cech obowiązują dla każdego z~okien W0..W3,
+a~identyczna kopia modułu działa w~treningu i~w~serwisie inferencyjnym (spójność
+trening--serwing jest przypięta testami automatycznymi). Kodowanie one-hot używa
+stałych dziedzin kategorii zbioru UCI, dzięki czemu zestaw kolumn nie zależy od
+składu przetwarzanej próbki --- w~szczególności od pojedynczego rekordu
+w~inferencji. Wartości nieskończone i~brakujące powstające w~cechach ilorazowych
+(np. przy \texttt{LIMIT\_BAL}~=~0) są zerowane identycznie po obu stronach.
+Standaryzacja (StandardScaler) jest dopasowywana wyłącznie na części treningowej
+i~stosowana przez transformację do pozostałych podzbiorów oraz w~inferencji.
+Model sekwencyjny otrzymuje surowy tensor $3\times3$ (trzy miesiące $\times$
+trzy kanały: PAY, BILL\_AMT, PAY\_AMT), skalowany per kanał skalerami
+dopasowanymi na części treningowej --- bez cech pochodnych i~bez zmiennych
+demograficznych.
+
+\subsection{Konstrukcja panelu z przesuwanym oknem (W0..W3)}
+
+Rdzeniem części badawczej jest przekształcenie przekrojowego zbioru UCI w~panel
+umożliwiający symulację monitoringu. Z~sześciu miesięcy historii budowane są
+cztery nakładające się okna 3-miesięczne, tworzące pseudo-oś czasu
+(tabela~\ref{tab:okna}).
+
+\begin{table}[htbp]
+\centering
+\caption{Definicje okien przesuwnych.}
+\label{tab:okna}
+\begin{tabular}{lllll}
+\toprule
+Okno & Zakres & Statusy & Salda & Wpłaty \\
+\midrule
+W0 (najstarsze) & kwi--cze & \texttt{PAY\_6,5,4} & \texttt{BILL\_AMT6,5,4} & \texttt{PAY\_AMT6,5,4} \\
+W1              & maj--lip & \texttt{PAY\_5,4,3} & \texttt{BILL\_AMT5,4,3} & \texttt{PAY\_AMT5,4,3} \\
+W2              & cze--sie & \texttt{PAY\_4,3,2} & \texttt{BILL\_AMT4,3,2} & \texttt{PAY\_AMT4,3,2} \\
+W3 (najnowsze)  & lip--wrz & \texttt{PAY\_3,2,0} & \texttt{BILL\_AMT3,2,1} & \texttt{PAY\_AMT3,2,1} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Obowiązuje zasada nadrzędna: \textbf{żadna wartość nie jest fabrykowana}. Każde
+okno to rzeczywisty, trzymiesięczny wycinek historii klienta; jedyną operacją
+jest wybór miesięcy ,,widocznych'' w~danym punkcie pseudo-czasu. Klient ma jedną
+prawdziwą etykietę (default w~październiku), wspólną dla wszystkich okien ---
+nie są tworzone żadne etykiety pośrednie.
+
+Modele trenowane są wyłącznie na oknie W3, wyrównanym z~etykietą (,,mając
+ostatnie 3~miesiące, czy klient nie wykona zobowiązania w~następnym
+miesiącu?''). W~inferencji ten sam model stosowany jest do każdego z~okien
+W0..W3 --- ponieważ każde okno ma identyczną strukturę 3-miesięcznego wycinka,
+rozkład wejść inferencyjnych odpowiada treningowemu. Trening na jednym oknie na
+klienta eliminuje ryzyko wycieku etykiet, które niosłaby augmentacja wszystkimi
+czterema oknami.
+
+\textbf{Ograniczenie metodologiczne (istotne dla interpretacji wyników).} Zbiór
+UCI jest przekrojowy, więc monitoring jest symulowany retrospektywnie: cztery
+okna tego samego klienta nakładają się w~dwóch trzecich, a~wszystkie przewidują
+tę samą październikową etykietę --- okno W0 odpowiada predykcji
+z~czteromiesięcznym horyzontem, W3 z~jednomiesięcznym. Trajektoria PD stanowi
+zatem przybliżenie scenariusza produkcyjnego, a~nie jego pełną replikę;
+walidacja na prawdziwym panelu podłużnym pozostaje kierunkiem dalszych badań.
+Diagnozę odróżniającą narastanie ryzyka od ewentualnego przesunięcia rozkładu
+między oknami przedstawia rozdział~5.4.
+
+\subsection{Podział zbioru i protokół walidacji}
+
+Zastosowano trójdzielny, stratyfikowany podział 60/20/20
+(\texttt{random\_state}~=~42): 18~000 obserwacji treningowych, 6~000
+kalibracyjnych i~6~000 testowych. Część kalibracyjna służy wyłącznie dopasowaniu
+kalibracji izotonicznej (rozdz.~4.6) oraz wyznaczeniu progów alertu
+(rozdz.~4.7) --- dzięki temu zbiór testowy pozostaje zamrożony: nie uczestniczy
+w~treningu, doborze hiperparametrów, kalibracji ani doborze progów, a~wchodzi do
+analizy wyłącznie w~finalnej ewaluacji rozdziału~5. Standaryzacja cech
+dopasowywana jest na części treningowej (por.~3.3.3). Stratyfikacja zachowuje
+w~każdym podzbiorze proporcję klas 78/22.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=.95\textwidth]{fig_4_1_podzial_danych}
+\caption{Podział danych: trening / kalibracja / test (60/20/20). Źródło: opracowanie własne.}
+\label{fig:podzial}
+\end{figure}
+
+\section{Projekt architektury systemu eksperymentalnego}
+
+\subsection{Architektura ogólna i przepływ danych}
+
+System składa się z~czterech warstw komunikujących się przez HTTP/JSON
+i~uruchamianych w~kontenerach (docker-compose; frontend w~trybie deweloperskim
+poza kompozycją):
+
+\begin{verbatim}
+React 19 + TypeScript (5173)
+   |  POST/GET /api/v1/monitoring/*
+   v
+ASP.NET Core .NET 8 (5120) - MonitoringController -> MonitoringService
+   |  walidacja 22 cech, mapowanie nazw, labelki okien, obsluga bledow,
+   |  persystencja (EF Core, transakcja atomowa)
+   +--> Flask (5001): POST /predict/timeseries - 5 modeli x 4 okna,
+   |        trendy, progi kosztowe, SHAP top-5
+   +--> PostgreSQL 16 (5432): Client / Snapshot / Prediction / Trend
+\end{verbatim}
+
+Przepływ oceny monitorującej: frontend przesyła 22~cechy klienta wraz z~datą
+migawki; backend waliduje żądanie, wywołuje serwis predykcyjny, wzbogaca
+odpowiedź o~etykiety kalendarzowe okien i~--- w~ścieżce stanowej --- zapisuje
+migawkę, predykcje okna W3 oraz trendy w~bazie. Kontrakt API (cztery endpointy,
+typy, kody błędów) został sformalizowany przed implementacją, co umożliwiło
+równoległą pracę nad backendem i~frontendem przeciwko wspólnemu mockowi.
+
+\subsection{Warstwa backendowa}
+
+Backend pełni rolę bramy i~warstwy trwałości. Waliduje wejście (adnotacje
+zakresów dla 22~cech), mapuje konwencje nazewnicze, wyznacza etykiety
+kalendarzowe okien względem daty migawki i~mapuje błędy na ustrukturyzowaną
+kopertę (\texttt{VALIDATION\_FAILED}, \texttt{CONFLICT} --- duplikat pary
+klient/data, \texttt{CLIENT\_NOT\_FOUND},
+\texttt{ML\_SERVICE\_ERROR}/\texttt{UNAVAILABLE}, \texttt{INTERNAL\_ERROR}).
+Warstwa trwałości (EF~Core, Npgsql, automatyczne migracje przy starcie)
+przechowuje encje: \texttt{Client} (unikalny identyfikator biznesowy),
+\texttt{Snapshot} (data + pełne 22~cechy wejściowe), \texttt{Prediction}
+(PD per model dla okna etykietowanego W3) i~\texttt{Trend} (nachylenie
+trajektorii i~alert per model, aktualizowane w~trybie upsert). Zapis migawki
+wraz z~pięcioma predykcjami i~pięcioma trendami wykonywany jest w~jawnej
+transakcji bazodanowej --- awaria w~trakcie zapisu nie może pozostawić migawki
+bez predykcji; właściwość ta jest weryfikowana testem integracyjnym
+z~wstrzykniętą awarią na rzeczywistym PostgreSQL.
+
+\subsection{Integracja modeli AI z systemem}
+
+Serwis predykcyjny (Flask) ładuje przy starcie pięć skalibrowanych artefaktów
+W3 (cztery modele drzewiaste \texttt{.pkl} --- opakowania
+\texttt{CalibratedClassifierCV} --- oraz model LSTM \texttt{.keras}
+z~zewnętrznym kalibratorem izotonicznym), skalery i~plik progów alertu.
+Endpoint \texttt{POST /predict/timeseries} przyjmuje 22~cechy, wewnętrznie
+mapuje wartości każdego z~okien W0..W3 w~sloty kolumn W3 (dzięki czemu model
+trenowany na W3 ocenia każde okno w~tej samej przestrzeni cech), i~zwraca:
+trajektorię (5~modeli $\times$ 4~okna), trendy z~regułą alertu opartą na
+nachyleniu (W3~$-$~W0), progi kosztowe, flagi alertów per okno oraz wyjaśnienia
+SHAP (pięć najistotniejszych cech per model drzewiasty, dla okna W3).
+Historyczny endpoint \texttt{POST /predict} (modele 6-miesięczne bez
+kalibracji) zachowano jako punkt odniesienia --- oba tryby są rozdzielone
+i~nie mieszają artefaktów.
+
+\subsection{Warstwa frontendowa}
+
+Interfejs (React~19, TypeScript, Vite; wykresy Recharts) ma dwie zakładki.
+Zakładka \emph{Prediction} odtwarza klasyczną, jednorazową ocenę (formularz
+22~cech, karty wyników per model). Zakładka \emph{Monitoring} realizuje
+Wariant~B: lista monitorowanych klientów z~rozwijaną historią (master--detail),
+wykres trajektorii PD (pięć linii, cztery okna), karty alertów semaforowych per
+model, formularz datowanej migawki z~funkcją kopiowania poprzednich wartości
+oraz komponent wyjaśnień SHAP (poziome słupki rozbieżne: wkład dodatni podnosi
+PD). Warstwa typów TypeScript odwzorowuje kontrakt API w~pełnej,
+pięciomodelowej postaci.
+
+\section{Obsługa wyjątków i scenariusze brzegowe}
+
+Obsługę błędów zaprojektowano w~trzech warstwach. Serwis ML odrzuca żądania
+z~brakującym lub nienumerycznym polem (kod \texttt{VALIDATION\_FAILED}) ---
+walidacja typów zapobiega zarówno awarii ścieżki sekwencyjnej, jak i~cichej
+imputacji zera w~ścieżce statycznej (zero jest w~tym zbiorze znaczącą wartością
+statusu płatności). Backend mapuje niedostępność serwisu ML na 503, jego błędy
+na 502, duplikat migawki na 409, nieznanego klienta na 404, a~scenariusze
+brzegowe cech ilorazowych (np. zerowy limit) neutralizuje identycznie jak
+trening. Frontend tłumaczy kody błędów na komunikaty użytkownika. Scenariusze
+te są pokryte testami integracyjnymi wszystkich trzech warstw.
+
+\section{Narzędzia i środowisko technologiczne}
+
+Stack: Python~3.11 (scikit-learn, XGBoost, LightGBM, CatBoost,
+TensorFlow/Keras, fairlearn, SHAP, Optuna), Flask; .NET~8 (ASP.NET Core,
+EF~Core, Npgsql); React~19 + TypeScript + Vite; PostgreSQL~16; Docker Compose.
+Testy: pytest (serwis ML --- w~tym testy parytetu trening/serwing), xUnit
+(backend --- w~tym testy integracyjne na rzeczywistym PostgreSQL przez
+Testcontainers), Vitest (frontend). Metodyka pracy: GitHub Flow --- gałęzie
+funkcjonalne, przegląd drugiego autora dla każdego pull requesta, ciągła
+integracja (cztery zadania: backend, serwis ML, warstwa treningowa, frontend)
+blokująca scalenie przy czerwonych testach. Zakres prac zdekomponowano na
+zadania z~jawnym grafem zależności i~definicją ukończenia, prowadzone
+w~sześciu dwutygodniowych sprintach planistycznych. Wszystkie wyniki liczbowe
+rozdziału~5 są reprodukowalne pojedynczym uruchomieniem skryptów warstwy
+treningowej, a~trening modelu sekwencyjnego jest deterministyczny (ustalone
+ziarno losowe).

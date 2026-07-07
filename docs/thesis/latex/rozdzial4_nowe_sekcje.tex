@@ -1,0 +1,73 @@
+% Rozdział 4 — NOWE sekcje 4.6 / 4.7 / 4.8 (wstawić po istniejącej sekcji 4.5).
+% Podmiany w ISTNIEJĄCYCH sekcjach rozdz. 4: patrz rozdzial4_instrukcje.md.
+% Nowe cytowanie: \cite{zadrozny2002} (bibliografia_nowe.tex).
+
+\section{Kalibracja prawdopodobieństw (regresja izotoniczna)}
+
+W schemacie monitoringu trajektorii kalibracja nie jest kosmetyką, lecz
+warunkiem sensowności całej konstrukcji: wzrost PD z~0,30 do 0,45 między oknami
+musi oznaczać rzeczywisty wzrost ryzyka, a~nie artefakt skali konkretnego
+modelu. Modele trenowane z~ważeniem klas (sekcja~4.1.2) systematycznie zawyżają
+surowe prawdopodobieństwa, dlatego każdy z~pięciu klasyfikatorów poddano
+kalibracji potreningowej na wydzielonej części kalibracyjnej (rozdz.~3.3.5).
+
+Wybrano regresję izotoniczną --- nieparametryczną, monotoniczną korektę
+skali~\cite{zadrozny2002} --- zamiast parametrycznej metody Platta, ponieważ
+nie narzuca ona sigmoidalnej postaci rozjazdu między wynikiem modelu
+a~częstością empiryczną, a~przy 6~000 obserwacji kalibracyjnych ryzyko
+przeuczenia korekty jest niewielkie. Dla czterech modeli drzewiastych
+zastosowano opakowanie \texttt{CalibratedClassifierCV(FrozenEstimator(model),
+method="isotonic")} (estymator bazowy zamrożony --- kalibrator dopasowuje się
+wyłącznie na części kalibracyjnej); dla LSTM --- zewnętrzny obiekt
+\texttt{IsotonicRegression} aplikowany do surowych wyjść sieci i~serializowany
+obok modelu. Kalibracja poprawiła wynik Briera o~19--25\% (las losowy:
+0,1689~$\rightarrow$~0,1374; XGBoost: 0,1787~$\rightarrow$~0,1360; LSTM:
+0,1850~$\rightarrow$~0,1385) przy praktycznie niezmienionym AUC --- korekta
+monotoniczna nie zmienia rankingu. Wykres kalibracji (reliability curve) po
+korekcie przebiega blisko przekątnej (rys.~\ref{fig:kalibracja}).
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=.85\textwidth]{calibration_comparison_w3}
+\caption{Krzywe kalibracji pięciu modeli W3 po korekcie izotonicznej.
+Źródło: opracowanie własne.}
+\label{fig:kalibracja}
+\end{figure}
+
+\section{Progi alertu optymalne kosztowo}
+
+Domyślny próg klasyfikacyjny 0,5 jest w~ocenie kredytowej arbitralny: koszt
+przeoczenia przyszłego defaultu (utrata kapitału) wielokrotnie przewyższa koszt
+fałszywego alarmu (koszt przeglądu, ewentualna utrata marży). Przyjęto model
+kosztu $\mathrm{FN} = 5 \times \mathrm{FP}$ i~dla każdego modelu wyznaczono próg
+minimalizujący koszt oczekiwany, przeszukując zakres $[0{,}1;\,0{,}9]$
+z~krokiem 0,005 \textbf{na części kalibracyjnej} --- zbiór testowy nie
+uczestniczy w~doborze progu, zgodnie z~zasadą z~sekcji~4.1.1. (Świadomy
+kompromis: część kalibracyjna służy również dopasowaniu kalibratora, więc
+prawdopodobieństwa są tam dla niego in-sample; alternatywa --- dobór progu na
+teście --- naruszałaby zamrożenie testu.)
+
+Wyznaczone progi: las losowy 0,145; XGBoost 0,165; LightGBM 0,160; CatBoost
+0,160; LSTM 0,155. Wszystkie leżą daleko poniżej 0,5 --- bezpośrednie
+odzwierciedlenie asymetrii kosztów: system woli częściej alarmować, niż
+przeoczyć default. Progi są serializowane do pliku
+\texttt{alert\_thresholds.json} i~serwowane przez API (pola
+\texttt{costThresholds} i~\texttt{windowAlerts} odpowiedzi), dzięki czemu
+warstwa decyzyjna systemu operuje na tych samych wartościach, które audytowane
+są w~rozdziale~5 (fairness liczony przy progach produkcyjnych, nie przy
+umownym 0,5).
+
+\section{Implementacja LightGBM i CatBoost}
+
+Oba warianty wzmacniania gradientowego (teoria: sekcje 2.3.4 i~2.3.5) włączono
+do eksperymentu w~tym samym reżimie co las losowy i~XGBoost: identyczny podział
+danych, ta sama przestrzeń cech okna W3, ważenie klas
+(\texttt{class\_weight="balanced"} / \texttt{auto\_class\_weights="Balanced"}),
+kalibracja izotoniczna na części kalibracyjnej i~próg kosztowy z~sekcji~4.7.
+Hiperparametry ujednolicono z~XGBoost dla porównywalności (800~iteracji,
+learning rate 0,02, głębokość~4, subsampling 0,7); CatBoost używa bootstrapu
+Bernoulliego i~regularyzacji \texttt{l2\_leaf\_reg}~=~3,0. Odpowiedź serwisu
+predykcyjnego, DTO backendu oraz interfejs użytkownika zostały rozszerzone do
+pełnej, pięciomodelowej postaci (trajektoria, trendy, progi i~alerty per
+model). Porównanie ilościowe całej piątki --- wraz z~przedziałami ufności
+bootstrap --- zawiera rozdział~5.3.

@@ -1,0 +1,20 @@
+% SMOKE TEST składni — NIE jest to szablon pracy.
+% Kompiluje wszystkie pliki paczki w minimalnym dokumencie, żeby wychwycić
+% błędy LaTeX-a przed wklejeniem do właściwego projektu (Overleaf).
+% Kompilacja: pdflatex -interaction=nonstopmode main_test.tex  (lub tectonic)
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[polish]{babel}
+\usepackage{booktabs,graphicx,amsmath}
+% Ścieżki figur względem docs/thesis/latex/:
+\graphicspath{{../../../ml-learing-center/thesis_figures/output/rozdzial_4/}{../../../ml-learing-center/thesis_figures/output/rozdzial_5/}{../../../ml-learing-center/reports/}}
+\begin{document}
+\input{rozdzial3}
+\input{rozdzial4_nowe_sekcje}
+\input{rozdzial5}
+\input{zakonczenie}
+\begin{thebibliography}{99}
+\input{bibliografia_nowe}
+\end{thebibliography}
+\end{document}
