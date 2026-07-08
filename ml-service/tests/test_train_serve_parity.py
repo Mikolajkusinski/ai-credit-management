@@ -22,17 +22,27 @@ import pytest
 
 SERVICE_ROOT = Path(__file__).resolve().parent.parent
 
-ARTIFACTS = [
+# W3 artifacts are tracked in git (CI has them); the legacy 6-month ones are
+# deliberately gitignored (ml-service/.pkl except *_w3). `import app` loads the
+# LEGACY models unconditionally at module import, so every test that touches
+# the app module must skip when legacy artifacts are absent (e.g. on CI) --
+# same convention as tests/test_timeseries.py.
+W3_ARTIFACTS = [
     "rf_model_w3.pkl", "xgb_model_w3.pkl",
     "lightgbm_model_w3.pkl", "catboost_model_w3.pkl",
     "scaler_w3.pkl", "features_w3.pkl",
     "lstm_model_w3.keras", "lstm_scalers_w3.pkl", "lstm_calibrator_w3.pkl",
     "alert_thresholds.json",
 ]
+LEGACY_ARTIFACTS = [
+    "rf_model.pkl", "xgb_model.pkl", "scaler.pkl", "features.pkl",
+    "lstm_model.keras", "lstm_scalers.pkl",
+]
+ARTIFACTS = W3_ARTIFACTS + LEGACY_ARTIFACTS
 
 
-def _require_artifacts():
-    missing = [a for a in ARTIFACTS if not (SERVICE_ROOT / a).exists()]
+def _require_artifacts(names=None):
+    missing = [a for a in (names or ARTIFACTS) if not (SERVICE_ROOT / a).exists()]
     if missing:
         pytest.skip(f"missing artifacts: {missing}")
 
@@ -76,8 +86,10 @@ DIVERSE_CLIENTS = [
 
 def test_single_row_dummies_match_batch():
     """Feature matrix from row-by-row engineering (Flask path) must be identical
-    to batch engineering after selection to the saved feature list."""
-    _require_artifacts()
+    to batch engineering after selection to the saved feature list.
+
+    Runs on CI (needs only the tracked W3 artifacts, no `import app`)."""
+    _require_artifacts(W3_ARTIFACTS)
     from features import engineer_features
     from sliding_window import WINDOW_DEFS
 
@@ -105,8 +117,10 @@ def test_single_row_dummies_match_batch():
 
 def test_female_client_gets_sex_dummy():
     """Regression pin for U1: a SEX=2 client engineered from a 1-row frame MUST
-    have SEX_2 == 1 (pre-fix it was silently 0 for everyone)."""
-    _require_artifacts()
+    have SEX_2 == 1 (pre-fix it was silently 0 for everyone).
+
+    Runs on CI (needs only the tracked W3 artifacts, no `import app`)."""
+    _require_artifacts(W3_ARTIFACTS)
     from features import engineer_features
     from sliding_window import WINDOW_DEFS
 
