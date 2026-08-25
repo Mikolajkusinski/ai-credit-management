@@ -84,11 +84,14 @@ Trenowane na oknie W3 (najnowsze 3 mies., wyrównane z etykietą październikow�
 
 | Model | AUC cal | Brier cal | Cost-opt threshold |
 |---|---|---|---|
-| Random Forest | 0.7741 | 0.1372 | 0.145 |
-| XGBoost | 0.7760 | 0.1360 | 0.180 |
-| LightGBM | 0.7764 | 0.1366 | 0.160 |
-| **CatBoost** ← najlepszy | **0.7802** | **0.1354** | 0.130 |
-| LSTM | 0.7610 | 0.1387 | 0.175 |
+| Random Forest | 0.7741 | 0.1374 | 0.145 |
+| XGBoost | 0.7761 | 0.1360 | 0.165 |
+| LightGBM | 0.7767 | 0.1363 | 0.160 |
+| **CatBoost** ← najlepszy | **0.7793** | **0.1357** | 0.160 |
+| LSTM | 0.7614 | 0.1388 | 0.155 |
+
+*(liczby po leakage-fix 2026-07-07: progi na splicie kalibracyjnym, skalery po splicie —
+`reports/{threshold,scaler}_leakage_fix.md`)*
 
 Wykresy do slajdu: ![ROC comparison](figures/roc_comparison_w3.png) lub ![PR comparison](figures/pr_comparison_w3.png)
 
@@ -110,9 +113,9 @@ dla LSTM osobny `sklearn.IsotonicRegression` na raw outputach. 3-way split 60/20
 
 | Model | Brier **przed** | Brier **po** | Δ |
 |---|---|---|---|
-| Random Forest | 0.1688 | 0.1372 | **−19%** |
+| Random Forest | 0.1689 | 0.1374 | **−19%** |
 | XGBoost | 0.1787 | 0.1360 | **−24%** |
-| LSTM | 0.1803 | 0.1388 | **−23%** |
+| LSTM | 0.1850 | 0.1385 | **−25%** |
 
 AUC praktycznie zachowane (isotonic jest monotoniczny → ranking nietkniety; różnice ≤ 0.005).
 
@@ -137,17 +140,22 @@ Operating point: **False Alarm = 10%** (kanoniczny budżet)
 
 | Model | static catch | monitoring catch | Δ pp | only-monitor catches | mean lead |
 |---|---|---|---|---|---|
-| Random Forest | 50.3% | 45.3% | **−4.97** | 72 | 1.99 windows |
-| XGBoost | 49.8% | 43.9% | **−5.88** | 43 | 2.04 |
-| LSTM | 47.9% | 45.7% | −2.11 | 58 | 2.06 |
+| Random Forest | 52.9% | 42.0% | **−10.85** | 48 | 1.96 windows |
+| XGBoost | 48.6% | 43.5% | **−5.12** | 47 | 2.05 |
+| LightGBM | 54.4% | 49.4% | **−4.97** | 52 | 2.06 |
+| CatBoost | 51.2% | 44.8% | **−6.41** | 39 | 2.09 |
+| **LSTM** | 46.0% | 48.6% | **+2.56** ✅ | 74 | 2.04 |
 
 Wykresy: ![Static vs Dynamic CatBoost](figures/static_vs_dynamic_catboost_w3.png) + ![XGBoost](figures/static_vs_dynamic_xgboost_w3.png)
 
 ### Honest verdict (slide-headline — najważniejszy moment seminarium)
 
-> *„Monitoring **nie wygrywa** czystej dyskryminacji przy FA=10%. Aggregator `max(W0..W3)` widzi 4×
-> więcej noise'u niż pojedyncza skalibrowana W3. Wygrywa **lead time** (~2 okna wcześniej) i
-> **unikalne catche** — defaulterów, których W3-only nigdy by nie złapał (43-184 na model)."*
+> *„Dla modeli statycznych monitoring **nie wygrywa** czystej dyskryminacji przy FA=10% —
+> aggregator `max(W0..W3)` widzi 4× więcej noise'u niż pojedyncza skalibrowana W3. Wygrywa
+> **lead time** (~2 okna wcześniej) i **unikalne catche** — defaulterów, których W3-only nigdy
+> by nie złapał (39-74 na model). Wyjątek: **LSTM — jedyny model sekwencyjny — wygrywa
+> monitoringiem także na catch rate (+2.6 pp)**, spójnie z hipotezą, że architektura
+> sekwencyjna najlepiej wykorzystuje trajektorię."*
 
 ### Framing dla obrony
 
@@ -326,8 +334,8 @@ rosnące (przekraczające próg alertu w pewnym momencie).
 - `docs/api-contracts/monitoring.md` — kontrakt API (4 endpointy + 6 typów + reguła alertu)
 - `TASKS.md` — backlog 28 zadań z zależnościami
 - `plan_sprintow_wariant_B.md` — metodyka + ryzyka + harmonogram
-- `PodsumowanieSprintu1.md`, `PodsumowanieSprintu2_MK.md`, `PodsumowanieSprintu3_GF.md`,
-  `PodsumowanieSprintu4_GF.md` — narrative per sprint dla seminarium
+- `PodsumowanieSprintow.md`, `PodsumowanieSprintow.md`, `PodsumowanieSprintow.md`,
+  `PodsumowanieSprintow.md` — narrative per sprint dla seminarium
 
 ### Lista wszystkich wykresów (w `ml-learing-center/reports/`)
 - Comparison: roc / pr / calibration (3 PNG, 5 modeli na każdym)

@@ -13,3 +13,4 @@ shap>=0.45
 optuna>=3.4
 fairlearn>=0.10
 pytest>=7.4
+pypdf>=4.0

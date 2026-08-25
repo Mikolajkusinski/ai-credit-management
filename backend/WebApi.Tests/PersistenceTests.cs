@@ -359,6 +359,50 @@ public class PersistenceTests : IAsyncLifetime
         Assert.True(trend.ComputedAt >= before, "ComputedAt should be set by the DB NOW() default");
     }
 
+    // A structurally valid Flask body whose trajectory is MISSING the W3 point. The service
+    // persists the client and snapshot first and only then looks up W3 (`Trajectory.First`),
+    // so this deterministically injects a failure mid-write — after the snapshot INSERT,
+    // before predictions/trends. Used to prove the write is atomic.
+    private const string FlaskMissingW3Body = """
+    {
+      "snapshotDate": null,
+      "trajectory": [
+        { "window": "W0", "label": null, "predictions": { "randomForest": 0.18, "xgboost": 0.20, "lightgbm": 0.19, "catboost": 0.17, "lstm": 0.15 } },
+        { "window": "W1", "label": null, "predictions": { "randomForest": 0.27, "xgboost": 0.29, "lightgbm": 0.28, "catboost": 0.26, "lstm": 0.24 } },
+        { "window": "W2", "label": null, "predictions": { "randomForest": 0.41, "xgboost": 0.44, "lightgbm": 0.42, "catboost": 0.40, "lstm": 0.39 } }
+      ],
+      "trends": {
+        "randomForest": { "slope": 0.40, "alert": "INCREASING_RISK" },
+        "xgboost":      { "slope": 0.41, "alert": "INCREASING_RISK" },
+        "lightgbm":     { "slope": 0.41, "alert": "INCREASING_RISK" },
+        "catboost":     { "slope": 0.40, "alert": "INCREASING_RISK" },
+        "lstm":         { "slope": 0.40, "alert": "INCREASING_RISK" }
+      }
+    }
+    """;
+
+    [Fact]
+    public async Task FailureMidWrite_RollsBackClientAndSnapshot_NoOrphanedRows()
+    {
+        // EF InMemory cannot verify this (no transactions) — this is exactly the gap the
+        // Testcontainers suite exists for. Before the explicit transaction in
+        // MonitoringService.ScoreAndPersistAsync, this scenario left an orphaned Client +
+        // Snapshot with zero predictions, corrupting the client's stored trajectory.
+        await using var factory = CreateFactory(FlaskMissingW3Body);
+        var client = factory.CreateClient();
+
+        var response = await client.PostAsJsonAsync(
+            "/api/v1/monitoring/clients/rollback-client/snapshots",
+            new { snapshotDate = "2026-05-10", features = ValidFeatures() });
+        Assert.False(response.IsSuccessStatusCode, "a mid-write failure must not return success");
+
+        using var db = NewDbContext(factory);
+        Assert.Empty(await db.Clients.ToListAsync());
+        Assert.Empty(await db.Snapshots.ToListAsync());
+        Assert.Empty(await db.Predictions.ToListAsync());
+        Assert.Empty(await db.Trends.ToListAsync());
+    }
+
     private static HttpResponseMessage JsonResponse(HttpStatusCode status, string json) =>
         new(status) { Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json") };
 

@@ -1,5 +1,7 @@
 # Materiały na Seminarium dyplomowe 2 — Wariant B (monitoring kalendarzowy)
 
+> ⚠️ **Nota 2026-07-07:** dokumenty źródłowe wymienione niżej zostały scalone/usunięte: podsumowania sprintów → `PodsumowanieSprintow.md`; DokumentRoznice.md i WalidacjaPDFv7.md → ustalenia skonsumowane w `Fable5-zmiany.md` (pliki w historii gita). Liczby w tej prezentacji odpowiadają stanowi 2026-06-06 (sprzed napraw metodologicznych).
+
 > **Cel tego pliku:** zebrać w jednym miejscu wszystko, co potrzebne do zbudowania prezentacji PowerPoint w claude-project oraz do live demo. Kolejność sekcji = kolejność slajdów.
 >
 > **Źródła:** `plan_sprintow_wariant_B.md`, `CHECKLIST.md`, `PodsumowanieSprintu{1..5}_*.md`, `DokumentRoznice.md`, `WalidacjaPDFv7.md`, `ml-learing-center/reports/` (numeryka + PNG), `docs/api-contracts/monitoring.md`, kod projektu (`ml-learing-center/`, `ml-service/`, `backend/`, `frontend/`).
@@ -580,79 +582,79 @@ Dla każdej decyzji: **Co · Dlaczego · Wpływ na scoring/ryzyko · Linki do ra
 ### A.1 Sliding-window panel 4×W (CREDIT-101)
 
 - **Co:** funkcja `extract_windows(row)` w `ml-learing-center/sliding_window.py` zamienia 1 wiersz UCI w 4 okna 3-miesięczne (W0–W3).
-- **Dlaczego:** *„Nie fabrykujemy danych. Każda migawka używa wyłącznie prawdziwych kolumn z prawdziwej historii klienta. 4 okna = 4-punktowa trajektoria PD na tych samych 6 miesiącach."* (`PodsumowanieSprintu1.md` §3.CREDIT-101). Wariant B wymaga panelu czasowego, ale UCI ma statyczny snapshot — sliding-window konstruuje panel **bez generowania nowych wartości**.
+- **Dlaczego:** *„Nie fabrykujemy danych. Każda migawka używa wyłącznie prawdziwych kolumn z prawdziwej historii klienta. 4 okna = 4-punktowa trajektoria PD na tych samych 6 miesiącach."* (`PodsumowanieSprintow.md` §3.CREDIT-101). Wariant B wymaga panelu czasowego, ale UCI ma statyczny snapshot — sliding-window konstruuje panel **bez generowania nowych wartości**.
 - **Wpływ na scoring/ryzyko:** **enabler całej trajektorii PD.** Bez tego scoring jest jednorazowy, nie kalendarzowy. Strata AUC W3 vs legacy 6-mies. < 1 pp (akceptowalna, R1 zamknięty).
-- **Linki:** `ml-learing-center/sliding_window.py`, `plan_sprintow_wariant_B.md` §33-75 (mapowanie okien), `PodsumowanieSprintu1.md` §3.CREDIT-101.
+- **Linki:** `ml-learing-center/sliding_window.py`, `plan_sprintow_wariant_B.md` §33-75 (mapowanie okien), `PodsumowanieSprintow.md` §3.CREDIT-101.
 
 ### A.2 Retrening na W3 + fix 2 silent bugów feature engineering (CREDIT-102)
 
 - **Co:** retrening 3 modeli na W3 z artefaktami `_w3`; legacy nietknięte. Plus fix `BILL_AMT1 / LIMIT_BAL` → `BILL_mean / LIMIT_BAL` i `(...PAY... >= 2).sum()` → `.any().astype(int)` w `app.py`.
-- **Dlaczego:** *„Rozkład treningowy = rozkład inferencyjny. Model uczy się na W3, przy monitoringu ten sam model stosujemy do W0, W1, W2, W3 — każde okno to identyczny 3-mies. wycinek. Brak out-of-distribution shift."* (`PodsumowanieSprintu1.md` §3.CREDIT-102). Bugfix: *„Inferencja widziała inną feature niż model w treningu — silent corruption."*
+- **Dlaczego:** *„Rozkład treningowy = rozkład inferencyjny. Model uczy się na W3, przy monitoringu ten sam model stosujemy do W0, W1, W2, W3 — każde okno to identyczny 3-mies. wycinek. Brak out-of-distribution shift."* (`PodsumowanieSprintow.md` §3.CREDIT-102). Bugfix: *„Inferencja widziała inną feature niż model w treningu — silent corruption."*
 - **Wpływ na scoring/ryzyko:** **enabler poprawnej inferencji na wszystkich 4 oknach**. Po fixie zdrowy klient → PD = 0.12 / 0.15 / 0.19 (rozsądnie niskie) zamiast losowych wartości z out-of-distribution.
-- **Linki:** `ml-learing-center/main.py`, `ml-service/app.py` (linie 35/40 — bugfix), `PodsumowanieSprintu1.md` §4 (Dług techniczny).
+- **Linki:** `ml-learing-center/main.py`, `ml-service/app.py` (linie 35/40 — bugfix), `PodsumowanieSprintow.md` §4 (Dług techniczny).
 
 ### A.3 Kalibracja izotoniczna (CREDIT-105) — P0 dla Wariantu B
 
 - **Co:** `CalibratedClassifierCV(FrozenEstimator(base), method='isotonic')` dla tree models, `sklearn.IsotonicRegression` na raw LSTM output. 3-way split train / calib / test (60/20/20).
-- **Dlaczego:** *„Trajektoria PD ma sens tylko gdy bezwzględne wartości odpowiadają realnym częstościom — wzrost 0.3→0.5 musi znaczyć realny wzrost ryzyka."* (Sekcja II.3 tego dokumentu; źródło w `PodsumowanieSprintu2_MK.md` § Sprint 2 update, plan sprintów Wariantu B §187-194). Bez kalibracji `predict_proba` z drzew jest porządkowe — nieporównywalne między oknami liczbowo.
+- **Dlaczego:** *„Trajektoria PD ma sens tylko gdy bezwzględne wartości odpowiadają realnym częstościom — wzrost 0.3→0.5 musi znaczyć realny wzrost ryzyka."* (Sekcja II.3 tego dokumentu; źródło w `PodsumowanieSprintow.md` § Sprint 2 update, plan sprintów Wariantu B §187-194). Bez kalibracji `predict_proba` z drzew jest porządkowe — nieporównywalne między oknami liczbowo.
 - **Wpływ na scoring/ryzyko:** Brier **−19/−24/−23%** (RF/XGB/LSTM) → PD są teraz interpretowalne liczbowo. **Bez tego cały Wariant B nie miałby sensu** (trajektoria PD bez kalibracji = trajektoria rankingu = nic).
 - **Linki:** `ml-learing-center/main.py` (sekcja CREDIT-105), `ml-service/lstm_calibrator_w3.pkl`, `reports/calibration_comparison_w3.png`.
 
 ### A.4 Progi cost-optymalne (CREDIT-106)
 
 - **Co:** sweep progów (0.1, 0.9), minimalizacja `cost = 5·FN + 1·FP`; `ml-service/alert_thresholds.json` z `_meta`; serwowane w response Flask jako `costThresholds` + `windowAlerts`.
-- **Dlaczego:** *„Próg 0.5 nie jest neutralny. Pod asymetrycznym modelem kosztów (FN=5×FP) optymalny cut-off to 0.145-0.185 per model — daleko od 0.5. System serwuje te per-model progi tak, żeby downstream consumers nie musiały znać matematyki kosztu."* (`PodsumowanieSprintu3_GF.md` §2.CREDIT-106).
+- **Dlaczego:** *„Próg 0.5 nie jest neutralny. Pod asymetrycznym modelem kosztów (FN=5×FP) optymalny cut-off to 0.145-0.185 per model — daleko od 0.5. System serwuje te per-model progi tak, żeby downstream consumers nie musiały znać matematyki kosztu."* (`PodsumowanieSprintow.md` §2.CREDIT-106).
 - **Wpływ na scoring/ryzyko:** **decyzja kiedy alarmować staje się ekonomiczna, nie arbitralna.** Bias w stronę niskich progów (tolerujemy ~1700 FP żeby przepchnąć FN do ~340). Frontend koloruje punkty Timeline per model.
-- **Linki:** `ml-learing-center/optimize_thresholds.py`, `ml-service/alert_thresholds.json`, `PodsumowanieSprintu3_GF.md` §2.
+- **Linki:** `ml-learing-center/optimize_thresholds.py`, `ml-service/alert_thresholds.json`, `PodsumowanieSprintow.md` §2.
 
 ### A.5 Silnik trajektorii PD per okno (CREDIT-104)
 
 - **Co:** Flask `POST /predict/timeseries` przyjmuje 22 cechy, rozbija na 4 okna, scoruje każde każdym z 5 modeli, zwraca trajektorię + trendy.
 - **Dlaczego:** kontrakt CREDIT-210 odblokowuje 4 zadania równolegle; Flask musi być bezstanowy (bez DB, bez `clientRef`) — orkiestrację i trwałość robi .NET. To podział z `monitoring.md` §3.
 - **Wpływ na scoring/ryzyko:** **transformacja systemu z one-shot na panelowy.** Trajektoria PD per model = surowiec dla TimelineChart, slope alert, monitoring rule (CREDIT-111).
-- **Linki:** `ml-service/app.py`, `docs/api-contracts/monitoring.md`, `PodsumowanieSprintu2_MK.md` §2.CREDIT-202 (kontekst orkiestracji).
+- **Linki:** `ml-service/app.py`, `docs/api-contracts/monitoring.md`, `PodsumowanieSprintow.md` §2.CREDIT-202 (kontekst orkiestracji).
 
 ### A.6 Dowód tezy: statyka vs monitoring (CREDIT-111)
 
 - **Co:** sweep 19 progów × 5 modeli, kanoniczny operating point FA=10%; uczciwy verdict.
-- **Dlaczego:** *„Monitoring nie wygrywa w czystej dyskryminacji. Wygrywa w lead time — 2 okna wcześniej, plus 43-184 unikalnych catchy na model. Trade-off jest funkcją modelu kosztów."* (`PodsumowanieSprintu3_GF.md` §2.CREDIT-111). Nie nadinterpretuję — `max(W0..W3)` aggregator widzi 4× więcej szumu niż pojedyncza skalibrowana W3.
+- **Dlaczego:** *„Monitoring nie wygrywa w czystej dyskryminacji. Wygrywa w lead time — 2 okna wcześniej, plus 43-184 unikalnych catchy na model. Trade-off jest funkcją modelu kosztów."* (`PodsumowanieSprintow.md` §2.CREDIT-111). Nie nadinterpretuję — `max(W0..W3)` aggregator widzi 4× więcej szumu niż pojedyncza skalibrowana W3.
 - **Wpływ na scoring/ryzyko:** **definiuje framing obrony tezy.** „Wcześniejsza detekcja przy porównywalnej dyskryminacji" zamiast „monitoring strictly dominuje". To rozróżnienie ma znaczenie dla rekomendacji produkcyjnych: monitoring sensowny gdy FN > FP (kredyt to dokładnie taki przypadek).
-- **Linki:** `ml-learing-center/static_vs_dynamic.py`, `reports/static_vs_dynamic_*.png` (5×), `reports/static_vs_dynamic_operating.csv`, `PodsumowanieSprintu3_GF.md` §2.CREDIT-111.
+- **Linki:** `ml-learing-center/static_vs_dynamic.py`, `reports/static_vs_dynamic_*.png` (5×), `reports/static_vs_dynamic_operating.csv`, `PodsumowanieSprintow.md` §2.CREDIT-111.
 
 ### A.7 LightGBM + CatBoost (CREDIT-109)
 
 - **Co:** dorzucenie 2 modeli (CatBoost wins single z AUC 0.7802); 5-modelowa rodzina.
-- **Dlaczego:** pull-forward ze Sprintu 5 → Sprint 4 żeby odblokować CREDIT-113 → CREDIT-114 (ścieżka krytyczna). *„Stacking-owi potrzebny materiał o różnej naturze: LightGBM = leaf-wise gradient boosting z histogramową dyskretyzacją + GOSS + EFB, CatBoost = ordered boosting + native categorical handling."* (`PodsumowanieSprintu4_GF.md` §4.CREDIT-109).
+- **Dlaczego:** pull-forward ze Sprintu 5 → Sprint 4 żeby odblokować CREDIT-113 → CREDIT-114 (ścieżka krytyczna). *„Stacking-owi potrzebny materiał o różnej naturze: LightGBM = leaf-wise gradient boosting z histogramową dyskretyzacją + GOSS + EFB, CatBoost = ordered boosting + native categorical handling."* (`PodsumowanieSprintow.md` §4.CREDIT-109).
 - **Wpływ na scoring/ryzyko:** **najlepszy single model (CatBoost) wnosi 0.6 pp AUC** nad XGB; spread rodziny ~2 pp daje materiał stacking. Cost thresholds rozszerzone do 5 modeli. SHAP TreeExplainer obsługuje oba nowe.
-- **Linki:** `ml-learing-center/main.py`, `ml-service/{lightgbm,catboost}_model_w3.pkl`, `reports/metrics_w3.csv`, `PodsumowanieSprintu4_GF.md` §4.
+- **Linki:** `ml-learing-center/main.py`, `ml-service/{lightgbm,catboost}_model_w3.pkl`, `reports/metrics_w3.csv`, `PodsumowanieSprintow.md` §4.
 
 ### A.8 Fairness audit przy cost-opt thresholds, nie 0.5! (CREDIT-112)
 
 - **Co:** fairlearn DPD + EOD per SEX, 5 modeli, binaryzacja przy cost-opt thresholdach z CREDIT-106.
-- **Dlaczego:** *„Audyt wykonany przy realnym operating point (cost-opt threshold, FN=5×FP z CREDIT-106), nie arbitralnym 0.5 — wynik reprezentuje faktyczne zachowanie systemu pod normalną decyzją alertu."* (`PodsumowanieSprintu5_GF.md` §2.CREDIT-112). To kluczowe pytanie audytora: „przy jakim progu liczyłeś DPD?" — odpowiedź „przy progu, którego system faktycznie używa" jest defensible.
+- **Dlaczego:** *„Audyt wykonany przy realnym operating point (cost-opt threshold, FN=5×FP z CREDIT-106), nie arbitralnym 0.5 — wynik reprezentuje faktyczne zachowanie systemu pod normalną decyzją alertu."* (`PodsumowanieSprintow.md` §2.CREDIT-112). To kluczowe pytanie audytora: „przy jakim progu liczyłeś DPD?" — odpowiedź „przy progu, którego system faktycznie używa" jest defensible.
 - **Wpływ na scoring/ryzyko:** **AI Act regulatory clearance.** Wszystkie 5 modeli |DPD| ≤ 0.039, |EOD| ≤ 0.033 (DoD 0.10, **4× margines**). DPD dodatnie reflects wyższy base rate defaultów w SEX=1 w UCI (24.2 vs 20.8%), nie bias modeli. CatBoost największy diff, LSTM najbliżej parytetu (0.007).
-- **Linki:** `ml-learing-center/fairness_audit.py`, `reports/fairness_report.md`, `reports/fairness_metrics_w3.csv`, 2 PNG, `PodsumowanieSprintu5_GF.md` §2.
+- **Linki:** `ml-learing-center/fairness_audit.py`, `reports/fairness_report.md`, `reports/fairness_metrics_w3.csv`, 2 PNG, `PodsumowanieSprintow.md` §2.
 
 ### A.9 SHAP top-5 (tylko tree, LSTM out, CREDIT-107)
 
 - **Co:** TreeExplainer + helper `_unwrap_calibrated()` (wyciąga base z CalibratedClassifierCV); response zawiera `shap.{model}.topFeatures` (4 modele × 5 cech).
-- **Dlaczego:** *„Każda predykcja jest interpretowalna. Top-5 cech per model — w 102 ms, na każdym zapytaniu."* (`PodsumowanieSprintu4_GF.md` §2.CREDIT-107). LSTM pominięty: *„KernelExplainer z background sampling przekroczyłby budżet < 2s DoD."*
+- **Dlaczego:** *„Każda predykcja jest interpretowalna. Top-5 cech per model — w 102 ms, na każdym zapytaniu."* (`PodsumowanieSprintow.md` §2.CREDIT-107). LSTM pominięty: *„KernelExplainer z background sampling przekroczyłby budżet < 2s DoD."*
 - **Wpływ na scoring/ryzyko:** **defensible explanation pod regulatora i pod użytkownika.** Konwencja znaku (+/− pcha PD w górę/dół) trafia bezpośrednio do UI jako kolorowe bary. Sanity check dla zdrowego klienta: top cechy negatywne (PAY_mean, late_count, severe_late) = "płaci na czas" — analityk widzi czego oczekiwał.
-- **Linki:** `ml-service/app.py` (`compute_shap_top_features`, `SHAP_EXPLAINERS`), `PodsumowanieSprintu4_GF.md` §2.
+- **Linki:** `ml-service/app.py` (`compute_shap_top_features`, `SHAP_EXPLAINERS`), `PodsumowanieSprintow.md` §2.
 
 ### A.10 Persystencja migawek z guardem 409 + upsert trendów (CREDIT-203 / CREDIT-204)
 
 - **Co:** `POST /clients/{ref}/snapshots` → guard duplikatu *przed* Flaskiem → 409, scoring (reuse) → zapis Snapshot + N×Prediction + N×Trend (upsert). `GET /clients/{ref}/history` → chronologiczna trajektoria.
-- **Dlaczego:** *„Tu monitoring staje się prawdziwy: każda ocena to trwała migawka w Postgresie. Z kolejnych migawek tego samego klienta odtworzymy oś czasu PD — fundament dowodu tezy."* (`PodsumowanieSprintu2_MK.md` §2.CREDIT-203). Decyzje: predykcje **W3-only** persistowane (etykietowane okno = ocena „aktualna"; trajektoria W0..W3 to widok analityczny), 409 zamiast cichego upsertu (chroni przed double-write).
+- **Dlaczego:** *„Tu monitoring staje się prawdziwy: każda ocena to trwała migawka w Postgresie. Z kolejnych migawek tego samego klienta odtworzymy oś czasu PD — fundament dowodu tezy."* (`PodsumowanieSprintow.md` §2.CREDIT-203). Decyzje: predykcje **W3-only** persistowane (etykietowane okno = ocena „aktualna"; trajektoria W0..W3 to widok analityczny), 409 zamiast cichego upsertu (chroni przed double-write).
 - **Wpływ na scoring/ryzyko:** **system staje się stateful** — można odtworzyć trajektorię PD klienta z migawek bez ponownej inferencji; Timeline na realnych danych z bazy, nie tylko mock.
-- **Linki:** `backend/WebApi/Services/MonitoringService.cs` (`ScoreAndPersistAsync`), `backend/WebApi/Controllers/MonitoringController.cs`, `PodsumowanieSprintu2_MK.md` §2.CREDIT-203/204.
+- **Linki:** `backend/WebApi/Services/MonitoringService.cs` (`ScoreAndPersistAsync`), `backend/WebApi/Controllers/MonitoringController.cs`, `PodsumowanieSprintow.md` §2.CREDIT-203/204.
 
 ### A.11 SHAP pass-through .NET DTO (CREDIT-211)
 
 - **Co:** dodanie `ShapExplanation` do `TimeseriesResponse` i `SnapshotResponse`; SHAP scoring-time only (nie persistowany w DB).
 - **Dlaczego:** silent gap — Flask zwracał `shap`, ale `WindowPredictions` w .NET DTO go dropował przy deserializacji (kontrakt §3.5 w `monitoring.md` zapowiadał, kod nie konsumował). Frontend `ShapExplanation.tsx` (diverging bars).
 - **Wpływ na scoring/ryzyko:** **kompletna explanation pipeline end-to-end** Flask → .NET → React. Bez tego SHAP byłby tylko w Flask response, niewidoczny dla user'a.
-- **Linki:** `backend/WebApi/Models/TimeseriesResponse.cs` (`ShapExplanation`/`ShapModel`/`ShapFeature`), `frontend/WebApp/src/components/ShapExplanation.tsx`, `PodsumowanieSprintu5_GF.md` §3 (i CREDIT-115 dla podobnego gapu z 5 modelami).
+- **Linki:** `backend/WebApi/Models/TimeseriesResponse.cs` (`ShapExplanation`/`ShapModel`/`ShapFeature`), `frontend/WebApp/src/components/ShapExplanation.tsx`, `PodsumowanieSprintow.md` §3 (i CREDIT-115 dla podobnego gapu z 5 modelami).
 
 ### A.12 Fix hardcoded miesięcy → `deriveMonthLabels(referenceDate)` (CREDIT-303)
 
@@ -664,23 +666,23 @@ Dla każdej decyzji: **Co · Dlaczego · Wpływ na scoring/ryzyko · Linki do ra
 ### A.13 5-modelowy passthrough end-to-end (CREDIT-115 + CREDIT-116)
 
 - **Co:** Backend `WindowPredictions` + `Trends` rozszerzone o `Lightgbm` + `Catboost`; persystencja 5 predictions + 5 trends per snapshot (było 3+3). Frontend `ModelKey` + Timeline 5 linii + TrendAlerts 5 kart w responsive grid.
-- **Dlaczego:** **gap odkryty 2026-06-05 podczas demo prep** — Flask serwował 5 modeli, backend DTO drop'ował 2, UI pokazywał 3/5 mimo, że Flask 5/5. *„Found and fixed during demo prep — integration gap między CREDIT-109 (Flask 5 modeli) a CREDIT-202 (backend 3-model DTO)."* (`PodsumowanieSprintu4_GF.md` §4.1).
+- **Dlaczego:** **gap odkryty 2026-06-05 podczas demo prep** — Flask serwował 5 modeli, backend DTO drop'ował 2, UI pokazywał 3/5 mimo, że Flask 5/5. *„Found and fixed during demo prep — integration gap między CREDIT-109 (Flask 5 modeli) a CREDIT-202 (backend 3-model DTO)."* (`PodsumowanieSprintow.md` §4.1).
 - **Wpływ na scoring/ryzyko:** **live demo pokazuje teraz 5/5 modeli end-to-end** (Flask → .NET → React) — spójne z claim'em pracy „5 modeli W3 calibrated". Bez tego live demo by ujawniło rozjazd.
-- **Linki:** `backend/WebApi/Models/TimeseriesResponse.cs`, `frontend/WebApp/src/components/{TimelineChart,TrendAlerts}.tsx`, `PodsumowanieSprintu5_GF.md` §3.
+- **Linki:** `backend/WebApi/Models/TimeseriesResponse.cs`, `frontend/WebApp/src/components/{TimelineChart,TrendAlerts}.tsx`, `PodsumowanieSprintow.md` §3.
 
 ### A.14 Optuna tuned NIE promoted do produkcji (CREDIT-108) — uczciwa scope
 
 - **Co:** Optuna 30 trials × 5-fold CV per model (RF, XGB); RF +0.0010 / XGB +0.0030 test AUC; tuned modele NIE zastąpiły defaultów CREDIT-102.
-- **Dlaczego:** *„Tuned modele NIE są promoted do produkcji. Promocja wymagałaby re-runs CREDIT-105 (kalibracja na nowych bazach), CREDIT-106 (cost thresholds), CREDIT-109 (raporty). Cascade nieuzasadniony dla < 0.5 pp uplift przed deadlinem seminarium. Raport jest ciekawością akademicką + sanity check."* (`PodsumowanieSprintu4_GF.md` §3.CREDIT-108).
+- **Dlaczego:** *„Tuned modele NIE są promoted do produkcji. Promocja wymagałaby re-runs CREDIT-105 (kalibracja na nowych bazach), CREDIT-106 (cost thresholds), CREDIT-109 (raporty). Cascade nieuzasadniony dla < 0.5 pp uplift przed deadlinem seminarium. Raport jest ciekawością akademicką + sanity check."* (`PodsumowanieSprintow.md` §3.CREDIT-108).
 - **Wpływ na scoring/ryzyko:** **świadoma uczciwość scope'u** — formalna odpowiedź na pytanie audytora „czy default jest blisko optimum?". Odpowiedź: tak, w < 0.5 pp test AUC po 30 trials. Wniosek: tuning nie jest źródłem uplift'ów na tym dataset'cie; szukać w kalibracji + stackingu.
-- **Linki:** `ml-learing-center/optuna_tuning.py`, `reports/optuna_study.md`, `reports/optuna_trials.csv` (60 wierszy), `PodsumowanieSprintu4_GF.md` §3.
+- **Linki:** `ml-learing-center/optuna_tuning.py`, `reports/optuna_study.md`, `reports/optuna_trials.csv` (60 wierszy), `PodsumowanieSprintow.md` §3.
 
 ### A.15 docker-compose bez frontendu (CREDIT-402)
 
 - **Co:** docker-compose stawia tylko `db` + `backend` + `ml-service`; frontend pozostaje na `npm run dev` (port 5173) lokalnie.
-- **Dlaczego:** świadoma decyzja — *„Frontend POZA compose — pozostaje uruchamiany lokalnie przez `npm run dev` (decyzja świadoma)."* (`PodsumowanieSprintu1.md` §3.CREDIT-402). Hot-reload Vite jest najwygodniejszy poza Dockerem; konteneryzacja frontendu nie daje istotnej wartości na deweloperskim setupie.
+- **Dlaczego:** świadoma decyzja — *„Frontend POZA compose — pozostaje uruchamiany lokalnie przez `npm run dev` (decyzja świadoma)."* (`PodsumowanieSprintow.md` §3.CREDIT-402). Hot-reload Vite jest najwygodniejszy poza Dockerem; konteneryzacja frontendu nie daje istotnej wartości na deweloperskim setupie.
 - **Wpływ na scoring/ryzyko:** **wpływ na demo flow** — trzeba pamiętać o trzecim terminalu (`npm run dev`). Auto-migracje EF Core przy starcie backendu (`db.Database.Migrate()`) eliminują ręczne kroki.
-- **Linki:** `docker-compose.yml`, `backend/WebApi/Dockerfile`, `backend/WebApi/Program.cs`, `PodsumowanieSprintu1.md` §3.CREDIT-402.
+- **Linki:** `docker-compose.yml`, `backend/WebApi/Dockerfile`, `backend/WebApi/Program.cs`, `PodsumowanieSprintow.md` §3.CREDIT-402.
 
 ---
 

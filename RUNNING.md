@@ -4,7 +4,7 @@ spraw# RUNNING.md — Instrukcja uruchamiania projektu (krok po kroku)
 >
 > Architektura, porty i komendy referencyjne: patrz `CLAUDE.md`. Stan backlogu: `TASKS.md`. Postęp prac: `CHECKLIST.md`.
 >
-> **Stan na 2026-06-05** (po zamknięciu Sprintów 1-4 obu torów: 21/28 zadań 🟢; Sprint 4 GF backlog domknięty — patrz `PodsumowanieSprintu1.md`, `PodsumowanieSprintu2_MK.md`, `PodsumowanieSprintu3_GF.md`, `PodsumowanieSprintu4_GF.md`).
+> **Stan na 2026-06-05** (po zamknięciu Sprintów 1-4 obu torów: 21/28 zadań 🟢; Sprint 4 GF backlog domknięty — patrz `PodsumowanieSprintow.md`, `PodsumowanieSprintow.md`, `PodsumowanieSprintow.md`, `PodsumowanieSprintow.md`).
 
 ---
 
@@ -290,9 +290,9 @@ CI (`.github/workflows/ci.yml`) odpala wszystkie trzy na każdym PR-ze. **Czerwo
 4. `CHECKLIST.md` — kto co teraz robi.
 5. `docs/api-contracts/monitoring.md` — pełna specyfikacja 4 endpointów monitoring API + typy współdzielone + reguła alertu.
 6. **Sprint summaries** — historia dostarczonych zadań i kluczowe decyzje projektowe:
-   - `PodsumowanieSprintu1.md` — sliding-window + schemat bazy (oba tory)
-   - `PodsumowanieSprintu2_MK.md` — kontrakt API + .NET predict-timeseries + persistence
-   - `PodsumowanieSprintu3_GF.md` — dowód tezy (statyka vs monitoring) + cost thresholds
-   - `PodsumowanieSprintu4_GF.md` — LightGBM/CatBoost + SHAP + Optuna tuning
+   - `PodsumowanieSprintow.md` — sliding-window + schemat bazy (oba tory)
+   - `PodsumowanieSprintow.md` — kontrakt API + .NET predict-timeseries + persistence
+   - `PodsumowanieSprintow.md` — dowód tezy (statyka vs monitoring) + cost thresholds
+   - `PodsumowanieSprintow.md` — LightGBM/CatBoost + SHAP + Optuna tuning
 
 To wszystko. Powodzenia. 🚀

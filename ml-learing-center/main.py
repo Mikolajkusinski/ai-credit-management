@@ -230,17 +230,23 @@ W3 = WINDOW_DEFS[3]
 
 # Static features on W3 (RF / XGBoost)
 X_w3, features_w3 = engineer_features(df_w3, W3)
-scaler_w3 = StandardScaler()
-X_w3_scaled = scaler_w3.fit_transform(X_w3)
 
 # 3-way split (60 / 20 / 20): test first (20% held out for final eval), then
 # split the remaining 80% into 75/25 -> 60% train / 20% calib of total.
-X_tmp, X_te_w3, y_tmp, y_te_w3 = train_test_split(
-    X_w3_scaled, y_w3, test_size=0.2, stratify=y_w3, random_state=42
+# Split BEFORE scaling (leakage fix 2026-07-07): the scaler must see training
+# rows only -- fitting on the full panel leaked test-row mean/std into
+# preprocessing. Row assignment is unchanged: a stratified split depends only
+# on y, sizes and random_state, not on X values.
+X_tmp_raw, X_te_raw, y_tmp, y_te_w3 = train_test_split(
+    X_w3, y_w3, test_size=0.2, stratify=y_w3, random_state=42
 )
-X_tr_w3, X_cal_w3, y_tr_w3, y_cal_w3 = train_test_split(
-    X_tmp, y_tmp, test_size=0.25, stratify=y_tmp, random_state=42
+X_tr_raw, X_cal_raw, y_tr_w3, y_cal_w3 = train_test_split(
+    X_tmp_raw, y_tmp, test_size=0.25, stratify=y_tmp, random_state=42
 )
+scaler_w3 = StandardScaler().fit(X_tr_raw)
+X_tr_w3 = scaler_w3.transform(X_tr_raw)
+X_cal_w3 = scaler_w3.transform(X_cal_raw)
+X_te_w3 = scaler_w3.transform(X_te_raw)
 
 # RF -- train on 60%, calibrate on 20%, evaluate on 20%
 rf_base = RandomForestClassifier(
@@ -308,14 +314,33 @@ cat_cal_proba = cat_w3.predict_proba(X_te_w3)[:, 1]
 auc_cat_cal = roc_auc_score(y_te_w3, cat_cal_proba)
 brier_cat_cal = brier_score_loss(y_te_w3, cat_cal_proba)
 
-# LSTM -- tensor (N, 3, 3), same 3-way split via shared random_state=42
-X_seq_w3, lstm_scalers_w3 = prepare_lstm_sequences(df_w3, W3)
+# LSTM -- tensor (N, 3, 3), same 3-way split via shared random_state=42.
+# Channel scalers fitted on TRAIN rows only (leakage fix 2026-07-07): derive
+# the train-row indices with the same double stratified split, fit there,
+# then transform the full panel with the frozen scalers.
+_idx_all = np.arange(len(df_w3))
+_idx_tmp, _idx_te = train_test_split(
+    _idx_all, test_size=0.2, stratify=y_w3, random_state=42
+)
+_idx_tr, _idx_cal = train_test_split(
+    _idx_tmp, test_size=0.25, stratify=y_w3.iloc[_idx_tmp], random_state=42
+)
+assert np.array_equal(y_w3.iloc[_idx_te].to_numpy(), y_te_w3.to_numpy()), \
+    "index split diverged from the array split -- seeds out of sync"
+
+_, lstm_scalers_w3 = prepare_lstm_sequences(df_w3.iloc[_idx_tr], W3)
+X_seq_w3, _ = prepare_lstm_sequences(df_w3, W3, scalers=lstm_scalers_w3)
 Xs_tmp, Xs_te_w3, ys_tmp, ys_te_w3 = train_test_split(
     X_seq_w3, y_w3, test_size=0.2, stratify=y_w3, random_state=42
 )
 Xs_tr_w3, Xs_cal_w3, ys_tr_w3, ys_cal_w3 = train_test_split(
     Xs_tmp, ys_tmp, test_size=0.25, stratify=ys_tmp, random_state=42
 )
+
+# Reproducible W3 LSTM weights across retrains (thesis numbers must be
+# regenerable); the legacy LSTM above predates this and stays as-is.
+import tensorflow as _tf
+_tf.keras.utils.set_random_seed(42)
 
 model_w3 = Sequential([
     Input(shape=(3, 3)),
@@ -403,14 +428,26 @@ def _find_optimal_threshold(y_true, y_proba, fn_cost=_FN_COST_106, fp_cost=_FP_C
     return best_thr, best_cost
 
 
-_y_te_arr = y_te_w3.to_numpy()
-_ys_te_arr = ys_te_w3.to_numpy()
+# Leakage fix 2026-07-07: thresholds used to be optimized on the TEST split --
+# the same data later used for evaluation, the fairness audit (CREDIT-112) and
+# the static-vs-dynamic comparison (CREDIT-111). They are now optimized on the
+# CALIBRATION split. Accepted compromise: the isotonic calibrators were fitted
+# on this split too, so calibrated probabilities here are in-sample for the
+# calibrator -- still strictly better than picking thresholds on the test set.
+_y_cal_arr = y_cal_w3.to_numpy()
+_ys_cal_arr = ys_cal_w3.to_numpy()
 
-_rf_thr_106, _rf_cost_106 = _find_optimal_threshold(_y_te_arr, rf_cal_proba)
-_xgb_thr_106, _xgb_cost_106 = _find_optimal_threshold(_y_te_arr, xgb_cal_proba)
-_lgbm_thr_106, _lgbm_cost_106 = _find_optimal_threshold(_y_te_arr, lgbm_cal_proba)
-_cat_thr_106, _cat_cost_106 = _find_optimal_threshold(_y_te_arr, cat_cal_proba)
-_lstm_thr_106, _lstm_cost_106 = _find_optimal_threshold(_ys_te_arr, lstm_cal_proba)
+_rf_calsplit_proba = rf_w3.predict_proba(X_cal_w3)[:, 1]
+_xgb_calsplit_proba = xgb_w3.predict_proba(X_cal_w3)[:, 1]
+_lgbm_calsplit_proba = lgbm_w3.predict_proba(X_cal_w3)[:, 1]
+_cat_calsplit_proba = cat_w3.predict_proba(X_cal_w3)[:, 1]
+_lstm_calsplit_proba = lstm_calibrator_w3.predict(lstm_calib_proba)
+
+_rf_thr_106, _rf_cost_106 = _find_optimal_threshold(_y_cal_arr, _rf_calsplit_proba)
+_xgb_thr_106, _xgb_cost_106 = _find_optimal_threshold(_y_cal_arr, _xgb_calsplit_proba)
+_lgbm_thr_106, _lgbm_cost_106 = _find_optimal_threshold(_y_cal_arr, _lgbm_calsplit_proba)
+_cat_thr_106, _cat_cost_106 = _find_optimal_threshold(_y_cal_arr, _cat_calsplit_proba)
+_lstm_thr_106, _lstm_cost_106 = _find_optimal_threshold(_ys_cal_arr, _lstm_calsplit_proba)
 
 print(f"\n===== CREDIT-106 cost-optimized alert thresholds (FN={_FN_COST_106}x FP) =====")
 print(f"  RandomForest  threshold={_rf_thr_106:.3f}   expected_cost={_rf_cost_106:.0f}")
@@ -426,7 +463,7 @@ _thr_payload = {
         "fn_to_fp_ratio": _FN_COST_106 / _FP_COST_106,
         "bounds": list(_THR_BOUNDS_106),
         "resolution": _THR_RES_106,
-        "source": "CREDIT-106 + CREDIT-109: optimized on W3 calibrated test split (random_state=42, test_size=0.2)",
+        "source": "CREDIT-106 + CREDIT-109: optimized on the W3 CALIBRATION split (60/20/20, random_state=42); leakage fix 2026-07-07 -- previously optimized on the test split",
     },
     "randomForest": _rf_thr_106,
     "xgboost": _xgb_thr_106,

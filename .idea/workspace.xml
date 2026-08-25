@@ -5,12 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="500ce533-bc1c-44b5-89b2-adbf95755bc0" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Praca Magisterska-3.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Praca Magisterska-6.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Praca Magisterska-7.pdf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Praca Magisterska-8.pdf" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/prezentacja_seminarium/demo_zapas/01_prediction.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/prezentacja_seminarium/demo_zapas/02_trajektoria.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/prezentacja_seminarium/demo_zapas/03_lista_klientow.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/prezentacja_seminarium/demo_zapas/04_rising_historia.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/prezentacja_seminarium/demo_zapas/05_snapshot_form.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/prezentacja_seminarium/demo_zapas/06_shap.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ml-service/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/ml-service/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Uzyj-Fable5-Zanim-Zniknie.md" beforeDir="false" afterPath="$PROJECT_DIR$/Uzyj-Fable5-Zanim-Zniknie.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -18,7 +20,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="38290" />
+    <option name="cachedIndexableFilesCount" value="38299" />
     <option name="fileBasedEmbeddingIndicesEnabled" value="true" />
   </component>
   <component name="Git.Settings">
@@ -47,7 +49,7 @@
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
     "dart.analysis.tool.window.visible": "false",
-    "git-widget-placeholder": "sprint5/fairness",
+    "git-widget-placeholder": "Sprint5-Fable",
     "junie.onboarding.icon.badge.shown": "true",
     "kotlin-language-version-configured": "true",
     "node.js.detected.package.eslint": "true",
@@ -63,6 +65,7 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/prezentacja_seminarium/demo_zapas" />
       <recent name="$PROJECT_DIR$" />
     </key>
   </component>

@@ -11,7 +11,7 @@ from tensorflow import keras
 import logging
 
 from sliding_window import WINDOW_DEFS
-from features import engineer_features as engineer_features_w3_df
+from features import UCI_CATEGORIES, engineer_features as engineer_features_w3_df
 from monitoring import SLOPE_THRESHOLD, WINDOW_NAMES, compute_alert, compute_trends
 
 app = Flask(__name__)
@@ -93,6 +93,25 @@ REQUIRED_FIELDS = [
 ]
 
 
+def _validate_payload(data):
+    """Return (field, reason) for the first invalid field, or (None, None).
+
+    Presence alone is not enough: a present-but-null (or non-numeric) value
+    would either crash the LSTM tensor build (500 instead of 400) or be
+    silently imputed as 0 by fillna in the static path -- and 0 is a real
+    PAY status ("paid on time"), so silent imputation lies about the client.
+    """
+    if not isinstance(data, dict):
+        return "<body>", "request body must be a JSON object"
+    for field in REQUIRED_FIELDS:
+        if field not in data:
+            return field, f"Missing required field: {field}"
+        value = data[field]
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            return field, f"Field {field} must be a number, got: {value!r}"
+    return None, None
+
+
 # ===== Legacy 6-month feature engineering (used by /predict) =====
 
 def engineer_features(data):
@@ -115,12 +134,22 @@ def engineer_features(data):
     df["severe_late"] = (df[pay_cols] >= 2).any(axis=1).astype(int)
     df["recent_pay_status"] = df["PAY_0"]
 
+    # Fixed category domains -- without this a 1-row frame yields zero dummy
+    # columns after drop_first (all demographics silently zeroed; see
+    # features.UCI_CATEGORIES and Fable5-zmiany.md U1).
+    for col, cats in UCI_CATEGORIES.items():
+        df[col] = pd.Categorical(df[col].astype(int), categories=cats)
     df = pd.get_dummies(df, columns=["SEX", "EDUCATION", "MARRIAGE"], drop_first=True)
 
     for col in feature_names:
         if col not in df.columns:
             df[col] = 0
     df = df[feature_names]
+
+    # Parity with training cleanup (main.py legacy section): LIMIT_BAL=0 makes
+    # utilization_rate inf, BILL_mean=-1 makes payment_ratio inf -- training
+    # replaced those with 0, so inference must too (else sklearn raises -> 500).
+    df = df.fillna(0).replace([np.inf, -np.inf], 0)
 
     return scaler.transform(df)
 
@@ -269,9 +298,9 @@ def predict():
         data = request.json
         logger.info(f"Received prediction request: {data}")
 
-        for field in REQUIRED_FIELDS:
-            if field not in data:
-                return jsonify({"error": f"Missing required field: {field}"}), 400
+        bad_field, reason = _validate_payload(data)
+        if bad_field is not None:
+            return jsonify({"error": reason}), 400
 
         rf_features = engineer_features(data)
         rf_proba = rf_model.predict_proba(rf_features)[0][1]
@@ -313,15 +342,15 @@ def predict_timeseries():
         data = request.json
         logger.info(f"Received timeseries request: {data}")
 
-        for field in REQUIRED_FIELDS:
-            if field not in data:
-                return jsonify({
-                    "error": {
-                        "code": "VALIDATION_FAILED",
-                        "message": f"Missing required field: {field}",
-                        "details": {"field": field},
-                    }
-                }), 400
+        bad_field, reason = _validate_payload(data)
+        if bad_field is not None:
+            return jsonify({
+                "error": {
+                    "code": "VALIDATION_FAILED",
+                    "message": reason,
+                    "details": {"field": bad_field},
+                }
+            }), 400
 
         trajectory = [
             {

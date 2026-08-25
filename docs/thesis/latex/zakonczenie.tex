@@ -1,0 +1,37 @@
+% Zakończenie pracy — liczby zgodne z reports/ (stan 2026-07-07).
+
+\section*{Zakończenie}
+\addcontentsline{toc}{section}{Zakończenie}
+
+Praca postawiła pytanie, czy ocenę ryzyka kredytowego warto traktować jako
+proces rozwijający się w~czasie, a~nie jednorazowy werdykt --- i~odpowiedziała
+na nie konstrukcyjnie oraz empirycznie. Zbudowano kompletny system
+eksperymentalny (React / .NET~8 / Flask / PostgreSQL), w~którym pięć
+skalibrowanych modeli ocenia tę samą ekspozycję na czterech przesuwanych oknach
+historii płatniczej, a~trajektoria PD zasila regułę wczesnego ostrzegania
+z~progami optymalnymi kosztowo i~wyjaśnieniami predykcji.
+
+Wyniki empiryczne układają się w~spójny obraz. Skrócenie okna obserwacji do
+trzech miesięcy kosztuje mniej niż 1~pp AUC (H1). Reguła monitorująca nie
+przewyższa statycznej pod względem czułości przy stałym budżecie fałszywych
+alarmów --- z~wyjątkiem modelu sekwencyjnego --- ale oferuje około dwóch okien
+wyprzedzenia i~kilkadziesiąt wykryć na model niedostępnych ocenie jednorazowej
+(H2, potwierdzona częściowo). Wszystkie modele przechodzą audyt sprawiedliwości
+z~wielokrotnym zapasem, a~eksperyment ablacyjny pokazał, że usunięcie atrybutu
+chronionego z~cech nie kosztuje nic predykcyjnie i~poprawia parytet (H3).
+Najlepszym pojedynczym modelem jest CatBoost (AUC 0,779); przewaga metod
+drzewiastych nad LSTM na danych tabelarycznych potwierdza literaturę, lecz to
+LSTM --- jedyny model bez cech demograficznych i~jedyny architektonicznie
+sekwencyjny --- okazuje się najbliższy parytetu i~jako jedyny zyskuje na regule
+monitorującej także w~czułości.
+
+Kierunki dalszych badań wynikają wprost z~ograniczeń: walidacja schematu na
+prawdziwym panelu podłużnym z~etykietami przesuwanymi w~czasie; złożenie
+predykcji w~zespół typu stacking z~protokołem out-of-fold; rozszerzenie audytu
+sprawiedliwości na pozostałe atrybuty i~analiza mitygacji progowej; wreszcie
+kalibracja modelu kosztów FN/FP na rzeczywistych stratach portfelowych, od
+której zależy bilans reguły monitorującej. Niezależnie od tych rozszerzeń,
+zasadniczy wniosek pracy pozostaje: monitoring trajektorii PD jest praktycznie
+wykonalnym, audytowalnym i~regulacyjnie umocowanym uzupełnieniem oceny
+statycznej --- wartym wdrożenia tam, gdzie koszt spóźnionej reakcji przewyższa
+koszt dodatkowego przeglądu.

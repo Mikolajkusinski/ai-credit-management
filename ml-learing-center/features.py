@@ -16,6 +16,19 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
+# Fixed category domains from the UCI dataset. get_dummies derives dummy columns
+# from values OBSERVED in the frame, so a single-row frame (Flask inference) would
+# produce exactly one dummy per column and drop_first=True would remove it --
+# silently zeroing all demographics (train/serve skew, Fable5-zmiany.md U1/U2).
+# Casting to Categorical with the full domain makes the dummy set independent of
+# batch composition; values outside the domain become NaN -> all-zero dummies
+# (baseline category), never a shifted column.
+UCI_CATEGORIES: Dict[str, List[int]] = {
+    "SEX": [1, 2],
+    "EDUCATION": [0, 1, 2, 3, 4, 5, 6],
+    "MARRIAGE": [0, 1, 2, 3],
+}
+
 
 def engineer_features(
     df: pd.DataFrame, window: Dict[str, List[str]]
@@ -53,6 +66,8 @@ def engineer_features(
     # Most recent payment status inside the window.
     out["recent_pay_status"] = out[pay_cols[-1]]
 
+    for col, cats in UCI_CATEGORIES.items():
+        out[col] = pd.Categorical(out[col].astype(int), categories=cats)
     out = pd.get_dummies(out, columns=["EDUCATION", "MARRIAGE", "SEX"], drop_first=True)
     categorical_cols = [
         c for c in out.columns
@@ -71,16 +86,24 @@ def engineer_features(
 
 
 def prepare_lstm_sequences(
-    df: pd.DataFrame, window: Dict[str, List[str]]
+    df: pd.DataFrame,
+    window: Dict[str, List[str]],
+    scalers: List[StandardScaler] | None = None,
 ) -> Tuple[np.ndarray, List[StandardScaler]]:
     """Build the LSTM input tensor (N, 3, 3) and the per-channel scalers.
 
     Channels: 0 = PAY status, 1 = BILL amount, 2 = PAY amount.
     Time axis: oldest -> newest inside the window.
 
+    Args:
+        scalers: When provided, the 3 per-channel scalers are used with
+            `transform` only (no refit) -- pass scalers fitted on the training
+            rows to avoid preprocessing leakage. When None (legacy behaviour),
+            scalers are fitted on `df` itself.
+
     Returns:
         (X_seq, scalers) where X_seq has shape (len(df), 3, 3) and `scalers`
-        is a list of 3 fitted StandardScalers (one per channel).
+        is the list of 3 StandardScalers actually used (one per channel).
     """
     pay_cols = window["pay"]
     bill_cols = window["bill"]
@@ -92,11 +115,15 @@ def prepare_lstm_sequences(
         X_seq[:, t, 1] = df[bill_cols[t]].to_numpy()
         X_seq[:, t, 2] = df[amt_cols[t]].to_numpy()
 
-    scalers: List[StandardScaler] = []
+    if scalers is None:
+        scalers = []
+        for f in range(3):
+            sc = StandardScaler()
+            sc.fit(X_seq[:, :, f].reshape(-1, 1))
+            scalers.append(sc)
+
     for f in range(3):
-        sc = StandardScaler()
         flat = X_seq[:, :, f].reshape(-1, 1)
-        X_seq[:, :, f] = sc.fit_transform(flat).reshape(len(df), 3)
-        scalers.append(sc)
+        X_seq[:, :, f] = scalers[f].transform(flat).reshape(len(df), 3)
 
     return X_seq, scalers

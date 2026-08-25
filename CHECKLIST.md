@@ -8,14 +8,14 @@
 > - 🔴 **Do zrobienia** — task dostępny (wszystkie `blocked_by` są 🟢), nie został jeszcze rozpoczęty.
 > - 🔒 **Zablokowane** — task czeka na zależność (`blocked_by` zawiera coś, co nie jest 🟢).
 >
-> **Ostatnia aktualizacja:** 2026-06-06 (po merge CREDIT-112 — audyt fairness (fairlearn) na W3: DPD/EOD per 5 modeli przy progach cost-opt z CREDIT-106; wszystkie modele |diff| ≤ 0.1 (max DPD 0.039 CatBoost; LSTM najbliżej parytetu — DPD 0.007, EOD 0.015); `reports/fairness_report.md` + `fairness_metrics_w3.csv` + 2 PNG)
+> **Ostatnia aktualizacja:** 2026-07-07 (porządki w dokumentach repo: podsumowania sprintów scalone → `PodsumowanieSprintow.md`; audyty Fable 5 + lista zadań scalone → `Fable5-zmiany.md`; usunięte stare PDF-y pracy v3/v6/v7 (zostaje v8), `DokumentRoznice.md`, `WalidacjaPDFv7.md` — wszystko w historii gita. Kroki do obrony: `TO-DO-OBRONA.md`. Wcześniej tego dnia: CREDIT-114 + CREDIT-501 🟢, descope CREDIT-113, naprawy U1/wycieków z atomowym retrainem, transakcja atomowa zapisu, job CI dla warstwy treningowej)
 
 ---
 
 ## 🎯 Aktualne zadanie
 
-- **Gabriel Figur (GF):** 🔴 **CREDIT-113** — Stacked ensemble (LR meta-learner na 5 modelach bazowych) · branch `sprint6/stacking` *(ostatnie ogniwo przed CREDIT-114 final report)*
-- **Mikołaj Kusiński (MK):** 🔴 **CREDIT-304** — UI polish (responsive 1024/1440/1920, a11y Lighthouse ≥ 90, dark mode, tooltipy modeli) · branch `sprint6/ui-polish` *(Sprint 6 P2; odblokowane przez CREDIT-302 + CREDIT-303 — ostatni task toru MK)*
+- **Gabriel Figur (GF):** ⏸️ wszystkie zadania toru GF wykonane (ścieżka krytyczna tezy domknięta: 101→102→104→110→111→114 ✅); dalej: teksty pracy (rozdz. 3/5) + eksperymenty dowodowe na obronę (plan: `Fable5-zmiany.md` / plik planu)
+- **Mikołaj Kusiński (MK):** 🔴 **CREDIT-304** — UI polish (responsive 1024/1440/1920, a11y Lighthouse ≥ 90, dark mode, tooltipy modeli) · branch `sprint6/ui-polish` *(Sprint 6 P2; ostatni otwarty task projektu)*
 
 > **Reguła aktualizacji tej sekcji:** gdy task zostanie zmergeowany do `main`, ustaw tutaj kolejny najwyżej priorytetowy dostępny (🔴) task z toru właściwej osoby. Jeśli osoba nie ma już dostępnych tasków w bieżącym sprincie, wpisz „⏸️ czeka na odblokowanie / koniec sprintu".
 
@@ -24,9 +24,10 @@
 ## 📊 Statystyki
 
 - **Łącznie zadań:** 30 (CREDIT-115 + CREDIT-116 dodane 2026-06-05 jako follow-up do CREDIT-109)
-- **🟢 Wykonane:** 26 (CREDIT-101, CREDIT-102, CREDIT-103, CREDIT-201, CREDIT-401, CREDIT-402, CREDIT-210, CREDIT-104, CREDIT-202, CREDIT-203, CREDIT-204, CREDIT-301, CREDIT-302, CREDIT-205, CREDIT-105, CREDIT-110, CREDIT-111, CREDIT-106, CREDIT-109, CREDIT-107, CREDIT-108, CREDIT-115, CREDIT-116, CREDIT-303, CREDIT-211, CREDIT-112)
-- **🔴 Dostępne:** 2 (CREDIT-113, CREDIT-304)
-- **🔒 Zablokowane:** 2
+- **🟢 Wykonane:** 28 (CREDIT-101, CREDIT-102, CREDIT-103, CREDIT-201, CREDIT-401, CREDIT-402, CREDIT-210, CREDIT-104, CREDIT-202, CREDIT-203, CREDIT-204, CREDIT-301, CREDIT-302, CREDIT-205, CREDIT-105, CREDIT-110, CREDIT-111, CREDIT-106, CREDIT-109, CREDIT-107, CREDIT-108, CREDIT-115, CREDIT-116, CREDIT-303, CREDIT-211, CREDIT-112, **CREDIT-114**, **CREDIT-501**)
+- **🔴 Dostępne:** 1 (CREDIT-304)
+- **🔒 Zablokowane:** 0
+- **⚪ Descoped:** 1 (CREDIT-113 — decyzja 2026-07-07, backlog po obronie)
 
 ---
 
@@ -99,11 +100,11 @@
   - blocked_by: 101, 102, 104 · blocks: 111
 
 - 🟢 **CREDIT-111** · [EVAL] · P0 · GF · `sprint3/static-vs-dynamic`
-  - **DOWÓD TEZY** — statyka (PD z W3) vs monitoring (trajektoria); catch rate vs fałszywe alarmy. Mixed results @ FA=10%: monitoring tracił 2-6pp catch vs static (max-aggregator noise > single calibrated snapshot), ALE mean lead ~2 okna i 43-184 unikalnych catchy/model. Framing: "monitoring offers earlier detection at comparable discrimination". 3 ROC overlay PNG + 2 CSV + Markdown report.
+  - **DOWÓD TEZY** — statyka (PD z W3) vs monitoring (trajektoria); catch rate vs fałszywe alarmy. Mixed results @ FA=10% *(liczby po leakage-fix 2026-07-07)*: monitoring traci 5-11pp catch vs static dla 4 modeli statycznych, ALE **LSTM jako jedyny wygrywa monitoringiem (+2.6pp)**; mean lead ~2 okna i 39-74 unikalnych catchy/model. Framing: "monitoring offers earlier detection at comparable discrimination". 5 ROC overlay PNG + 2 CSV + Markdown report + `threshold_leakage_fix.md`.
   - blocked_by: 110 · blocks: 114
 
 - 🟢 **CREDIT-106** · [ML] · P1 · GF · SWAP-OK · `sprint3/cost-thresholds`
-  - Progi kosztowe (FN > FP); `alert_thresholds.json` w (0.1, 0.9). Per-model optymalne: RF=0.145 / XGB=0.180 / LSTM=0.185 (FN=5×FP). Flask response z `costThresholds` + `windowAlerts` (additive, non-breaking).
+  - Progi kosztowe (FN > FP); `alert_thresholds.json` w (0.1, 0.9). Per-model optymalne *(po leakage-fix 2026-07-07: optymalizacja na splicie kalibracyjnym, nie testowym)*: RF=0.145 / XGB=0.165 / LGBM=0.160 / CatBoost=0.160 / LSTM=0.155 (FN=5×FP). Flask response z `costThresholds` + `windowAlerts` (additive, non-breaking).
   - blocked_by: 105 · blocks: —
 
 - 🟢 **CREDIT-204** · [BE] · P0 · MK · `sprint3/client-history-get`
@@ -147,7 +148,7 @@
   - blocked_by: 107, 210 · blocks: —
 
 - 🟢 **CREDIT-109** · [ML] · P2 · GF · `sprint5/lgbm-catboost`
-  - LightGBM + CatBoost na oknach 3-mies.; 5 modeli w response Flask. CatBoost najlepszy (AUC 0.7802, Brier 0.1354); cost thresholds rozszerzone do 5 modeli; `compute_trends` iteracyjne po `predictions.keys()`. PR #23, merged 2026-06-05.
+  - LightGBM + CatBoost na oknach 3-mies.; 5 modeli w response Flask. CatBoost najlepszy (AUC 0.7793, Brier 0.1357 *po leakage-fix 2026-07-07*; pierwotnie 0.7802/0.1354); cost thresholds rozszerzone do 5 modeli; `compute_trends` iteracyjne po `predictions.keys()`. PR #23, merged 2026-06-05.
   - blocked_by: 102 · blocks: 113
 
 - 🟢 **CREDIT-112** · [EVAL] · P1 · GF · SWAP-OK · `sprint5/fairness`
@@ -166,21 +167,26 @@
 
 ## Sprint 6 — Polish, ensemble, raport, docs (11 sie – 24 sie)
 
-- 🔴 **CREDIT-113** · [ML] · P2 · GF · `sprint6/stacking`
-  - Stacked ensemble (LR meta-learner na 5 modelach bazowych). **Ostatnie ogniwo przed CREDIT-114 final report.**
-  - blocked_by: 102, 105, 109 · blocks: 114
-
-- 🔒 **CREDIT-114** · [EVAL] · P0 · GF · `sprint6/final-report`
-  - Raport końcowy + komplet wykresów do slajdów obrony.
-  - blocked_by: 103, 111, 113 · blocks: —
+- 🟢 **CREDIT-114** · [EVAL] · P0 · GF · `sprint6/final-report`
+  - Raport końcowy: `ml-learing-center/final_report.py` → `reports/FINAL_REPORT.md` (sekcje 1:1 pod rozdz. 5: tabela 5 modeli, statyka vs monitoring z uczciwym werdyktem, fairness, weryfikacja H1/H2/H3, ograniczenia, mapa artefaktów→sekcje). Każda liczba czytana z plików `reports/`, zero ręcznych wartości. Wykonane 2026-07-07 po leakage-fix.
+  - blocked_by: 103, 111 · blocks: — *(113 usunięte z blocked_by po descope 2026-07-07)*
 
 - 🔴 **CREDIT-304** · [FE] · P2 · MK · `sprint6/ui-polish`
   - Responsive (1024/1440/1920), a11y (Lighthouse ≥ 90), dark mode, tooltipy modeli.
   - blocked_by: 302, 303 · blocks: —
 
-- 🔒 **CREDIT-501** · [DOCS] · P0 · GF+MK · `sprint6/docs`
-  - README + Model Card + Architecture + aktualizacja `CLAUDE.md` (nowe endpointy, baza, okno 3-mies.).
+- 🟢 **CREDIT-501** · [DOCS] · P0 · GF+MK · `sprint6/docs`
+  - README + Model Card + Architecture + aktualizacja `CLAUDE.md` (nowe endpointy, baza, okno 3-mies.). Wykonane 2026-07-07: nowy `README.md` (uruchomienie end-to-end + kluczowe wyniki), `docs/MODEL_CARD.md` (dane/trening/metryki/fairness/ograniczenia — liczby z reports/), `docs/ARCHITECTURE.md` (przepływ + decyzje projektowe), `CLAUDE.md` przepisany na stan 5-modelowy z Postgres i monitoringiem.
   - blocked_by: ~all · blocks: —
+
+---
+
+## ⚪ Descoped / Backlog po obronie
+
+- ⚪ **CREDIT-113** · [ML] · P2 · GF · `sprint6/stacking`
+  - Stacked ensemble (LR meta-learner na 5 modelach bazowych).
+  - **Świadoma decyzja zakresu 2026-07-07:** stacking nie wnosi do dowodu tezy (H1/H2/H3 nie wymagają ensemble), a poprawna realizacja wymaga protokołu out-of-fold + rekalibracji meta-modelu (bez OOF = wyciek). Przeniesione do kierunków dalszych badań w pracy; w razie powrotu — protokół w `Fable5-zmiany.md` (prompt P6).
+  - blocked_by: 102, 105, 109 · blocks: — *(usunięte z blocked_by CREDIT-114)*
 
 ---
 

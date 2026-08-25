@@ -1,4 +1,7 @@
 using System.Globalization;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
+using WebApi.Data;
 using WebApi.Models;
 using WebApi.Models.Entities;
 
@@ -16,6 +19,7 @@ public class MonitoringService
     private readonly SnapshotRepository _snapshotRepository;
     private readonly PredictionRepository _predictionRepository;
     private readonly TrendRepository _trendRepository;
+    private readonly AppDbContext _db;
     private readonly ILogger<MonitoringService> _logger;
 
     // The labelled window whose predictions are persisted (contract open question #1 = W3 only).
@@ -36,12 +40,14 @@ public class MonitoringService
         SnapshotRepository snapshotRepository,
         PredictionRepository predictionRepository,
         TrendRepository trendRepository,
+        AppDbContext db,
         ILogger<MonitoringService> logger)
     {
         _pythonModelClient = pythonModelClient;
         _snapshotRepository = snapshotRepository;
         _predictionRepository = predictionRepository;
         _trendRepository = trendRepository;
+        _db = db;
         _logger = logger;
     }
 
@@ -100,6 +106,17 @@ public class MonitoringService
             throw new MlServiceException("ML service returned an empty response", upstreamStatusCode: null);
         }
 
+        // Atomic write (deferred in CREDIT-203/205, closed 2026-07-07): client, snapshot,
+        // 5 predictions and 5 trends commit together or not at all — a failure mid-way must
+        // not leave an orphaned snapshot without predictions in the trajectory. All repos
+        // share this scoped DbContext, so their SaveChangesAsync calls enlist in this
+        // transaction. The in-memory provider (used by contract-level tests) is
+        // non-relational and does not support transactions — skipped there; the real
+        // rollback behaviour is covered by PersistenceTests on Testcontainers PostgreSQL.
+        await using IDbContextTransaction? transaction = _db.Database.IsRelational()
+            ? await _db.Database.BeginTransactionAsync()
+            : null;
+
         var clientCreated = client is null;
         client ??= await _snapshotRepository.CreateClientAsync(clientRef);
 
@@ -127,6 +144,11 @@ public class MonitoringService
             ("catboost", scored.Trends.Catboost.Slope, scored.Trends.Catboost.Alert),
             ("lstm", scored.Trends.Lstm.Slope, scored.Trends.Lstm.Alert),
         });
+
+        if (transaction is not null)
+        {
+            await transaction.CommitAsync();
+        }
 
         _logger.LogInformation(
             "Persisted snapshot {SnapshotId} for client {ClientRef} ({PredCount} predictions, {TrendCount} trends)",

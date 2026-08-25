@@ -222,14 +222,15 @@ Złamanie tych reguł unieważnia tezę. Stosuj bezwzględnie.
 
 ### Sprint 6 — Polish, ensemble, raport, docs (11 sie – 24 sie)
 
-**CREDIT-113 · [ML] · P2 · GF · branch `sprint6/stacking`**
-- blocked_by: 102, 105, 109  |  blocks: 114
+**CREDIT-113 · [ML] · P2 · GF · branch `sprint6/stacking` · ⚪ DESCOPED 2026-07-07**
+- blocked_by: 102, 105, 109  |  blocks: — *(usunięte z blocked_by CREDIT-114)*
 - Cel: stacked ensemble (LR meta-learner na predykcjach modeli bazowych).
 - Pliki: `main.py`, `app.py`.
 - DoD: AUC ensemble ≥ najlepszy pojedynczy; klucz `ensemble` w response.
+- **Decyzja zakresu:** przeniesione do backlogu po obronie — stacking nie wnosi do dowodu tezy (H1/H2/H3 nie wymagają ensemble), a poprawna realizacja wymaga protokołu out-of-fold + rekalibracji meta-modelu (bez OOF = wyciek). W pracy: jedno zdanie w „kierunkach dalszych badań". Protokół realizacji w razie powrotu: `Fable5-zmiany.md` prompt P6.
 
 **CREDIT-114 · [EVAL] · P0 · GF · branch `sprint6/final-report`**
-- blocked_by: 103, 111, 113  |  blocks: —
+- blocked_by: 103, 111  |  blocks: —
 - Cel: raport końcowy + eksport wykresów do prezentacji.
 - Pliki: `ml-learing-center/generate_final_report.py`, `reports/final_report.md`.
 - DoD: zbiorczy raport + komplet wykresów do slajdów.
